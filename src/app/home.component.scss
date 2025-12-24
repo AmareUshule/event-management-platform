@@ -1,0 +1,21 @@
+.home {
+  padding: 2rem 0;
+
+  h1 {
+    margin-bottom: 0.5rem;
+    font-size: 1.75rem;
+  }
+
+  p {
+    margin-bottom: 1rem;
+  }
+
+  .btn {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background: var(--primary-color);
+    color: #fff;
+    border-radius: 6px;
+    text-decoration: none;
+  }
+}

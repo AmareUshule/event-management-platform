@@ -1,0 +1,17 @@
+<section class="login container">
+  <h2>Sign in</h2>
+
+  <form (ngSubmit)="onSubmit()" #f="ngForm">
+    <div class="field">
+      <label for="username">Username</label>
+      <input id="username" name="username" [(ngModel)]="username" required />
+    </div>
+
+    <div class="field">
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" [(ngModel)]="password" required />
+    </div>
+
+    <button type="submit" [disabled]="!f.form.valid">Sign in</button>
+  </form>
+</section>

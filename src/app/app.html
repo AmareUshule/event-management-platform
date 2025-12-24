@@ -1,2 +1,10 @@
-<app-nx-welcome></app-nx-welcome>
-<router-outlet></router-outlet>
+<header class="app-header">
+	<nav class="container">
+		<a routerLink="/">Home</a>
+		<a routerLink="/login" style="margin-left:1rem">Login</a>
+	</nav>
+</header>
+
+<main class="container">
+	<router-outlet></router-outlet>
+</main>

@@ -1,0 +1,31 @@
+.login {
+  padding: 2rem 0;
+
+  h2 {
+    margin-bottom: 1rem;
+  }
+
+  .field {
+    margin-bottom: 0.75rem;
+
+    label {
+      display: block;
+      margin-bottom: 0.25rem;
+    }
+
+    input {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid #d1d5db;
+      border-radius: 4px;
+    }
+  }
+
+  button {
+    padding: 0.5rem 1rem;
+    background: var(--primary-color);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+  }
+}
