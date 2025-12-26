@@ -34,6 +34,7 @@ Infrastructure depends on Domain interfaces
 
 
 ## Project Structure
+```
 src/
  ├── app/
  │   ├── core/
@@ -73,6 +74,7 @@ src/
  ├── assets/
  ├── environments/
  └── main.ts
+ ```
 
 
  ## Documentation
