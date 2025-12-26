@@ -1,8 +1,119 @@
-<section class="home container">
-  <h1>Welcome to Event Management Platform</h1>
-  <p>Manage events, participants, and reports from a simple dashboard.</p>
+<!-- Modern Home Page Design -->
+<section class="home">
+  <!-- Hero Section -->
+  <div class="hero">
+    <div class="hero-content">
+      <h1 class="hero-title">EventFlow</h1>
+      <p class="hero-subtitle">The smart way to manage, track, and communicate events across your organization</p>
+      <p class="hero-description">
+        Eliminate manual coordination. Centralize event planning. Ensure nobody misses important meetings, workshops, or announcements.
+      </p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" routerLink="/login">Sign In</a>
+        <a class="btn btn-outline" routerLink="/events">Browse Events</a>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <!-- Event calendar/visual placeholder -->
+      <div class="calendar-preview">
+        <div class="calendar-day event-day">
+          <span class="day-number">22</span>
+          <span class="event-badge">🎯 Workshop</span>
+        </div>
+        <div class="event-dots">
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+        </div>
+      </div>
+    </div>
+  </div>
 
-  <p>
-    <a class="btn" routerLink="/login">Sign in</a>
-  </p>
+  <!-- Value Proposition -->
+  <div class="value-props">
+    <div class="value-card">
+      <div class="value-icon">🚫</div>
+      <h3>Stop the Chaos</h3>
+      <p>No more endless calls, WhatsApp groups, or lost emails</p>
+    </div>
+    <div class="value-card">
+      <div class="value-icon">✅</div>
+      <h3>Stay Informed</h3>
+      <p>Real-time updates on all events across departments</p>
+    </div>
+    <div class="value-card">
+      <div class="value-icon">📅</div>
+      <h3>Plan Better</h3>
+      <p>Visual calendar with conflict detection and reminders</p>
+    </div>
+  </div>
+
+  <!-- Who It's For -->
+  <div class="audience-section">
+    <h2 class="section-title">Built for Everyone</h2>
+    <div class="audience-grid">
+      <div class="audience-card">
+        <h4>Departments</h4>
+        <ul>
+          <li>Create events</li>
+          <li>Add participants</li>
+          <li>Upload documents</li>
+          <li>Update in real-time</li>
+        </ul>
+      </div>
+      <div class="audience-card highlight">
+        <h4>Communication Team</h4>
+        <ul>
+          <li>View all events</li>
+          <li>Filter by priority</li>
+          <li>Assign coverage</li>
+          <li>Get alerts</li>
+        </ul>
+      </div>
+      <div class="audience-card">
+        <h4>All Employees</h4>
+        <ul>
+          <li>See what's happening</li>
+          <li>Check schedules</li>
+          <li>Download info</li>
+          <li>Never miss out</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Example -->
+  <div class="example-section">
+    <div class="example-card">
+      <div class="example-header">
+        <span class="example-label">LIVE EXAMPLE</span>
+        <h3>Engineering Workshop</h3>
+      </div>
+      <div class="example-details">
+        <div class="detail">
+          <span class="detail-label">📍</span> 
+          <span>Elilly Hotel</span>
+        </div>
+        <div class="detail">
+          <span class="detail-label">📅</span>
+          <span>Jan 22, 9:00 AM</span>
+        </div>
+        <div class="detail">
+          <span class="detail-label">🎯</span>
+          <span>Turbine Maintenance</span>
+        </div>
+      </div>
+      <div class="example-note">
+        <span class="note-icon">⚡</span>  
+        <span>Communication team notified instantly. No calls needed.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-section">
+    <h2>Ready to streamline your events?</h2>
+    <a class="btn btn-large" routerLink="/register">Start Free Trial</a>
+    <p class="cta-note">Join departments already using EventFlow</p>
+  </div>
 </section>
