@@ -1,29 +1,18 @@
-/* Your existing .home styles */
+/* Home Page Base Styles */
 .home {
   padding: 2rem 0;
-  max-width: 1200px; /* Added from new */
-  margin: 0 auto; /* Added from new */
-
-  h1 {
-    margin-bottom: 0.5rem;
-    font-size: 1.75rem;
-  }
-
-  p {
-    margin-bottom: 1rem;
-  }
-
-  .btn {
-    display: inline-block;
-    padding: 0.5rem 1rem;
-    background: var(--primary-color);
-    color: #fff;
-    border-radius: 6px;
-    text-decoration: none;
-  }
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
-/* Add these new styles AFTER your existing .home styles */
+.home h1 {
+  margin-bottom: 0.5rem;
+  font-size: 1.75rem;
+}
+
+.home p {
+  margin-bottom: 1rem;
+}
 
 /* Hero Section */
 .hero {
@@ -37,7 +26,7 @@
 .hero-title {
   font-size: 3.5rem;
   font-weight: 800;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #064e3b, #7f1d1d);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   margin-bottom: 1rem;
@@ -51,38 +40,53 @@
 
 .hero-description {
   color: #718096;
-  margin-bottom: 2rem;
   line-height: 1.6;
+  margin-bottom: 2rem;
 }
 
 .hero-actions {
   display: flex;
   gap: 1rem;
+  flex-wrap: wrap;
 }
 
-/* Override existing .btn with new styles */
+/* Buttons */
 .btn {
-  padding: 0.75rem 1.5rem !important; /* Add !important if needed */
+  padding: 0.75rem 1.5rem;
   border-radius: 8px;
-  text-decoration: none;
   font-weight: 600;
+  text-decoration: none;
   transition: all 0.3s ease;
+  display: inline-block;
   border: 2px solid transparent;
 }
 
+/* Primary Gradient Button (EEP Green → Red) */
 .btn-primary {
-  background: var(--primary-color, #4299e1); /* Use your variable */
+  background: linear-gradient(to right, #064e3b, #7f1d1d);
   color: white;
 }
 
-.btn-outline {
-  border: 2px solid var(--primary-color, #4299e1);
-  color: var(--primary-color, #4299e1);
-  background: transparent;
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
 }
 
+/* Outline Gradient Button */
+.btn-outline {
+  background: linear-gradient(to right, #064e3b, #7f1d1d);
+  color: white;
+  border: 2px solid transparent;
+}
+
+.btn-outline:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+}
+
+/* Large Buttons */
 .btn-large {
-  padding: 1rem 2.5rem !important;
+  padding: 1rem 2.5rem;
   font-size: 1.1rem;
 }
 
@@ -132,19 +136,8 @@
 }
 
 .audience-card.highlight {
-  border-color: var(--primary-color, #4299e1);
-  background: #f0f9ff;
-}
-
-.audience-card ul {
-  list-style: none;
-  padding: 0;
-  margin-top: 1rem;
-}
-
-.audience-card li {
-  padding: 0.5rem 0;
-  color: #4a5568;
+  border-color: #064e3b;
+  background: linear-gradient(135deg, #064e3b1a, #7f1d1d1a);
 }
 
 /* Example Section */
@@ -161,60 +154,22 @@
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
 }
 
-.example-header {
-  margin-bottom: 2rem;
-}
-
-.example-label {
-  background: #e6fffa;
-  color: #234e52;
-  padding: 0.25rem 0.75rem;
-  border-radius: 20px;
-  font-size: 0.875rem;
-  font-weight: 600;
-}
-
-.example-details {
-  display: flex;
-  gap: 2rem;
-  margin-bottom: 1.5rem;
-}
-
-.detail {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.detail-label {
-  font-size: 1.25rem;
-}
-
-.example-note {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: #38a169;
-  font-weight: 500;
-}
-
-/* CTA */
+/* CTA Section */
 .cta-section {
   text-align: center;
   padding: 4rem 2rem;
-  background: linear-gradient(135deg, #f6f9fc 0%, #f1f5f9 100%);
+  background: linear-gradient(135deg, #064e3b, #7f1d1d);
   border-radius: 20px;
-  margin-top: 4rem;
+  color: white;
 }
 
 .cta-section h2 {
   font-size: 2rem;
   margin-bottom: 1.5rem;
-  color: #2d3748;
 }
 
 .cta-note {
-  color: #718096;
+  color: #e0f2f1;
   margin-top: 1rem;
   font-size: 0.9rem;
 }
@@ -225,12 +180,12 @@
     grid-template-columns: 1fr;
     text-align: center;
   }
-  
+
   .value-props,
   .audience-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .hero-actions {
     justify-content: center;
   }
