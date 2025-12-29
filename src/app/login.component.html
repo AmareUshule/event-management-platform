@@ -1,18 +1,19 @@
 <section class="login container">
-  <h2>Sign in</h2>
+  <h2>EEP Employee Sign In</h2>
 
   <form (ngSubmit)="onSubmit()" #f="ngForm">
     <div class="field">
-      <label for="username">Username</label>
-      <input id="username" name="username" [(ngModel)]="username" required />
+      <label for="employeeId">Employee ID</label>
+      <input id="employeeId" name="employeeId" [(ngModel)]="employeeId" required placeholder="Enter your EEP ID" />
     </div>
 
     <div class="field">
       <label for="password">Password</label>
-      <input id="password" name="password" type="password" [(ngModel)]="password" required />
+      <input id="password" name="password" type="password" [(ngModel)]="password" required placeholder="Enter your password" />
     </div>
 
-    <button type="submit" [disabled]="!f.form.valid">Sign in</button>
+    <button type="submit" [disabled]="!f.form.valid">Sign In</button>
   </form>
-</section>
 
+  <p class="help-text">Forgot your password? Contact IT Support at it-support@eep.com.et</p>
+</section>

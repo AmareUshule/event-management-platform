@@ -1,192 +1,89 @@
-/* Home Page Base Styles */
-.home {
-  padding: 2rem 0;
-  max-width: 1200px;
-  margin: 0 auto;
-}
+/* EEP Brand Colors */
+$eep-green-900: #0b5d1e; // Deep EEP green
+$eep-red-900: #8b0000;   // Deep EEP red
+$eep-light-bg: #f6f9f7;
 
-.home h1 {
-  margin-bottom: 0.5rem;
-  font-size: 1.75rem;
-}
-
-.home p {
-  margin-bottom: 1rem;
-}
-
-/* Hero Section */
-.hero {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4rem;
-  align-items: center;
-  margin-bottom: 4rem;
-}
-
-.hero-title {
-  font-size: 3.5rem;
-  font-weight: 800;
-  background: linear-gradient(135deg, #064e3b, #7f1d1d);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  margin-bottom: 1rem;
-}
-
-.hero-subtitle {
-  font-size: 1.5rem;
-  color: #2d3748;
-  margin-bottom: 1rem;
-}
-
-.hero-description {
-  color: #718096;
-  line-height: 1.6;
-  margin-bottom: 2rem;
-}
-
-.hero-actions {
+.landing {
+  min-height: 100vh;
   display: flex;
-  gap: 1rem;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(
+    135deg,
+    #f3faf6,
+    $eep-light-bg
+  );
+  padding: 24px;
+}
+
+.landing-content {
+  max-width: 800px;
+  text-align: center;
+}
+
+.title {
+  font-size: 3rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 16px;
+}
+
+.brand {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 6px 16px;
+  border-radius: 10px;
+  background: linear-gradient(
+    90deg,
+    $eep-green-900,
+    $eep-red-900
+  );
+  color: white;
+  font-weight: 700;
+}
+
+.subtitle {
+  font-size: 1.1rem;
+  color: #475569;
+  line-height: 1.6;
+  margin-bottom: 32px;
+}
+
+.actions {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
   flex-wrap: wrap;
 }
 
-/* Buttons */
 .btn {
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
+  padding: 12px 22px;
+  font-size: 0.95rem;
   font-weight: 600;
+  border-radius: 10px;
   text-decoration: none;
-  transition: all 0.3s ease;
-  display: inline-block;
-  border: 2px solid transparent;
+  transition: all 0.25s ease;
 }
 
-/* Primary Gradient Button (EEP Green → Red) */
-.btn-primary {
-  background: linear-gradient(to right, #064e3b, #7f1d1d);
+/* Primary Button (EEP Green) */
+.btn.primary {
+  background: $eep-green-900;
   color: white;
+  box-shadow: 0 10px 20px rgba(11, 93, 30, 0.3);
 }
 
-.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+.btn.primary:hover {
+  background: darken($eep-green-900, 6%);
+  transform: translateY(-1px);
 }
 
-/* Outline Gradient Button */
-.btn-outline {
-  background: linear-gradient(to right, #064e3b, #7f1d1d);
-  color: white;
-  border: 2px solid transparent;
-}
-
-.btn-outline:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
-}
-
-/* Large Buttons */
-.btn-large {
-  padding: 1rem 2.5rem;
-  font-size: 1.1rem;
-}
-
-/* Value Props */
-.value-props {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 2rem;
-  margin: 4rem 0;
-}
-
-.value-card {
-  text-align: center;
-  padding: 2rem;
-  border-radius: 12px;
-  background: #f8fafc;
-}
-
-.value-icon {
-  font-size: 2.5rem;
-  margin-bottom: 1rem;
-}
-
-/* Audience Section */
-.section-title {
-  text-align: center;
-  font-size: 2rem;
-  margin: 4rem 0 2rem;
-  color: #2d3748;
-}
-
-.audience-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 2rem;
-}
-
-.audience-card {
-  padding: 2rem;
-  border-radius: 12px;
-  border: 2px solid #e2e8f0;
-  transition: transform 0.3s ease;
-}
-
-.audience-card:hover {
-  transform: translateY(-5px);
-}
-
-.audience-card.highlight {
-  border-color: #064e3b;
-  background: linear-gradient(135deg, #064e3b1a, #7f1d1d1a);
-}
-
-/* Example Section */
-.example-section {
-  margin: 4rem 0;
-}
-
-.example-card {
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 2rem;
+/* Secondary Button (EEP Red Outline) */
+.btn.secondary {
   background: white;
-  border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  color: $eep-red-900;
+  border: 2px solid $eep-red-900;
 }
 
-/* CTA Section */
-.cta-section {
-  text-align: center;
-  padding: 4rem 2rem;
-  background: linear-gradient(135deg, #064e3b, #7f1d1d);
-  border-radius: 20px;
-  color: white;
-}
-
-.cta-section h2 {
-  font-size: 2rem;
-  margin-bottom: 1.5rem;
-}
-
-.cta-note {
-  color: #e0f2f1;
-  margin-top: 1rem;
-  font-size: 0.9rem;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .hero {
-    grid-template-columns: 1fr;
-    text-align: center;
-  }
-
-  .value-props,
-  .audience-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .hero-actions {
-    justify-content: center;
-  }
+.btn.secondary:hover {
+  background: rgba(139, 0, 0, 0.05);
 }

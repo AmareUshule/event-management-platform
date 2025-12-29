@@ -10,11 +10,11 @@ import { FormsModule } from '@angular/forms';
   styleUrls: ['./login.component.scss'],
 })
 export class LoginComponent {
-  username = '';
+  employeeId = '';
   password = '';
 
   onSubmit() {
-    // Placeholder behavior — replace with real auth call
-    alert(`Attempting sign in for ${this.username}`);
+    // Placeholder for actual EEP authentication
+    alert(`Attempting sign in for Employee ID: ${this.employeeId}`);
   }
 }

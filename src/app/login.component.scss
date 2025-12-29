@@ -1,31 +1,93 @@
+/* EEP Brand Colors */
+$eep-green-900: #0b5d1e; // Deep EEP green
+$eep-red-900: #8b0000;   // Deep EEP red
+$eep-light-bg: #f6f9f7;
+
 .login {
-  padding: 2rem 0;
+  padding: 3rem 1rem;
+  max-width: 400px;
+  margin: 0 auto;
+  background: $eep-light-bg;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+  text-align: center;
+  font-family: "Segoe UI", sans-serif;
 
   h2 {
-    margin-bottom: 1rem;
+    color: $eep-green-900;
+    margin-bottom: 2rem;
+    font-weight: 700;
+    font-size: 1.8rem;
   }
 
   .field {
-    margin-bottom: 0.75rem;
+    margin-bottom: 1.25rem;
+    text-align: left;
 
     label {
       display: block;
-      margin-bottom: 0.25rem;
+      margin-bottom: 0.35rem;
+      font-weight: 600;
+      color: #1f2937;
+      font-size: 0.95rem;
     }
 
     input {
       width: 100%;
-      padding: 0.5rem;
-      border: 1px solid #d1d5db;
-      border-radius: 4px;
+      padding: 0.6rem 0.75rem;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      transition: border-color 0.2s;
+
+      &:focus {
+        border-color: $eep-green-900;
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(11, 93, 30, 0.2);
+      }
     }
   }
 
   button {
-    padding: 0.5rem 1rem;
-    background: var(--primary-color);
-    color: #fff;
-    border: none;
-    border-radius: 6px;
+    width: 100%;
+    padding: 0.65rem;
+    font-weight: 700;
+    font-size: 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &.primary {
+      background-color: $eep-green-900;
+      color: white;
+      border: none;
+      box-shadow: 0 10px 20px rgba(11, 93, 30, 0.3);
+
+      &:hover:not(:disabled) {
+        background-color: darken($eep-green-900, 6%);
+        transform: translateY(-1px);
+      }
+    }
+
+    &.secondary {
+      background-color: white;
+      color: $eep-red-900;
+      border: 2px solid $eep-red-900;
+
+      &:hover:not(:disabled) {
+        background-color: rgba(139, 0, 0, 0.05);
+      }
+    }
+
+    &:disabled {
+      background-color: #94a3b8;
+      cursor: not-allowed;
+    }
+  }
+
+  .help-text {
+    margin-top: 1rem;
+    font-size: 0.85rem;
+    color: #475569;
   }
 }
