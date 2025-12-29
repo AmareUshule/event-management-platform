@@ -1,4 +1,5 @@
 /* EEP Brand Colors */
+@use "sass:color";
 $eep-green-900: #0b5d1e; // Deep EEP green
 $eep-red-900: #8b0000;   // Deep EEP red
 $eep-light-bg: #f6f9f7;
@@ -73,7 +74,7 @@ $eep-light-bg: #f6f9f7;
 }
 
 .btn.primary:hover {
-  background: darken($eep-green-900, 6%);
+  background: color.adjust($eep-green-900, $lightness: -6%);
   transform: translateY(-1px);
 }
 
