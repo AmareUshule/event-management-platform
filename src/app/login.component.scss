@@ -1,94 +1,175 @@
-/* EEP Brand Colors */
-@use "sass:color";
-$eep-green-900: #0b5d1e; // Deep EEP green
-$eep-red-900: #8b0000;   // Deep EEP red
-$eep-light-bg: #f6f9f7;
+/* ================================
+   AUTH LAYOUT WRAPPER
+================================ */
+.auth-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4rem;
+  min-height: 100vh;
+  padding: 2rem;
+  background: #f8fafc;
+}
 
-.login {
-  padding: 3rem 1rem;
-  max-width: 400px;
-  margin: 0 auto;
-  background: $eep-light-bg;
-  border-radius: 12px;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+/* ================================
+   LEFT SIDE – BRANDING
+================================ */
+.auth-brand {
+  padding: 64px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  max-width: 480px;
+}
+
+.auth-brand h1 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #14532d; /* EEP Green 900 */
+  margin-bottom: 12px;
+}
+
+.brand-text {
+  font-size: 16px;
+  line-height: 1.6;
+  color: #374151;
+}
+
+.security-note {
+  margin-top: 32px;
+  font-size: 14px;
+  color: #14532d; /* EEP Green 900 */
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ================================
+   RIGHT SIDE – LOGIN CARD
+================================ */
+.auth-card {
+  background: #ffffff;
+  padding: 48px;
+  width: 380px;
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(20, 83, 45, 0.15);
+}
+
+.auth-card h2 {
+  font-size: 24px;
+  font-weight: 600;
+  color: #14532d; /* EEP Green 900 */
+  margin-bottom: 6px;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: #6b7280;
+  margin-bottom: 24px;
+}
+
+/* ================================
+   FORM FIELDS
+================================ */
+.field {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 16px;
+}
+
+.field label {
+  font-size: 13px;
+  margin-bottom: 6px;
+  color: #374151;
+}
+
+.field input {
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.field input:focus {
+  outline: none;
+  border-color: #7f1d1d; /* EEP Red 900 */
+  box-shadow: 0 0 0 3px rgba(127, 29, 29, 0.15);
+}
+
+/* ================================
+   OPTIONS
+================================ */
+.options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  font-size: 14px;
+  color: #374151;
+}
+
+/* ================================
+   BUTTON
+================================ */
+button {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  background: #14532d; /* EEP Green 900 */
+  color: white;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+button:hover:not(:disabled) {
+  background: #166534; /* slightly lighter green */
+}
+
+button:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+/* ================================
+   HELP TEXT
+================================ */
+.help-text {
+  margin-top: 20px;
+  font-size: 13px;
+  color: #6b7280;
   text-align: center;
-  font-family: "Segoe UI", sans-serif;
+}
 
-  h2 {
-    color: $eep-green-900;
-    margin-bottom: 2rem;
-    font-weight: 700;
-    font-size: 1.8rem;
+.help-text a {
+  color: #7f1d1d; /* EEP Red 900 */
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.help-text a:hover {
+  text-decoration: underline;
+}
+
+/* ================================
+   MOBILE RESPONSIVE
+================================ */
+@media (max-width: 900px) {
+  .auth-wrapper {
+    flex-direction: column;
+    gap: 2rem;
   }
 
-  .field {
-    margin-bottom: 1.25rem;
-    text-align: left;
-
-    label {
-      display: block;
-      margin-bottom: 0.35rem;
-      font-weight: 600;
-      color: #1f2937;
-      font-size: 0.95rem;
-    }
-
-    input {
-      width: 100%;
-      padding: 0.6rem 0.75rem;
-      border: 1px solid #cbd5e1;
-      border-radius: 8px;
-      font-size: 0.95rem;
-      transition: border-color 0.2s;
-
-      &:focus {
-        border-color: $eep-green-900;
-        outline: none;
-        box-shadow: 0 0 0 2px rgba(11, 93, 30, 0.2);
-      }
-    }
+  .auth-brand {
+    display: none;
   }
 
-  button {
+  .auth-card {
     width: 100%;
-    padding: 0.65rem;
-    font-weight: 700;
-    font-size: 1rem;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s;
-
-    &.primary {
-      background-color: $eep-green-900;
-      color: white;
-      border: none;
-      box-shadow: 0 10px 20px rgba(11, 93, 30, 0.3);
-
-      &:hover:not(:disabled) {
-        background-color: color.adjust($eep-green-900, $lightness: -6%);
-        transform: translateY(-1px);
-      }
-    }
-
-    &.secondary {
-      background-color: white;
-      color: $eep-red-900;
-      border: 2px solid $eep-red-900;
-
-      &:hover:not(:disabled) {
-        background-color: rgba(139, 0, 0, 0.05);
-      }
-    }
-
-    &:disabled {
-      background-color: #94a3b8;
-      cursor: not-allowed;
-    }
-  }
-
-  .help-text {
-    margin-top: 1rem;
-    font-size: 0.85rem;
-    color: #475569;
+    max-width: 420px;
+    padding: 32px;
   }
 }

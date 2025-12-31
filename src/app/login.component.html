@@ -1,19 +1,61 @@
-<section class="login container">
-  <h2>EEP Employee Sign In</h2>
+<section class="auth-wrapper">
+  <!-- LEFT: Branding & Context -->
+  <div class="auth-brand">
+    <h1>EEP Event Management System</h1>
+    <p class="brand-text">
+      A centralized platform to plan, manage, track, and communicate
+      organizational events across Ethiopian Electric Power.
+    </p>
 
-  <form (ngSubmit)="onSubmit()" #f="ngForm">
-    <div class="field">
-      <label for="employeeId">Employee ID</label>
-      <input id="employeeId" name="employeeId" [(ngModel)]="employeeId" required placeholder="Enter your EEP ID" />
+    <div class="security-note">
+      🔒EEP employees only  
     </div>
+  </div>
 
-    <div class="field">
-      <label for="password">Password</label>
-      <input id="password" name="password" type="password" [(ngModel)]="password" required placeholder="Enter your password" />
-    </div>
+  <!-- RIGHT: Login Card -->
+  <div class="auth-card">
+    <h2>Welcome Back</h2>
+    <p class="subtitle">Sign in with your employee credentials</p>
 
-    <button type="submit" [disabled]="!f.form.valid">Sign In</button>
-  </form>
+    <form (ngSubmit)="onSubmit()" #f="ngForm">
+      <div class="field">
+        <label for="employeeId">Employee ID</label>
+        <input
+          id="employeeId"
+          name="employeeId"
+          [(ngModel)]="employeeId"
+          required
+          placeholder="e.g. ep123456"
+        />
+      </div>
 
-  <p class="help-text">Forgot your password? Contact IT Support at it-support@eep.com.et</p>
+      <div class="field">
+        <label for="password">Password</label>
+        <input
+          id="password"
+          name="password"
+          type="password"
+          [(ngModel)]="password"
+          required
+          placeholder="••••••••"
+        />
+      </div>
+
+      <div class="options">
+        <label>
+          <input type="checkbox" />
+          Remember me
+        </label>
+      </div>
+
+      <button type="submit" [disabled]="!f.form.valid">
+        Sign In
+      </button>
+    </form>
+
+    <p class="help-text">
+      Forgot your password?
+      <a href="mailto:it-support@eep.com.et">Contact IT Support</a>
+    </p>
+  </div>
 </section>

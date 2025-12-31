@@ -9,7 +9,9 @@
   "targets": {
     "build": {
       "executor": "@angular/build:application",
-      "outputs": ["{options.outputPath}"],
+      "outputs": [
+        "{options.outputPath}"
+      ],
       "options": {
         "outputPath": "dist/event-management-platform",
         "browser": "./src/main.ts",
@@ -18,10 +20,13 @@
         "assets": [
           {
             "glob": "**/*",
-            "input": "public"
+            "input": "src/assets",
+            "output": "assets"
           }
         ],
-        "styles": ["./src/styles.scss"],
+        "styles": [
+          "./src/styles.scss"
+        ],
         "server": "src/main.server.ts",
         "ssr": {
           "entry": "src/server.ts"
@@ -68,7 +73,9 @@
     "lint": {
       "executor": "@nx/eslint:lint",
       "options": {
-        "lintFilePatterns": ["./src"]
+        "lintFilePatterns": [
+          "./src"
+        ]
       }
     },
     "test": {
