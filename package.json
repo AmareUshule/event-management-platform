@@ -3,17 +3,22 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-  "start": "nx serve",
-  "build": "nx build",
-  "prepare": "husky install",
-  "lint": "nx lint",
-  "format": "prettier --write \"**/*.{ts,js,html,scss,json}\"",
-  "test": "nx test"
-},
-"lint-staged": {
-  "*.{ts,js}": ["eslint --fix", "prettier --write"],
-  "*.{html,scss,json}": ["prettier --write"]
-},
+    "start": "nx serve",
+    "build": "nx build",
+    "prepare": "husky install",
+    "lint": "nx lint",
+    "format": "prettier --write \"**/*.{ts,js,html,scss,json}\"",
+    "test": "nx test"
+  },
+  "lint-staged": {
+    "*.{ts,js}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{html,scss,json}": [
+      "prettier --write"
+    ]
+  },
   "private": true,
   "dependencies": {
     "@angular-devkit/build-angular": "~21.0.0",
@@ -23,6 +28,7 @@
     "@angular/compiler": "~21.0.0",
     "@angular/core": "^21.0.6",
     "@angular/forms": "~21.0.0",
+    "@angular/material": "^21.0.5",
     "@angular/platform-browser": "~21.0.0",
     "@angular/platform-server": "~21.0.0",
     "@angular/router": "~21.0.0",

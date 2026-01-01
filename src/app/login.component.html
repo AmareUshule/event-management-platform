@@ -1,61 +1,144 @@
-<section class="auth-wrapper">
-  <!-- LEFT: Branding & Context -->
-  <div class="auth-brand">
-    <h1>EEP Event Management System</h1>
-    <p class="brand-text">
-      A centralized platform to plan, manage, track, and communicate
-      organizational events across Ethiopian Electric Power.
-    </p>
+<div class="auth-shell">
+  <!-- LEFT BRAND PANEL -->
+  <aside class="brand-panel">
+    <div class="brand-gradient">
+     <div class="brand-logo-container">
+  <div class="brand-logo">
+    <img
+      src="assets/images/EEP_Logo.jpg"
+      alt="EEP Logo"
+      class="logo-svg" />
 
-    <div class="security-note">
-      🔒EEP employees only  
+    <div class="logo-text">
+      <span class="logo-title">EEP</span>
+      <span class="logo-subtitle">Ethiopian Electric Power</span>
+        </div>
+      </div>
+   </div>
+
+      <div class="brand-content">
+        <h1 class="brand-title">
+          Event Management System
+        </h1>
+        <div class="brand-features">
+          <div class="feature-item">
+            <div class="feature-text">
+              <h3>Centralized Planning</h3>
+              <p>Coordinate all organizational events in one platform</p>
+            </div>
+          </div>
+          
+          <div class="feature-item">
+            <div class="feature-text">
+              <h3>Real-time Tracking</h3>
+              <p>Monitor event progress and resource allocation</p>
+            </div>
+          </div>
+          
+          <div class="feature-item">
+            <div class="feature-text">
+              <h3>Secure & Compliant</h3>
+              <p>Enterprise-grade security for sensitive data</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="security-badge">
+          <div class="badge-content">
+            <strong>Secure Access</strong>
+            <span>Authorized EEP personnel only</span>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
+  </aside>
 
-  <!-- RIGHT: Login Card -->
-  <div class="auth-card">
-    <h2>Welcome Back</h2>
-    <p class="subtitle">Sign in with your employee credentials</p>
+  <!-- RIGHT AUTH PANEL -->
+  <main class="auth-panel">
+    <div class="auth-container">
+      <mat-card class="auth-card" appearance="outlined">
+        <div class="card-header">
+          <mat-card-header>
+            <mat-card-title class="auth-title">Welcome Back</mat-card-title>
+            <mat-card-subtitle class="auth-subtitle">
+              Sign in to your EEP employee account
+            </mat-card-subtitle>
+          </mat-card-header>
+        </div>
 
-    <form (ngSubmit)="onSubmit()" #f="ngForm">
-      <div class="field">
-        <label for="employeeId">Employee ID</label>
-        <input
-          id="employeeId"
-          name="employeeId"
-          [(ngModel)]="employeeId"
-          required
-          placeholder="e.g. ep123456"
-        />
-      </div>
-
-      <div class="field">
-        <label for="password">Password</label>
-        <input
-          id="password"
-          name="password"
-          type="password"
-          [(ngModel)]="password"
-          required
-          placeholder="••••••••"
-        />
-      </div>
-
-      <div class="options">
-        <label>
-          <input type="checkbox" />
-          Remember me
-        </label>
-      </div>
-
-      <button type="submit" [disabled]="!f.form.valid">
-        Sign In
-      </button>
-    </form>
-
-    <p class="help-text">
-      Forgot your password?
-      <a href="mailto:it-support@eep.com.et">Contact IT Support</a>
-    </p>
-  </div>
-</section>
+        <mat-card-content>
+          <form #f="ngForm" (ngSubmit)="onSubmit()" class="auth-form">
+            <mat-form-field appearance="outline" class="form-field">
+              <mat-label>Employee ID</mat-label>
+              <input
+                matInput
+                name="employeeId"
+                [(ngModel)]="employeeId"
+                placeholder="EEP-ID-XXXXX"
+                required
+              />
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="form-field">
+              <mat-label>Password</mat-label>
+              <input
+                matInput
+                [type]="hidePassword ? 'password' : 'text'"
+                name="password"
+                [(ngModel)]="password"
+                required
+              />
+              <button
+                type="button"
+                mat-icon-button
+                matSuffix
+                (click)="hidePassword = !hidePassword"
+                [attr.aria-label]="'Hide password'"
+                [attr.aria-pressed]="hidePassword"
+              >
+              </button>
+            </mat-form-field>
+            <div class="form-options">
+              <mat-checkbox color="primary" class="remember-checkbox">
+                <span class="checkbox-label">Keep me signed in</span>
+              </mat-checkbox>
+              <a class="forgot-link" href="mailto:it-support@eep.com.et">
+                <mat-icon class="link-icon"></mat-icon>
+                Forgot password?
+              </a>
+            </div>
+            <button
+              mat-flat-button
+              color="primary"
+              type="submit"
+              class="submit-btn"
+              [disabled]="!f.form.valid"
+            > 
+              Sign In
+              <div class="btn-ripple"></div>
+            </button>
+            <div class="auth-divider">
+              <span>or</span>
+            </div>
+            <button
+              mat-stroked-button
+              type="button"
+              class="alternative-btn"
+              (click)="requestAccess()"
+            >
+              Request Access
+            </button>
+          </form>
+        </mat-card-content>
+        <mat-card-footer class="auth-footer">
+          <p class="footer-text">
+            Need help? Contact IT Support at 
+            <a href="mailto:it-support@eep.com.et">it-support@eep.com.et</a>
+          </p>
+          <p class="footer-copyright">
+            © 2026 Ethiopian Electric Power. All rights reserved.
+          </p>
+        </mat-card-footer>
+      </mat-card>
+    </div>
+  </main>
+</div>

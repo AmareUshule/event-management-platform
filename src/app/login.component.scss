@@ -1,175 +1,469 @@
-/* ================================
-   AUTH LAYOUT WRAPPER
+/* ===============================
+   ROOT LAYOUT
 ================================ */
-.auth-wrapper {
+.auth-shell {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  min-height: 100vh;
+  background: #ffffff;
+  font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+}
+
+/* ===============================
+   BRAND PANEL - EEP THEME
+================================ */
+.brand-panel {
+  position: relative;
+  overflow: hidden;
+}
+
+.brand-gradient {
+  height: 100%;
+  background: linear-gradient(145deg, 
+    #14532d 0%, 
+    #14532d 25%, 
+    #14532d 50%, 
+    #7f1d1d 100%);
+  padding: 3rem 4rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+}
+
+.brand-gradient::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 80%, rgba(34, 197, 94, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+}
+
+.brand-logo-container {
+  margin-bottom: 4rem;
+}
+
+.brand-logo {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.logo-svg {
+  width: 48px;
+  height: 48px;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+}
+
+.logo-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.logo-title {
+  font-size: 28px;
+  font-weight: 800;
+  color: white;
+  letter-spacing: 1px;
+  line-height: 1;
+}
+
+.logo-subtitle {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.8);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+
+.brand-content {
+  flex: 1;
+}
+
+.brand-title {
+  font-size: 36px;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 3rem;
+  line-height: 1.3;
+}
+
+ 
+
+.brand-features {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+  margin-bottom: 3rem;
+}
+
+.feature-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  transition: transform 0.3s ease;
+}
+
+.feature-item:hover {
+  transform: translateX(5px);
+}
+
+.feature-icon {
+  color: #facc15;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 8px;
+  min-width: 40px;
+  min-height: 40px;
+}
+
+.feature-text h3 {
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 4px 0;
+}
+
+.feature-text p {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.security-badge {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  max-width: 320px;
+}
+
+.badge-icon {
+  color: #095a27;
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+}
+
+.badge-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.badge-content strong {
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.badge-content span {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 12px;
+}
+
+/* ===============================
+   AUTH PANEL
+================================ */
+.auth-panel {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 4rem;
-  min-height: 100vh;
   padding: 2rem;
   background: #f8fafc;
 }
 
-/* ================================
-   LEFT SIDE – BRANDING
-================================ */
-.auth-brand {
-  padding: 64px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  max-width: 480px;
+.auth-container {
+  width: 100%;
+  max-width: 440px;
 }
 
-.auth-brand h1 {
+.auth-card {
+  padding: 2.5rem;
+  border-radius: 24px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05), 
+              0 8px 24px rgba(0, 0, 0, 0.04);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.auth-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.08), 
+              0 12px 28px rgba(0, 0, 0, 0.06);
+}
+
+.card-header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.header-logo-text {
+  font-size: 18px;
+  font-weight: 700;
+  color: #14532d;
+  letter-spacing: 0.5px;
+}
+
+.auth-title {
   font-size: 28px;
   font-weight: 700;
-  color: #14532d; /* EEP Green 900 */
-  margin-bottom: 12px;
+  color: #0f172a;
+  margin-bottom: 0.5rem !important;
 }
 
-.brand-text {
-  font-size: 16px;
-  line-height: 1.6;
-  color: #374151;
+.auth-subtitle {
+  color: #64748b !important;
+  font-size: 14px !important;
 }
 
-.security-note {
-  margin-top: 32px;
-  font-size: 14px;
-  color: #14532d; /* EEP Green 900 */
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-/* ================================
-   RIGHT SIDE – LOGIN CARD
+/* ===============================
+   FORM STYLES
 ================================ */
-.auth-card {
-  background: #ffffff;
-  padding: 48px;
-  width: 380px;
-  border-radius: 16px;
-  box-shadow: 0 20px 40px rgba(20, 83, 45, 0.15);
-}
-
-.auth-card h2 {
-  font-size: 24px;
-  font-weight: 600;
-  color: #14532d; /* EEP Green 900 */
-  margin-bottom: 6px;
-}
-
-.subtitle {
-  font-size: 14px;
-  color: #6b7280;
-  margin-bottom: 24px;
-}
-
-/* ================================
-   FORM FIELDS
-================================ */
-.field {
+.auth-form {
   display: flex;
   flex-direction: column;
-  margin-bottom: 16px;
+  gap: 1.5rem;
 }
 
-.field label {
+.form-field {
+  width: 100%;
+}
+
+.form-field .mat-form-field-outline {
+  background: #ffffff;
+  border-radius: 12px;
+}
+
+::ng-deep .form-field .mat-form-field-outline-thick {
+  color: #166e36 !important;
+}
+
+::ng-deep .form-field .mat-form-field-label {
+  color: #64748b !important;
+}
+
+.field-icon {
+  color: #94a3b8 !important;
+  margin-right: 0.75rem;
+}
+
+.form-options {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0.5rem 0;
+}
+
+.remember-checkbox {
+  font-size: 14px;
+}
+
+.checkbox-label {
+  color: #475569;
+  font-size: 14px;
+}
+
+.forgot-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  color: #0b5225;
+  text-decoration: none;
   font-size: 13px;
-  margin-bottom: 6px;
-  color: #374151;
+  font-weight: 500;
+  transition: all 0.2s ease;
 }
 
-.field input {
-  padding: 12px;
-  border-radius: 8px;
-  border: 1px solid #d1d5db;
+.forgot-link:hover {
+  color: #0d5829;
+  text-decoration: underline;
+}
+
+.link-icon {
+  width: 14px !important;
+  height: 14px !important;
+  font-size: 14px !important;
+}
+
+.submit-btn {
+  height: 48px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  margin-top: 0.5rem;
+  background: linear-gradient(135deg, #16a34a, #22c55e) !important;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.submit-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(34, 197, 94, 0.3);
+}
+
+.btn-icon {
+  margin-right: 0.5rem;
+}
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 1rem 0;
+  color: #94a3b8;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.auth-divider span {
+  padding: 0 1rem;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.alternative-btn {
+  height: 44px;
+  border-radius: 12px;
+  color: #475569;
+  border-color: #cbd5e1;
   font-size: 14px;
   transition: all 0.2s ease;
 }
 
-.field input:focus {
-  outline: none;
-  border-color: #7f1d1d; /* EEP Red 900 */
-  box-shadow: 0 0 0 3px rgba(127, 29, 29, 0.15);
+.alternative-btn:hover {
+  border-color: #94a3b8;
+  background: #f8fafc;
 }
 
-/* ================================
-   OPTIONS
-================================ */
-.options {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  font-size: 14px;
-  color: #374151;
-}
-
-/* ================================
-   BUTTON
-================================ */
-button {
-  width: 100%;
-  padding: 12px;
-  border-radius: 10px;
-  border: none;
-  background: #14532d; /* EEP Green 900 */
-  color: white;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-
-button:hover:not(:disabled) {
-  background: #166534; /* slightly lighter green */
-}
-
-button:disabled {
-  background: #9ca3af;
-  cursor: not-allowed;
-}
-
-/* ================================
-   HELP TEXT
-================================ */
-.help-text {
-  margin-top: 20px;
-  font-size: 13px;
-  color: #6b7280;
+.auth-footer {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e2e8f0;
   text-align: center;
 }
 
-.help-text a {
-  color: #7f1d1d; /* EEP Red 900 */
+.footer-text {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  color: #64748b;
+  font-size: 13px;
+  margin-bottom: 0.75rem;
+}
+
+.footer-text a {
+  color: #0d5a29;
   text-decoration: none;
   font-weight: 500;
 }
 
-.help-text a:hover {
+.footer-text a:hover {
   text-decoration: underline;
 }
 
-/* ================================
-   MOBILE RESPONSIVE
-================================ */
-@media (max-width: 900px) {
-  .auth-wrapper {
-    flex-direction: column;
-    gap: 2rem;
-  }
+.footer-icon {
+  width: 14px !important;
+  height: 14px !important;
+  font-size: 14px !important;
+  color: #94a3b8;
+}
 
-  .auth-brand {
+.footer-copyright {
+  color: #94a3b8;
+  font-size: 12px;
+  margin: 0;
+}
+
+/* ===============================
+   RESPONSIVE DESIGN
+================================ */
+@media (max-width: 1024px) {
+  .auth-shell {
+    grid-template-columns: 1fr 1fr;
+  }
+  
+  .brand-gradient {
+    padding: 2.5rem;
+  }
+  
+  .brand-title {
+    font-size: 30px;
+  }
+}
+
+@media (max-width: 768px) {
+  .auth-shell {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+  }
+  
+  .brand-panel {
+    padding: 2rem;
+    background: linear-gradient(135deg, #14532d, #22c55e);
+  }
+  
+  .brand-gradient {
+    padding: 0;
+    background: transparent;
+  }
+  
+  .brand-logo-container {
+    margin-bottom: 2rem;
+  }
+  
+  .brand-features {
     display: none;
   }
-
+  
   .auth-card {
-    width: 100%;
-    max-width: 420px;
-    padding: 32px;
+    padding: 2rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-panel {
+    padding: 1rem;
+  }
+  
+  .auth-card {
+    padding: 1.5rem;
+    border-radius: 20px;
+  }
+  
+  .card-header {
+    margin-bottom: 2rem;
+  }
+  
+  .auth-title {
+    font-size: 24px;
+  }
+  
+  .form-options {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
   }
 }
