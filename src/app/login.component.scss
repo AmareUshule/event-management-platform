@@ -1,662 +1,476 @@
-// Variables
-$primary-color: #0066cc;
-$primary-dark: #0052a3;
-$primary-light: #4d94ff;
-$success-color: #00a86b;
-$warning-color: #ff6b35;
-$danger-color: #dc3545;
-$dark-bg: #0a1929;
-$light-bg: #f8fafc;
-$card-bg: #ffffff;
-$text-primary: #1a202c;
-$text-secondary: #4a5568;
-$text-light: #718096;
-$border-color: #e2e8f0;
-$shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12);
-$shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
-$shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.15);
-$gradient-primary: linear-gradient(135deg, $primary-color, #0099ff);
-$gradient-dark: linear-gradient(135deg, $dark-bg, #1a365d);
-$gradient-green: linear-gradient(135deg, #00a86b, #00cc88);
+// ===============================
+// EEP BRAND COLORS & VARIABLES
+// ===============================
+@use "sass:color";
 
-// Mixins
+$eep-green-900: #0b5d1e;
+$eep-green-800: #0d6e27;
+$eep-green-700: #0f7f30;
+$eep-green-600: #119039;
+$eep-green-500: #13a142;
+$eep-green-400: #15b24b;
+
+$eep-red-900: #8b0000;
+$eep-red-800: #a30000;
+$eep-red-700: #ba0000;
+
+$eep-light-bg: #f6f9f7;
+
+$eep-gray-50: #f8fafc;
+$eep-gray-100: #f1f5f9;
+$eep-gray-200: #e2e8f0;
+$eep-gray-300: #cbd5e1;
+$eep-gray-400: #94a3b8;
+$eep-gray-500: #64748b;
+$eep-gray-600: #475569;
+$eep-gray-700: #334155;
+$eep-gray-800: #1e293b;
+$eep-gray-900: #0f172a;
+
+// Derived
+$primary-color: $eep-green-900;
+$primary-dark: $eep-green-800;
+$primary-light: $eep-green-400;
+$danger-color: $eep-red-900;
+
+$card-bg: #ffffff;
+$text-primary: $eep-gray-900;
+$text-secondary: $eep-gray-600;
+$text-light: $eep-gray-400;
+$border-color: $eep-gray-200;
+
+$shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.15);
+
+$gradient-eep: linear-gradient(135deg, $eep-green-900, $eep-red-900);
+
+// ===============================
+// MIXINS
+// ===============================
 @mixin flex-center {
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
+}
+
+@mixin flex-column-center {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
 @mixin card-shadow {
   box-shadow: $shadow-lg;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
-  
+
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
   }
 }
 
-// Main Container
+// ===============================
+// MAIN CONTAINER - FIXED!
+// ===============================
 .auth-shell {
-  display: grid;
-  grid-template-columns: 1.2fr 0.8fr;
   min-height: 100vh;
+  width: 100%;
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
-}
-
-// Brand Panel
-.brand-panel {
+  padding: 20px;
   position: relative;
-  overflow: hidden;
-  background: $gradient-dark;
-  color: white;
+  overflow: auto;
 
-  .brand-background {
-    height: 100%;
-    padding: 3rem;
-    position: relative;
-    z-index: 1;
-    
-    &::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: 
-        radial-gradient(circle at 20% 80%, rgba($primary-light, 0.1) 0%, transparent 50%),
-        radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
-      z-index: -1;
-    }
-  }
-
-  .bg-grid {
+  &::before {
+    content: '';
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background-image: 
-      linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-    background-size: 40px 40px;
-    opacity: 0.3;
-  }
-
-  .bg-glow {
-    position: absolute;
-    width: 500px;
-    height: 500px;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba($primary-light, 0.15) 0%, transparent 70%);
-    top: -250px;
-    right: -250px;
-    animation: pulse 8s ease-in-out infinite;
+    background:
+      radial-gradient(circle at 20% 80%, rgba($eep-green-400, 0.06), transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba($eep-red-700, 0.05), transparent 50%);
+    z-index: 0;
   }
 }
 
-@keyframes pulse {
-  0%, 100% { opacity: 0.3; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(1.05); }
+// ===============================
+// AUTH PANEL - FIXED!
+// ===============================
+.auth-panel {
+  width: 100%;
+  max-width: 480px;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-// Brand Header
-.brand-header {
-  margin-bottom: 3rem;
+// ===============================
+// AUTH CONTAINER - FIXED!
+// ===============================
+.auth-container {
+  width: 100%;
+  padding: 16px;
+}
 
-  .brand-logo {
+// ===============================
+// AUTH CARD - FIXED!
+// ===============================
+.auth-card {
+  width: 100%;
+  background: $card-bg;
+  border-radius: 24px !important;
+  overflow: visible !important;
+  border: 1px solid $border-color !important;
+  
+  // Remove Angular Material's default padding
+  ::ng-deep .mat-mdc-card-content {
+    padding: 0 !important;
+  }
+  
+  @include card-shadow;
+}
+
+// ===============================
+// CARD HEADER - FIXED!
+// ===============================
+.card-header {
+  padding: 2.5rem 2.5rem 1.5rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  .header-logo {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 0.75rem;
     margin-bottom: 1.5rem;
 
-    .logo-icon {
-      @include flex-center;
-      width: 60px;
-      height: 60px;
-      background: $gradient-primary;
-      border-radius: 16px;
-      animation: float 6s ease-in-out infinite;
+    .header-logo-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: $gradient-eep;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
 
       mat-icon {
-        font-size: 32px;
-        width: 32px;
-        height: 32px;
+        font-size: 24px;
+        width: 24px;
+        height: 24px;
       }
     }
 
-    .logo-text {
-      .logo-title {
-        font-size: 32px;
-        font-weight: 800;
-        margin: 0;
-        letter-spacing: 1px;
-      }
-
-      .logo-subtitle {
-        font-size: 12px;
-        opacity: 0.8;
-        letter-spacing: 0.5px;
-      }
-    }
-  }
-
-  .tag-line {
-    font-size: 16px;
-    opacity: 0.9;
-    font-weight: 300;
-    border-left: 3px solid $primary-light;
-    padding-left: 1rem;
-  }
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0) rotate(0); }
-  50% { transform: translateY(-10px) rotate(5deg); }
-}
-
-// Feature Showcase
-.feature-showcase {
-  margin: 3rem 0;
-
-  .showcase-title {
-    font-size: 28px;
-    font-weight: 600;
-    margin-bottom: 2rem;
-    background: linear-gradient(to right, #fff, $primary-light);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-
-  .feature-slider {
-    .feature-active {
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(10px);
-      border-radius: 20px;
-      padding: 2rem;
-      margin-bottom: 2rem;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      transition: all 0.3s ease;
-
-      &:hover {
-        transform: translateY(-5px);
-        background: rgba(255, 255, 255, 0.15);
-      }
-
-      .feature-icon-active {
-        font-size: 48px;
-        width: 48px;
-        height: 48px;
-        color: $primary-light;
-        margin-bottom: 1rem;
-      }
-
-      h3 {
-        font-size: 20px;
-        margin: 0 0 0.5rem 0;
-        font-weight: 600;
-      }
-
-      p {
-        margin: 0;
-        opacity: 0.8;
-        line-height: 1.6;
-      }
-    }
-
-    .feature-indicators {
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-
-      .indicator {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        padding: 1rem;
-        border-radius: 12px;
-        background: rgba(255, 255, 255, 0.05);
-        cursor: pointer;
-        transition: all 0.3s ease;
-
-        &:hover {
-          background: rgba(255, 255, 255, 0.1);
-          transform: translateX(5px);
-        }
-
-        &.active {
-          background: rgba($primary-light, 0.2);
-          border-left: 4px solid $primary-light;
-
-          mat-icon {
-            color: $primary-light;
-          }
-        }
-
-        mat-icon {
-          font-size: 20px;
-          width: 20px;
-          height: 20px;
-          opacity: 0.7;
-        }
-
-        span {
-          font-size: 14px;
-          font-weight: 500;
-        }
-      }
-    }
-  }
-}
-
-// Security Badge
-.security-section {
-  position: absolute;
-  bottom: 3rem;
-  left: 3rem;
-  right: 3rem;
-
-  .security-badge {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 1rem 1.5rem;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    border-radius: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-
-    mat-icon {
-      color: $success-color;
+    .header-logo-text {
       font-size: 24px;
-      width: 24px;
-      height: 24px;
+      font-weight: 700;
+      color: $eep-green-900;
+    }
+  }
+
+  .header-content {
+    .auth-title {
+      font-size: 32px;
+      font-weight: 700;
+      margin: 0 0 0.5rem 0;
+      color: $text-primary;
+      line-height: 1.2;
     }
 
-    .security-text {
-      display: flex;
-      flex-direction: column;
-
-      strong {
-        font-size: 14px;
-        font-weight: 600;
-      }
-
-      span {
-        font-size: 12px;
-        opacity: 0.8;
-      }
+    .auth-subtitle {
+      font-size: 16px;
+      color: $text-secondary;
+      margin: 0;
+      line-height: 1.5;
+      max-width: 400px;
     }
   }
 }
 
-// Auth Panel
-.auth-panel {
-  @include flex-center;
-  padding: 2rem;
-
-  .auth-container {
-    width: 100%;
-    max-width: 480px;
-  }
+// ===============================
+// DIVIDER - FIXED!
+// ===============================
+.form-divider {
+  margin: 0 2.5rem !important;
+  border-top-color: $border-color !important;
 }
 
-// Auth Card
-.auth-card {
-  @include card-shadow;
-  border-radius: 24px;
-  border: none;
-  overflow: hidden;
-  background: $card-bg;
-
-  .card-header {
-    padding: 2.5rem 2.5rem 1.5rem;
-
-    .header-logo {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      margin-bottom: 1.5rem;
-
-      .header-logo-icon {
-        @include flex-center;
-        width: 40px;
-        height: 40px;
-        background: $gradient-primary;
-        border-radius: 12px;
-        color: white;
-
-        mat-icon {
-          font-size: 24px;
-          width: 24px;
-          height: 24px;
-        }
-      }
-
-      .header-logo-text {
-        font-size: 18px;
-        font-weight: 700;
-        color: $primary-color;
-        letter-spacing: 0.5px;
-      }
-    }
-
-    .header-content {
-      .auth-title {
-        font-size: 32px;
-        font-weight: 700;
-        color: $text-primary;
-        margin: 0 0 0.5rem 0;
-      }
-
-      .auth-subtitle {
-        color: $text-secondary;
-        font-size: 14px;
-        margin: 0;
-      }
-    }
-  }
-
-  mat-divider {
-    margin: 0;
-  }
-}
-
-// Form Styles
-.auth-form {
+// ===============================
+// CARD CONTENT WRAPPER - NEW!
+// ===============================
+.card-content-wrapper {
   padding: 2.5rem;
+}
+
+// ===============================
+// FORM - FIXED!
+// ===============================
+.auth-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 
   .form-field {
     width: 100%;
     margin-bottom: 1.5rem;
 
-    ::ng-deep .mat-form-field-wrapper {
-      padding-bottom: 0;
+    // Angular Material field styling
+    ::ng-deep .mat-mdc-form-field {
+      width: 100%;
     }
 
-    ::ng-deep .mat-form-field-flex {
-      background: $light-bg;
-      border-radius: 12px;
-      padding: 0 1rem;
-      transition: all 0.3s ease;
-
+    ::ng-deep .mat-mdc-text-field-wrapper {
+      background-color: $eep-light-bg;
+      border-radius: 12px !important;
+      
       &:hover {
-        background: darken($light-bg, 2%);
+        background-color: color.adjust($eep-light-bg, $lightness: -2%);
       }
     }
 
-    ::ng-deep .mat-form-field-infix {
-      padding: 1rem 0;
-    }
-
-    ::ng-deep .mat-form-field-label {
-      color: $text-secondary;
+    ::ng-deep .mat-mdc-form-field-flex {
+      height: 56px;
+      align-items: center;
     }
 
     mat-icon[matPrefix] {
-      margin-right: 0.75rem;
+      margin-right: 12px;
       color: $text-light;
     }
   }
 
+  // ===============================
+  // FORM OPTIONS - UPDATED (No checkbox)
+  // ===============================
   .form-options {
+    width: 100%;
     display: flex;
+    justify-content: flex-end; // Changed from space-between to flex-end
     align-items: center;
-    justify-content: space-between;
-    margin: 1rem 0 2rem;
+    margin: 0 0 2rem 0; // Removed top margin since no checkbox
 
+    // Forgot password link only
     .forgot-link {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      color: $primary-color;
+      color: $eep-green-900;
       text-decoration: none;
       font-size: 14px;
       font-weight: 500;
-      transition: color 0.3s ease;
-
+      padding: 4px 8px;
+      border-radius: 4px;
+      transition: all 0.3s ease;
+      white-space: nowrap;
+      
       &:hover {
-        color: $primary-dark;
+        color: $eep-green-800;
         text-decoration: underline;
-      }
-
-      mat-icon {
-        font-size: 16px;
-        width: 16px;
-        height: 16px;
+        background-color: rgba($eep-green-900, 0.05);
       }
     }
   }
 }
 
-// Submit Button
+// ===============================
+// SUBMIT BUTTON - FIXED!
+// ===============================
 .submit-btn {
-  width: 100%;
-  height: 56px;
-  border-radius: 12px;
-  font-size: 16px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  background: $gradient-primary;
-  position: relative;
-  overflow: hidden;
-  transition: all 0.3s ease;
+  width: 100% !important;
+  height: 56px !important;
+  border-radius: 12px !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  background: $gradient-eep !important;
+  color: white !important;
+  transition: all 0.3s ease !important;
 
   &:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba($primary-color, 0.3);
-  }
-
-  &:active:not(:disabled) {
-    transform: translateY(0);
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 20px rgba($eep-green-900, 0.3) !important;
   }
 
   &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
+    opacity: 0.6 !important;
+    cursor: not-allowed !important;
   }
 
-  .btn-content {
-    @include flex-center;
-    gap: 0.75rem;
-  }
-
-  &.loading {
-    .mat-spinner circle {
-      stroke: white !important;
-    }
+  // Remove Angular Material's default button styling
+  ::ng-deep .mat-button-wrapper {
+    color: white !important;
   }
 }
 
-// Alternative Action
-.alternative-action {
-  text-align: center;
-  margin-top: 2rem;
-  padding-top: 2rem;
-  border-top: 1px solid $border-color;
-
-  .alternative-text {
-    color: $text-secondary;
-    font-size: 14px;
-    margin-bottom: 1rem;
+// ===============================
+// RESPONSIVE DESIGN - UPDATED
+// ===============================
+@media (max-width: 768px) {
+  .auth-shell {
+    padding: 16px;
   }
 
-  .request-btn {
-    width: 100%;
-    height: 48px;
-    border-radius: 12px;
-    font-size: 14px;
-    font-weight: 500;
-
-    mat-icon {
-      margin-right: 0.5rem;
-      font-size: 18px;
-      width: 18px;
-      height: 18px;
-    }
+  .auth-container {
+    padding: 12px;
   }
-}
 
-// Footer
-.auth-footer {
-  padding: 1.5rem 2.5rem;
-  background: $light-bg;
+  .card-header {
+    padding: 2rem 1.5rem 1rem;
 
-  .footer-content {
-    .support-info {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      margin-bottom: 1rem;
-
-      mat-icon {
-        color: $primary-color;
-        font-size: 20px;
-        width: 20px;
-        height: 20px;
-      }
-
-      .support-text {
-        display: flex;
-        flex-direction: column;
-
-        strong {
-          font-size: 14px;
-          color: $text-primary;
-        }
-
-        a {
-          color: $primary-color;
-          text-decoration: none;
-          font-size: 13px;
-
-          &:hover {
-            text-decoration: underline;
-          }
+    .header-logo {
+      .header-logo-icon {
+        width: 44px;
+        height: 44px;
+        
+        mat-icon {
+          font-size: 22px;
+          width: 22px;
+          height: 22px;
         }
       }
+
+      .header-logo-text {
+        font-size: 22px;
+      }
     }
 
-    .footer-legal {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+    .header-content {
+      .auth-title {
+        font-size: 28px;
+      }
 
-      .copyright, .version {
-        font-size: 12px;
-        color: $text-light;
-        margin: 0;
+      .auth-subtitle {
+        font-size: 15px;
       }
     }
   }
-}
 
-// System Status
-.system-status {
-  margin-top: 1.5rem;
-  padding: 1rem;
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(10px);
-  border-radius: 12px;
-  border: 1px solid $border-color;
+  .form-divider {
+    margin: 0 1.5rem !important;
+  }
 
-  .status-indicator {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 0.5rem;
+  .card-content-wrapper {
+    padding: 1.5rem;
+  }
 
-    .status-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
+  .auth-form {
+    .form-options {
+      justify-content: flex-end;
       
-      &.online {
-        background: $success-color;
-        animation: pulse-dot 2s ease-in-out infinite;
+      .forgot-link {
+        font-size: 14px;
       }
     }
-
-    span {
-      font-size: 12px;
-      color: $text-secondary;
-      font-weight: 500;
-    }
-  }
-
-  .last-update {
-    font-size: 11px;
-    color: $text-light;
-  }
-}
-
-@keyframes pulse-dot {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
-
-// Responsive Design
-@media (max-width: 1200px) {
-  .auth-shell {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
-@media (max-width: 992px) {
-  .auth-shell {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto 1fr;
-  }
-
-  .brand-panel {
-    min-height: 400px;
-    
-    .brand-background {
-      padding: 2rem;
-    }
-
-    .feature-showcase {
-      margin: 2rem 0;
-    }
-
-    .security-section {
-      position: relative;
-      bottom: auto;
-      left: auto;
-      right: auto;
-      margin-top: 2rem;
-    }
-  }
-
-  .auth-panel {
-    padding: 1rem;
   }
 }
 
 @media (max-width: 576px) {
-  .auth-card {
-    margin: 1rem;
-    
-    .card-header {
-      padding: 1.5rem;
+  .auth-shell {
+    padding: 12px;
+  }
+
+  .auth-container {
+    padding: 8px;
+  }
+
+  .card-header {
+    padding: 1.5rem 1rem 1rem;
+
+    .header-logo {
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+
+      .header-logo-text {
+        font-size: 20px;
+      }
+    }
+
+    .header-content {
+      .auth-title {
+        font-size: 24px;
+      }
+
+      .auth-subtitle {
+        font-size: 14px;
+      }
     }
   }
 
+  .card-content-wrapper {
+    padding: 1.25rem;
+  }
+
   .auth-form {
-    padding: 1.5rem;
+    .form-options {
+      justify-content: flex-end;
+      margin: 0 0 1.5rem 0;
+
+      .forgot-link {
+        width: auto;
+        align-self: flex-end;
+      }
+    }
   }
 
-  .form-options {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
+  .submit-btn {
+    height: 52px !important;
+    font-size: 15px !important;
+  }
+}
+
+@media (max-width: 400px) {
+  .card-header {
+    .header-content {
+      .auth-title {
+        font-size: 22px;
+      }
+
+      .auth-subtitle {
+        font-size: 13px;
+      }
+    }
   }
 
-  .footer-legal {
-    flex-direction: column;
-    gap: 0.5rem;
-    text-align: center;
+  .card-content-wrapper {
+    padding: 1rem;
   }
+
+  .auth-form {
+    .form-options {
+      .forgot-link {
+        font-size: 13px;
+        padding: 4px 6px;
+      }
+    }
+  }
+
+  .submit-btn {
+    height: 48px !important;
+    font-size: 14px !important;
+  }
+}
+
+// Animation
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.auth-card {
+  animation: fadeInUp 0.5s ease-out;
 }
