@@ -1,144 +1,200 @@
 <div class="auth-shell">
   <!-- LEFT BRAND PANEL -->
-  <aside class="brand-panel">
-    <div class="brand-gradient">
-     <div class="brand-logo-container">
-  <div class="brand-logo">
-    <img
-      src="assets/images/EEP_Logo.jpg"
-      alt="EEP Logo"
-      class="logo-svg" />
+  <div class="brand-panel">
+    <div class="brand-background">
+      <!-- Animated Background Elements -->
+      <div class="bg-grid"></div>
+      <div class="bg-glow"></div>
+      
+      <!-- Logo Section -->
+      <div class="brand-header">
+        <div class="brand-logo">
+          <div class="logo-icon">
+            <mat-icon>bolt</mat-icon>
+          </div>
+          <div class="logo-text">
+            <h1 class="logo-title">EEP</h1>
+            <span class="logo-subtitle">Ethiopian Electric Power</span>
+          </div>
+        </div>
+        <div class="tag-line">Powering Progress, Energizing Events</div>
+      </div>
 
-    <div class="logo-text">
-      <span class="logo-title">EEP</span>
-      <span class="logo-subtitle">Ethiopian Electric Power</span>
+      <!-- Feature Showcase -->
+      <div class="feature-showcase">
+        <h2 class="showcase-title">Event Management System</h2>
+        <div class="feature-slider">
+          <div class="feature-active">
+            <mat-icon class="feature-icon-active">{{ features[currentFeature].icon }}</mat-icon>
+            <h3>{{ features[currentFeature].title }}</h3>
+            <p>{{ features[currentFeature].description }}</p>
+          </div>
+          
+          <div class="feature-indicators">
+            <div *ngFor="let feature of features; let i = index" 
+                 class="indicator"
+                 [class.active]="i === currentFeature"
+                 (click)="currentFeature = i">
+              <mat-icon>{{ getFeatureIcon(i) }}</mat-icon>
+              <span>{{ feature.title }}</span>
+            </div>
+          </div>
         </div>
       </div>
-   </div>
 
-      <div class="brand-content">
-        <h1 class="brand-title">
-          Event Management System
-        </h1>
-        <div class="brand-features">
-          <div class="feature-item">
-            <div class="feature-text">
-              <h3>Centralized Planning</h3>
-              <p>Coordinate all organizational events in one platform</p>
-            </div>
-          </div>
-          
-          <div class="feature-item">
-            <div class="feature-text">
-              <h3>Real-time Tracking</h3>
-              <p>Monitor event progress and resource allocation</p>
-            </div>
-          </div>
-          
-          <div class="feature-item">
-            <div class="feature-text">
-              <h3>Secure & Compliant</h3>
-              <p>Enterprise-grade security for sensitive data</p>
-            </div>
-          </div>
-        </div>
-
+      <!-- Security Badge -->
+      <div class="security-section">
         <div class="security-badge">
-          <div class="badge-content">
-            <strong>Secure Access</strong>
-            <span>Authorized EEP personnel only</span>
+          <mat-icon>verified_user</mat-icon>
+          <div class="security-text">
+            <strong>ISO 27001 Certified</strong>
+            <span>Enterprise-grade security compliance</span>
           </div>
         </div>
       </div>
     </div>
-  </aside>
+  </div>
 
   <!-- RIGHT AUTH PANEL -->
-  <main class="auth-panel">
+  <div class="auth-panel">
     <div class="auth-container">
+      <!-- Floating Card -->
       <mat-card class="auth-card" appearance="outlined">
+        <!-- Header with Logo -->
         <div class="card-header">
-          <mat-card-header>
-            <mat-card-title class="auth-title">Welcome Back</mat-card-title>
-            <mat-card-subtitle class="auth-subtitle">
-              Sign in to your EEP employee account
-            </mat-card-subtitle>
-          </mat-card-header>
+          <div class="header-logo">
+            <mat-icon class="header-logo-icon">event</mat-icon>
+            <span class="header-logo-text">EMS Portal</span>
+          </div>
+          <div class="header-content">
+            <h1 class="auth-title">Welcome Back</h1>
+            <p class="auth-subtitle">Sign in to access the Event Management System</p>
+          </div>
         </div>
 
+        <mat-divider></mat-divider>
+
+        <!-- Login Form -->
         <mat-card-content>
-          <form #f="ngForm" (ngSubmit)="onSubmit()" class="auth-form">
-            <mat-form-field appearance="outline" class="form-field">
+          <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="auth-form">
+            <!-- Employee ID -->
+            <mat-form-field appearance="fill" class="form-field">
               <mat-label>Employee ID</mat-label>
-              <input
-                matInput
-                name="employeeId"
-                [(ngModel)]="employeeId"
-                placeholder="EEP-ID-XXXXX"
-                required
+              <mat-icon matPrefix>badge</mat-icon>
+              <input 
+                matInput 
+                formControlName="employeeId"
+                placeholder="EEP-ID-12345"
+                autocomplete="username"
               />
+              <mat-hint>Format: EEP-ID-XXXXX</mat-hint>
+              <mat-error *ngIf="loginForm.get('employeeId')?.hasError('required')">
+                Employee ID is required
+              </mat-error>
+              <mat-error *ngIf="loginForm.get('employeeId')?.hasError('pattern')">
+                Please use format: EEP-ID-12345
+              </mat-error>
             </mat-form-field>
-            <mat-form-field appearance="outline" class="form-field">
+
+            <!-- Password -->
+            <mat-form-field appearance="fill" class="form-field">
               <mat-label>Password</mat-label>
-              <input
-                matInput
+              <mat-icon matPrefix>lock</mat-icon>
+              <input 
+                matInput 
                 [type]="hidePassword ? 'password' : 'text'"
-                name="password"
-                [(ngModel)]="password"
-                required
+                formControlName="password"
+                autocomplete="current-password"
               />
-              <button
-                type="button"
-                mat-icon-button
+              <button 
+                type="button" 
+                mat-icon-button 
                 matSuffix
                 (click)="hidePassword = !hidePassword"
-                [attr.aria-label]="'Hide password'"
-                [attr.aria-pressed]="hidePassword"
+                [attr.aria-label]="hidePassword ? 'Show password' : 'Hide password'"
+                [matTooltip]="hidePassword ? 'Show password' : 'Hide password'"
               >
+                <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
               </button>
+              <mat-hint>Minimum 8 characters</mat-hint>
+              <mat-error *ngIf="loginForm.get('password')?.hasError('required')">
+                Password is required
+              </mat-error>
+              <mat-error *ngIf="loginForm.get('password')?.hasError('minlength')">
+                Password must be at least 8 characters
+              </mat-error>
             </mat-form-field>
+
+            <!-- Options -->
             <div class="form-options">
-              <mat-checkbox color="primary" class="remember-checkbox">
-                <span class="checkbox-label">Keep me signed in</span>
+              <mat-checkbox formControlName="rememberMe" color="primary">
+                Remember this device
               </mat-checkbox>
               <a class="forgot-link" href="mailto:it-support@eep.com.et">
-                <mat-icon class="link-icon"></mat-icon>
+                <mat-icon>help</mat-icon>
                 Forgot password?
               </a>
             </div>
-            <button
-              mat-flat-button
-              color="primary"
+
+            <!-- Submit Button -->
+            <button 
+              mat-flat-button 
+              color="primary" 
               type="submit"
               class="submit-btn"
-              [disabled]="!f.form.valid"
-            > 
-              Sign In
-              <div class="btn-ripple"></div>
-            </button>
-            <div class="auth-divider">
-              <span>or</span>
-            </div>
-            <button
-              mat-stroked-button
-              type="button"
-              class="alternative-btn"
-              (click)="requestAccess()"
+              [disabled]="loginForm.invalid || isLoading"
+              [class.loading]="isLoading"
             >
-              Request Access
+              <div class="btn-content">
+                <mat-spinner *ngIf="isLoading" diameter="20"></mat-spinner>
+                <span *ngIf="!isLoading">Sign In</span>
+              </div>
             </button>
+
+            <!-- Alternative Action -->
+            <div class="alternative-action">
+              <p class="alternative-text">Don't have access yet?</p>
+              <button 
+                mat-stroked-button 
+                type="button"
+                class="request-btn"
+                (click)="requestAccess()"
+              >
+                <mat-icon>person_add</mat-icon>
+                Request Access
+              </button>
+            </div>
           </form>
         </mat-card-content>
+
+        <mat-divider></mat-divider>
+
+        <!-- Footer -->
         <mat-card-footer class="auth-footer">
-          <p class="footer-text">
-            Need help? Contact IT Support at 
-            <a href="mailto:it-support@eep.com.et">it-support@eep.com.et</a>
-          </p>
-          <p class="footer-copyright">
-            © 2026 Ethiopian Electric Power. All rights reserved.
-          </p>
+          <div class="footer-content">
+            <div class="support-info">
+              <mat-icon>support_agent</mat-icon>
+              <div class="support-text">
+                <strong>Need assistance?</strong>
+                <a href="mailto:it-support@eep.com.et">it-support@eep.com.et</a>
+              </div>
+            </div>
+            <div class="footer-legal">
+              <p class="copyright">© 2024 Ethiopian Electric Power</p>
+              <p class="version">Event Management System v3.2.1</p>
+            </div>
+          </div>
         </mat-card-footer>
       </mat-card>
+
+      <!-- System Status -->
+      <div class="system-status">
+        <div class="status-indicator">
+          <div class="status-dot online"></div>
+          <span>System Status: Online</span>
+        </div>
+        <div class="last-update">Last updated: Today, 10:30 AM</div>
+      </div>
     </div>
-  </main>
+  </div>
 </div>
