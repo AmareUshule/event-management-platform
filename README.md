@@ -118,11 +118,3 @@ This repository is **not open source** and is maintained solely for EEP’s inte
 
 The **EEP Event Management System (EMS)** provides a reliable, secure, and centralized solution for managing organizational events within Ethiopian Electric Power.
 It enhances efficiency, transparency, and coordination through structured workflows and controlled access.
-
----
-
-If you want, I can also:
-
-- Add an **“Internal Use Only” legal notice**
-- Align wording with **government / enterprise IT standards**
-- Prepare a **deployment or operations README** for IT teams
