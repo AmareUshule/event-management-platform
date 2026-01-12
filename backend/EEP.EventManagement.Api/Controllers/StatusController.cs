@@ -7,7 +7,7 @@ namespace EEP.EventManagement.Api.Controllers
     public class StatusController : ControllerBase
     {
         [HttpGet]
-        public IActionResult GetStatus()
+        public IActionResult Get()
         {
             return Ok(new
             {
