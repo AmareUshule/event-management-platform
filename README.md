@@ -1,55 +1,128 @@
-# Event Management Platform
+# EEP Event Management System (EMS)
 
 ## Overview
-This repository contains the **Event Management Platform**, a full-stack web application for managing events.  
-- **Frontend**: Angular  
-- **Backend**: ASP.NET Core Web API  
-- **Collaboration**: GitHub  
 
-The project is structured into two main folders:  
-- `frontend/` → Angular client application  
-- `backend/` → ASP.NET Core Web API
+The **EEP Event Management System (EMS)** is an internal full-stack web application developed for **Ethiopian Electric Power (EEP)**.
+The system centralizes the planning, coordination, tracking, and communication of organizational events, replacing fragmented manual processes with a structured and secure digital platform.
 
-## Table of Contents
-1. [Project Structure](#project-structure)
-2. [Getting Started](#getting-started)
-3. [Contributing](#contributing)
-4. [License](#license)
+---
+
+## Core Features
+
+- Centralized event management
+- Event scheduling and tracking
+- Participant and role management
+- Document and agenda management
+- Calendar view and notifications
+- Dashboards and reporting
+- Audit trail and history tracking
+
+---
+
+## Core Technology Stack
+
+- **Frontend**: Angular _(TypeScript)_
+- **Backend**: ASP.NET Core Web API _(C#)_
+- **Database**: PostgreSQL
+
+---
 
 ## Project Structure
-event-management-platform/
-├── frontend/ # Angular application
-├── backend/ # ASP.NET Core Web API
-└── README.md # Root README
 
-markdown
-Copy code
+```
+event-management-platform/
+├── frontend/        # Angular application
+├── backend/         # ASP.NET Core Web API
+└── README.md        # Project documentation
+```
+
+---
 
 ## Getting Started
 
 ### Prerequisites
-- Node.js & npm (for Angular)
+
+- Node.js & npm
 - Angular CLI
 - .NET 8 SDK
+- PostgreSQL
 - Git
 
-### Clone Repo
+### Clone Repository
+
 ```bash
 git clone git@github.com:AmareUshule/event-management-platform.git
 cd event-management-platform
-Contributing
-Create a feature branch:
+```
 
-bash
-Copy code
-git checkout -b feature/your-feature-name
-Commit changes and push:
+### Run Frontend
 
-bash
-Copy code
-git add .
-git commit -m "Add feature XYZ"
-git push origin feature/your-feature-name
-Open a Pull Request for review.
+```bash
+cd frontend
+npm install
+ng serve
+```
 
-License
+### Run Backend
+
+```bash
+cd backend
+dotnet restore
+dotnet run
+```
+
+---
+
+## System Objectives
+
+- Provide a single source of truth for organizational events
+- Improve coordination between departments
+- Reduce manual communication and duplication
+- Enable proactive planning and visibility
+- Support management decision-making
+
+---
+
+## Scope
+
+The system supports:
+
+- Event creation and management
+- Participant tracking
+- Document handling
+- Calendar integration
+- Dashboards and reporting
+
+---
+
+## Security & Access
+
+- Secure authentication and authorization
+- Role-based access control
+- Internal audit logging
+
+---
+
+## Ownership & Usage
+
+**Owner**: Ethiopian Electric Power (EEP)
+**Usage**: Internal use only
+**Access**: Restricted
+**Contribution**: Not open for public contribution
+
+This repository is **not open source** and is maintained solely for EEP’s internal operations.
+
+---
+
+## Conclusion
+
+The **EEP Event Management System (EMS)** provides a reliable, secure, and centralized solution for managing organizational events within Ethiopian Electric Power.
+It enhances efficiency, transparency, and coordination through structured workflows and controlled access.
+
+---
+
+If you want, I can also:
+
+- Add an **“Internal Use Only” legal notice**
+- Align wording with **government / enterprise IT standards**
+- Prepare a **deployment or operations README** for IT teams
