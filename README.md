@@ -60,7 +60,7 @@ cd event-management-platform
 ```bash
 cd frontend
 npm install
-ng serve
+npm start
 ```
 
 ### Run Backend
