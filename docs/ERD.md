@@ -16,17 +16,17 @@
 
 ### 2. **Users**
 
-| Field         | Data Type    | Constraints                               |
-| ------------- | ------------ | ----------------------------------------- |
-| user_id       | SERIAL       | PK                                        |
-| first_name    | VARCHAR(50)  | NOT NULL                                  |
-| last_name     | VARCHAR(50)  | NOT NULL                                  |
-| email         | VARCHAR(100) | NOT NULL, UNIQUE                          |
-| role          | VARCHAR(20)  | NOT NULL (`Admin`, `Manager`, `Staff`)    |
-| department_id | INT          | FK → Departments(department_id), NOT NULL |
-| is_active     | BOOLEAN      | DEFAULT TRUE                              |
-| created_at    | TIMESTAMP    | DEFAULT now()                             |
-| updated_at    | TIMESTAMP    | DEFAULT now()                             |
+| Field         | Data Type    | Constraints                                          |
+| ------------- | ------------ | ---------------------------------------------------- |
+| employee_id   | SERIAL       | PK                                                   |
+| first_name    | VARCHAR(50)  | NOT NULL                                             |
+| last_name     | VARCHAR(50)  | NOT NULL                                             |
+| email         | VARCHAR(100) | NOT NULL, UNIQUE                                     |
+| role          | VARCHAR(20)  | NOT NULL (`Admin`, `Manager`, `expert`, `cameraman`) |
+| department_id | INT          | FK → Departments(department_id), NOT NULL            |
+| password      | VARCHAR(50)  | DEFAULT now()                                        |
+| created_at    | TIMESTAMP    | DEFAULT now()                                        |
+| updated_at    | TIMESTAMP    | DEFAULT now()                                        |
 
 ---
 
@@ -54,7 +54,7 @@
 | -------------- | ----------- | --------------------------------------------- |
 | assignment_id  | SERIAL      | PK                                            |
 | event_id       | INT         | FK → Events(event_id), NOT NULL               |
-| user_id        | INT         | FK → Users(user_id), NOT NULL                 |
+| employee_id    | INT         | FK → Users(user_id), NOT NULL                 |
 | status         | VARCHAR(20) | NOT NULL (`Assigned`, `Accepted`, `Declined`) |
 | decline_reason | TEXT        | NULL                                          |
 | assigned_at    | TIMESTAMP   | DEFAULT now()                                 |
@@ -97,7 +97,7 @@
 | Field           | Data Type   | Constraints                                   |
 | --------------- | ----------- | --------------------------------------------- |
 | notification_id | SERIAL      | PK                                            |
-| user_id         | INT         | FK → Users(user_id), NOT NULL                 |
+| employee_id     | INT         | FK → Users(user_id), NOT NULL                 |
 | event_id        | INT         | FK → Events(event_id), NULL                   |
 | type            | VARCHAR(50) | NOT NULL (`Assignment`, `Approval`, `Update`) |
 | channel         | VARCHAR(20) | NOT NULL (`Email`, `In-app`)                  |
