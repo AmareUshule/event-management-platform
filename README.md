@@ -89,7 +89,8 @@ Draft → Submitted → Approved → Scheduled → Ongoing → Completed → Arc
 * Title
 * Description
 * EventCategory
-* event_type ('PHYSICAL','VIRTUAL','HYBRID')
+* event_type ('PHYSICAL','VIRTUAL')
+* location
 * Department
 * StartDate / EndDate
 * Status
