@@ -88,6 +88,7 @@ Draft → Submitted → Approved → Scheduled → Ongoing → Completed → Arc
 * Id
 * Title
 * Description
+* EventCategory
 * Department
 * StartDate / EndDate
 * Status
