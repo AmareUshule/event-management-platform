@@ -52,6 +52,8 @@ IF role == Manager AND department != Communication
 
 IF role == Staff
   → Communication Expert / Camera Man permissions
+IF role == Employee
+  → View events/View department-level data
 ```
 
 > ⚠️ This logic must be enforced **both in the API (policies)** and **UI (guards)**.
