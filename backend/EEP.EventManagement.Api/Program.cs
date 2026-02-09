@@ -1,7 +1,9 @@
-using EEP.EventManagement.Application.Services.Interfaces;
-using EEP.EventManagement.Application.Services.Implementations;
+using EEP.EventManagement.Api.Application.Features.Events;
 using EEP.EventManagement.Infrastructure.Repositories.Interfaces;
 using EEP.EventManagement.Infrastructure.Repositories.Implementations;
+using System.Reflection;
+using EEP.EventManagement.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,9 +12,15 @@ var builder = WebApplication.CreateBuilder(args);
 // -----------------------------
 builder.Services.AddControllers();
 
+// DbContext
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseInMemoryDatabase("EventManagementDb"));
+
 // Application services
-builder.Services.AddScoped<IEventService, EventService>();
 builder.Services.AddScoped<IEventRepository, EventRepository>();
+
+// MediatR
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
 
 // Swagger
 builder.Services.AddEndpointsApiExplorer();
@@ -31,18 +39,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// -----------------------------
-// API STATUS (simple test)
-// -----------------------------
-app.MapGet("/api/status", () =>
-{
-    return Results.Ok(new
-    {
-        status = "API is running",
-        environment = app.Environment.EnvironmentName,
-        timestamp = DateTime.UtcNow
-    });
-});
+
 
 // -----------------------------
 // ENABLE CONTROLLERS
