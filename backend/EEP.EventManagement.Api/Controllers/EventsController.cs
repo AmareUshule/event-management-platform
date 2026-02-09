@@ -1,5 +1,6 @@
-using EEP.EventManagement.Api.DTOs.Events;
-using EEP.EventManagement.Application.Services.Interfaces;
+using EEP.EventManagement.Api.Application.Features.Events.Commands;
+using EEP.EventManagement.Api.Application.Features.Events.Queries;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EEP.EventManagement.Api.Controllers;
@@ -8,24 +9,24 @@ namespace EEP.EventManagement.Api.Controllers;
 [Route("api/events")]
 public class EventsController : ControllerBase
 {
-    private readonly IEventService _eventService;
+    private readonly IMediator _mediator;
 
-    public EventsController(IEventService eventService)
+    public EventsController(IMediator mediator)
     {
-        _eventService = eventService;
+        _mediator = mediator;
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create(CreateEventDto dto)
+    public async Task<IActionResult> Create(CreateEventCommand command)
     {
-        var result = await _eventService.CreateAsync(dto);
+        var result = await _mediator.Send(command);
         return Ok(result);
     }
 
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        var events = await _eventService.GetAllAsync();
+        var events = await _mediator.Send(new GetAllEventsQuery());
         return Ok(events);
     }
 }
