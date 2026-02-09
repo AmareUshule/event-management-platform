@@ -8,11 +8,11 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 // -----------------------------
-// ADD SERVICES
+// Register contrllers
 // -----------------------------
 builder.Services.AddControllers();
 
-// DbContext
+// DbContext - Database configuration (using InMemory)
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseInMemoryDatabase("EventManagementDb"));
 
@@ -38,8 +38,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
-
 
 // -----------------------------
 // ENABLE CONTROLLERS
