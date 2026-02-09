@@ -64,3 +64,4 @@ Migrations/*.cs
 # Misc
 # =========================
 __screenshots__/
+Logs/
