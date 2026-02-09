@@ -1,12 +1,28 @@
+using EEP.EventManagement.Application.Services.Interfaces;
+using EEP.EventManagement.Application.Services.Implementations;
+using EEP.EventManagement.Infrastructure.Repositories.Interfaces;
+using EEP.EventManagement.Infrastructure.Repositories.Implementations;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container
+// -----------------------------
+// ADD SERVICES
+// -----------------------------
+builder.Services.AddControllers();
+
+// Application services
+builder.Services.AddScoped<IEventService, EventService>();
+builder.Services.AddScoped<IEventRepository, EventRepository>();
+
+// Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline
+// -----------------------------
+// MIDDLEWARE
+// -----------------------------
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -16,7 +32,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 // -----------------------------
-// STATUS ENDPOINT
+// API STATUS (simple test)
 // -----------------------------
 app.MapGet("/api/status", () =>
 {
@@ -26,8 +42,11 @@ app.MapGet("/api/status", () =>
         environment = app.Environment.EnvironmentName,
         timestamp = DateTime.UtcNow
     });
-})
-.WithName("GetApiStatus")
-.WithOpenApi();
+});
+
+// -----------------------------
+// ENABLE CONTROLLERS
+// -----------------------------
+app.MapControllers();
 
 app.Run();
