@@ -1,14 +1,16 @@
+using EEP.EventManagement.Api.Application.Features.Auth.Commands;
+using EEP.EventManagement.Api.Application.Features.Auth.Validators;
 using EEP.EventManagement.Api.Application.Features.Events;
-using System.Reflection;
-using EEP.EventManagement.Infrastructure.Persistence;
+using EEP.EventManagement.Api.Infrastructure.Persistence;
+using EEP.EventManagement.Api.Infrastructure.Repositories.Implementations;
+using EEP.EventManagement.Api.Infrastructure.Repositories.Interfaces;
+using EEP.EventManagement.Api.Infrastructure.Security.Identity;
+using FluentValidation;
+using FluentValidation.AspNetCore;
+using MediatR;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Infrastructure.Security.Identity; // For ApplicationUser and IdentityDbContext
-using Microsoft.AspNetCore.Identity; // For Identity services
-using FluentValidation; // For FluentValidation
-using FluentValidation.AspNetCore; // For FluentValidation integration
-using MediatR; // For MediatR
-using EEP.EventManagement.Infrastructure.Repositories.Interfaces;
-using EEP.EventManagement.Infrastructure.Repositories.Implementations;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,16 +33,16 @@ builder.Services.AddScoped<IEventRepository, EventRepository>();
 builder.Services.AddMediatR(cfg =>
 {
     cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
-    cfg.RegisterServicesFromAssembly(typeof(Application.Features.Auth.Commands.RegisterUserCommand).Assembly); // Register application layer commands/queries
+    cfg.RegisterServicesFromAssembly(typeof(RegisterUserCommand).Assembly); // Register application layer commands/queries
 });
 
 // FluentValidation
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
-builder.Services.AddValidatorsFromAssembly(typeof(Application.Features.Auth.Validators.RegisterUserValidator).Assembly);
+builder.Services.AddValidatorsFromAssembly(typeof(RegisterUserValidator).Assembly);
 
 // ASP.NET Core Identity
-builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
+builder.Services.AddIdentity<ApplicationUser, IdentityRole<Guid>>()
     .AddEntityFrameworkStores<IdentityDbContext>()
     .AddDefaultTokenProviders();
 

@@ -1,7 +1,7 @@
 
 using EEP.EventManagement.Api.Application.Features.Events.DTOs;
 using EEP.EventManagement.Api.Application.Features.Events.Queries;
-using EEP.EventManagement.Infrastructure.Repositories.Interfaces;
+using EEP.EventManagement.Api.Infrastructure.Repositories.Interfaces;
 using MediatR;
 
 namespace EEP.EventManagement.Api.Application.Features.Events.Handlers

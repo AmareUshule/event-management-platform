@@ -1,4 +1,4 @@
-namespace EEP.EventManagement.Domain.Enums;
+namespace EEP.EventManagement.Api.Domain.Enums;
 
 public enum EventStatus
 {

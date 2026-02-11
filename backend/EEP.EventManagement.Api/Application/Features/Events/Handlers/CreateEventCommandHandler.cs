@@ -1,9 +1,9 @@
 
 using EEP.EventManagement.Api.Application.Features.Events.Commands;
 using EEP.EventManagement.Api.Application.Features.Events.DTOs;
-using EEP.EventManagement.Domain.Entities;
-using EEP.EventManagement.Domain.Enums;
-using EEP.EventManagement.Infrastructure.Repositories.Interfaces;
+using EEP.EventManagement.Api.Domain.Entities;
+using EEP.EventManagement.Api.Domain.Enums;
+using EEP.EventManagement.Api.Infrastructure.Repositories.Interfaces;
 using MediatR;
 
 namespace EEP.EventManagement.Api.Application.Features.Events.Handlers

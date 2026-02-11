@@ -1,9 +1,9 @@
-using EEP.EventManagement.Domain.Entities;
-using EEP.EventManagement.Infrastructure.Persistence;
-using EEP.EventManagement.Infrastructure.Repositories.Interfaces;
+using EEP.EventManagement.Api.Domain.Entities;
+using EEP.EventManagement.Api.Infrastructure.Persistence;
+using EEP.EventManagement.Api.Infrastructure.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
-namespace EEP.EventManagement.Infrastructure.Repositories.Implementations;
+namespace EEP.EventManagement.Api.Infrastructure.Repositories.Implementations;
 
 public class EventRepository : IEventRepository
 {

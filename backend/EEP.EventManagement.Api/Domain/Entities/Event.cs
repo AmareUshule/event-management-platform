@@ -1,7 +1,7 @@
 using EEP.EventManagement.Api.Domain.Common;
-using EEP.EventManagement.Domain.Enums;
+using EEP.EventManagement.Api.Domain.Enums;
 
-namespace EEP.EventManagement.Domain.Entities;
+namespace EEP.EventManagement.Api.Domain.Entities;
 
 public class Event : BaseEntity
 {

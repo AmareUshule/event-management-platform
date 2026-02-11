@@ -1,6 +1,6 @@
-using EEP.EventManagement.Domain.Entities;
+using EEP.EventManagement.Api.Domain.Entities;
 
-namespace EEP.EventManagement.Infrastructure.Repositories.Interfaces;
+namespace EEP.EventManagement.Api.Infrastructure.Repositories.Interfaces;
 
 public interface IEventRepository
 {
