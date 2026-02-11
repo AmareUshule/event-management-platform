@@ -1,33 +1,31 @@
 import { inject } from '@angular/core';
 import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
-import { catchError, throwError } from 'rxjs';
 import { Router } from '@angular/router';
+import { catchError, throwError } from 'rxjs';
 import { AuthService } from '../auth/auth.service';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
   const router = inject(Router);
   
-  // Skip auth for login and public endpoints
-  const excludedEndpoints = [
+  // Skip authentication for these endpoints
+  const excludedUrls = [
     '/auth/login',
     '/auth/refresh',
+    '/auth/register',
+    '/auth/forgot-password',
     '/public/',
     '/assets/'
   ];
   
-  const shouldSkipAuth = excludedEndpoints.some(endpoint => 
-    req.url.includes(endpoint)
-  );
+  const shouldSkip = excludedUrls.some(url => req.url.includes(url));
   
-  if (shouldSkipAuth) {
+  if (shouldSkip) {
     return next(req);
   }
   
-  // Get token from auth service
+  // Add authorization header if token exists
   const token = authService.getToken();
-  
-  // Clone request and add authorization header if token exists
   const authReq = token 
     ? req.clone({
         setHeaders: {
@@ -38,22 +36,19 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   
   return next(authReq).pipe(
     catchError((error: HttpErrorResponse) => {
-      // Handle authentication errors
       if (error.status === 401) {
-        // Token expired or invalid
-        console.warn('Authentication failed, redirecting to login');
-        //authService.clearAuthData(); // Use clearAuthData instead of logout to avoid redirect loop
-        router.navigate(['/login'], { 
+        // Unauthorized - token expired or invalid
+        authService.logout();
+        router.navigate(['/login'], {
           queryParams: { 
             sessionExpired: true,
             returnUrl: router.url 
-          } 
+          }
         });
       }
       
-      // Handle authorization errors
       if (error.status === 403) {
-        console.warn('Access forbidden');
+        // Forbidden - insufficient permissions
         router.navigate(['/unauthorized']);
       }
       
@@ -61,4 +56,3 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     })
   );
 };
-export default authInterceptor;

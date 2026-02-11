@@ -23,6 +23,7 @@ export class StorageService {
       localStorage.removeItem(key);
     }
   }
+  
   clear(): void {
     if (this.isBrowser()) {
       localStorage.clear();
