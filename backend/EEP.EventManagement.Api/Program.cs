@@ -48,9 +48,9 @@ builder.Services.AddScoped<IDepartmentRepository, DepartmentRepository>();
 builder.Services.AddScoped<IAssignmentRepository, AssignmentRepository>();
 
 // Register custom authorization handlers
-builder.Services.AddSingleton<IAuthorizationHandler, EEP.EventManagement.Api.Infrastructure.Security.Authorization.Handlers.IsCommunicationManagerHandler>();
-builder.Services.AddSingleton<IAuthorizationHandler, EEP.EventManagement.Api.Infrastructure.Security.Authorization.Handlers.IsAssignedToEventHandler>();
-builder.Services.AddSingleton<IAuthorizationHandler, EEP.EventManagement.Api.Infrastructure.Security.Authorization.Handlers.IsDepartmentManagerOfResourceHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, EEP.EventManagement.Api.Infrastructure.Security.Authorization.Handlers.IsCommunicationManagerHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, EEP.EventManagement.Api.Infrastructure.Security.Authorization.Handlers.IsAssignedToEventHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, EEP.EventManagement.Api.Infrastructure.Security.Authorization.Handlers.IsDepartmentManagerOfResourceHandler>();
 
 // MediatR
 builder.Services.AddMediatR(cfg =>
