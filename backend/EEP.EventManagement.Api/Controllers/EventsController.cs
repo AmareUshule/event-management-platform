@@ -19,6 +19,7 @@ public class EventsController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Policy = EEP.EventManagement.Api.Infrastructure.Security.Authorization.AuthorizationPolicies.CanCreateEvent)]
     public async Task<IActionResult> Create(CreateEventCommand command)
     {
         var result = await _mediator.Send(command);

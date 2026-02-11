@@ -13,7 +13,6 @@ namespace EEP.EventManagement.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize] // All actions in this controller require authorization by default
     public class AuthController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -49,6 +48,7 @@ namespace EEP.EventManagement.Api.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin,Manager")]
         public async Task<ActionResult<UserResponseDto>> UpdateUser(string id, [FromBody] UpdateUserDto userDto)
         {
             if (id != userDto.Id)
@@ -61,6 +61,7 @@ namespace EEP.EventManagement.Api.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin,Manager")]
         public async Task<ActionResult> DeleteUser(string id)
         {
             var command = new DeleteUserCommand(id);
@@ -69,6 +70,7 @@ namespace EEP.EventManagement.Api.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize(Roles = "Admin,Manager")]
         public async Task<ActionResult<UserResponseDto>> GetUserById(string id)
         {
             var query = new GetUserByIdQuery(id);
@@ -77,6 +79,7 @@ namespace EEP.EventManagement.Api.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Admin,Manager")]
         public async Task<ActionResult<List<UserResponseDto>>> GetAllUsers()
         {
             var query = new GetAllUsersQuery();

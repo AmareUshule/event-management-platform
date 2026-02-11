@@ -16,6 +16,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using EEP.EventManagement.Api.Infrastructure.Security.JWT;
 using EEP.EventManagement.Api.Middlewares;
+using Microsoft.AspNetCore.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,6 +45,12 @@ builder.Services.AddDbContext<IdentityDbContext>(options =>
 // Application services
 builder.Services.AddScoped<IEventRepository, EventRepository>();
 builder.Services.AddScoped<IDepartmentRepository, DepartmentRepository>();
+builder.Services.AddScoped<IAssignmentRepository, AssignmentRepository>();
+
+// Register custom authorization handlers
+builder.Services.AddSingleton<IAuthorizationHandler, EEP.EventManagement.Api.Infrastructure.Security.Authorization.Handlers.IsCommunicationManagerHandler>();
+builder.Services.AddSingleton<IAuthorizationHandler, EEP.EventManagement.Api.Infrastructure.Security.Authorization.Handlers.IsAssignedToEventHandler>();
+builder.Services.AddSingleton<IAuthorizationHandler, EEP.EventManagement.Api.Infrastructure.Security.Authorization.Handlers.IsDepartmentManagerOfResourceHandler>();
 
 // MediatR
 builder.Services.AddMediatR(cfg =>
@@ -66,6 +73,12 @@ builder.Services.AddValidatorsFromAssembly(typeof(EEP.EventManagement.Api.Applic
 builder.Services.AddIdentity<ApplicationUser, IdentityRole<Guid>>()
     .AddEntityFrameworkStores<IdentityDbContext>()
     .AddDefaultTokenProviders();
+
+// Configure Authorization Policies
+builder.Services.AddAuthorization(options =>
+{
+    EEP.EventManagement.Api.Infrastructure.Security.Authorization.AuthorizationPolicies.AddPolicies(options);
+});
 
 // Configure JWT Authentication
 builder.Services.AddAuthentication(options =>

@@ -5,7 +5,7 @@ namespace EEP.EventManagement.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize] // All actions in this controller require authorization
+    [Authorize(Roles = "Admin,Manager,Expert,Cameraman")] // All actions in this controller require authorization
     public class MediaController : ControllerBase
     {
         // TODO: Implement media related endpoints
