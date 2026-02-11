@@ -6,11 +6,13 @@ using EEP.EventManagement.Api.Application.Features.Departments.DTOs;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 
 namespace EEP.EventManagement.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize] // All actions in this controller require authorization
     public class DepartmentsController : ControllerBase
     {
         private readonly IMediator _mediator;

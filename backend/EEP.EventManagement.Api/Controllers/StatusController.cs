@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using System;
 
 namespace EEP.EventManagement.Api.Controllers
 {
@@ -7,6 +9,7 @@ namespace EEP.EventManagement.Api.Controllers
     public class StatusController : ControllerBase
     {
         [HttpGet]
+        [AllowAnonymous] // Allow anonymous access to the status endpoint
         public IActionResult Get()
         {
             return Ok(new

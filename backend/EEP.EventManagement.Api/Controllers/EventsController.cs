@@ -2,11 +2,13 @@ using EEP.EventManagement.Api.Application.Features.Events.Commands;
 using EEP.EventManagement.Api.Application.Features.Events.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace EEP.EventManagement.Api.Controllers;
 
 [ApiController]
 [Route("api/events")]
+[Authorize] // All actions in this controller require authorization
 public class EventsController : ControllerBase
 {
     private readonly IMediator _mediator;

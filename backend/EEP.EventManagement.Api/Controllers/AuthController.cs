@@ -7,11 +7,13 @@ using EEP.EventManagement.Api.Application.Features.Auth.Validators;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System;
+using Microsoft.AspNetCore.Authorization;
 
 namespace EEP.EventManagement.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize] // All actions in this controller require authorization by default
     public class AuthController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -22,6 +24,7 @@ namespace EEP.EventManagement.Api.Controllers
         }
 
         [HttpPost("register")]
+        [AllowAnonymous] // Allow anonymous access to the register endpoint
         public async Task<IActionResult> Register([FromBody] RegisterUserRequestDto dto)
         {
             var validator = new RegisterUserValidator();
@@ -34,6 +37,15 @@ namespace EEP.EventManagement.Api.Controllers
             var command = new RegisterUserCommand(dto);
             var result = await _mediator.Send(command);
             return Ok(result);
+        }
+
+        [HttpPost("login")]
+        [AllowAnonymous] // Allow anonymous access to the login endpoint
+        public async Task<ActionResult<LoginResponseDto>> Login([FromBody] LoginRequestDto dto)
+        {
+            var command = new LoginUserCommand(dto);
+            var response = await _mediator.Send(command);
+            return Ok(response);
         }
 
         [HttpPut("{id}")]
@@ -69,14 +81,6 @@ namespace EEP.EventManagement.Api.Controllers
         {
             var query = new GetAllUsersQuery();
             var response = await _mediator.Send(query);
-            return Ok(response);
-        }
-
-        [HttpPost("login")]
-        public async Task<ActionResult<LoginResponseDto>> Login([FromBody] LoginRequestDto dto)
-        {
-            var command = new LoginUserCommand(dto);
-            var response = await _mediator.Send(command);
             return Ok(response);
         }
     }
