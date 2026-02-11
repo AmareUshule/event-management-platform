@@ -11,5 +11,8 @@ import { RouterModule } from '@angular/router';
 export class App {
   protected title = 'event-management-platform';
 }
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> f84a1d540d0e6d261c1eeb1f979fde6af1ae5672

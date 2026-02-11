@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 
 export const APP_ROUTES: Routes = [
+<<<<<<< HEAD
   // Public routes
   {
     path: 'login',
@@ -20,3 +21,8 @@ export const APP_ROUTES: Routes = [
     redirectTo: '/login'
   }
 ];
+=======
+  // { path: 'login', loadComponent: () => import('../pages/login.component').then(m => m.WebappLoginComponent) },
+  { path: '', redirectTo: '/login', pathMatch: 'full' },
+];
+>>>>>>> f84a1d540d0e6d261c1eeb1f979fde6af1ae5672

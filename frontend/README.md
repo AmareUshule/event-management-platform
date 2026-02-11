@@ -99,3 +99,12 @@ And join the Nx community:
 - [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
 - [Our Youtube channel](https://www.youtube.com/@nxdevtools)
 - [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+<<<<<<< HEAD
+=======
+
+
+# Author
+
+1. Amare Ushule
+2. Solomon Ferede
+>>>>>>> f84a1d540d0e6d261c1eeb1f979fde6af1ae5672

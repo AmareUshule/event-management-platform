@@ -1,101 +1,300 @@
-# EventManagementPlatform
+# EEP Event Management System (EEMS)
 
-<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
+## Developer README
 
-✨ Your new, shiny [Nx workspace](https://nx.dev) is ready ✨.
+This document provides **developer-focused guidance** for setting up, understanding, and contributing to the EEP Event Management System based on the approved PRD.
 
-[Learn more about this workspace setup and its capabilities](https://nx.dev/getting-started/tutorials/angular-standalone-tutorial?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
+---
 
-## Run tasks
+## 1. System Overview
 
-To run the dev server for your app, use:
+EEMS is a **single monolithic web application** that enables centralized event management, approval workflows, communication staff assignment, and media support storage for Ethiopian Electric Power (EEP).
 
-```sh
-npx nx serve event-management-platform
+### High-Level Architecture
+
+```
+Angular (Frontend)
+      ↓ REST API
+.NET (C# Backend)
+      ↓ ORM / Queries
+PostgreSQL (Database)
 ```
 
-To create a production bundle:
+---
 
-```sh
-npx nx build event-management-platform
+## 2. Technology Stack
+
+| Layer        | Technology                    |
+| ------------ | ----------------------------- |
+| Frontend     | Angular (latest LTS)          |
+| Backend      | ASP.NET Core Web API          |
+| Database     | PostgreSQL                    |
+| Auth         | Role + Department based RBAC  |
+| Architecture | Single monolithic application |
+
+---
+
+## 3. Role & Authorization Logic (Critical)
+
+Authorization is determined by **Role + Department**.
+
+### Role Resolution Rules
+
+```text
+IF role == Admin
+  → Full access
+
+IF role == Manager AND department == Communication
+  → Communication Manager permissions
+
+IF role == Manager AND department != Communication
+  → Department Manager permissions
+
+IF role == Staff
+  → Communication Expert / Camera Man permissions
+IF role == Employee
+  → View events/View department-level data
 ```
 
-To see all available targets to run for a project, run:
+> ⚠️ This logic must be enforced **both in the API (policies)** and **UI (guards)**.
 
-```sh
-npx nx show project event-management-platform
+---
+
+## 4. Event Workflow (Backend-Enforced)
+
+```text
+Draft → Submitted → Approved → Scheduled → Ongoing → Completed → Archived
 ```
 
-These targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
+### Important Rules
 
-[More about running tasks in the docs &raquo;](https://nx.dev/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+* Events **cannot be approved** without assigning communication staff
+* Approved events are **read-only** (except system status updates)
+* Assignment and approval happen in a **single transaction**
 
-## Add new projects
+---
 
-While you could add new projects to your workspace manually, you might want to leverage [Nx plugins](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) and their [code generation](https://nx.dev/features/generate-code?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) feature.
+## 5. Core Domain Models (Conceptual)
 
-Use the plugin's generator to create new projects.
+### User
 
-To generate a new application, use:
+* Id
+* Name
+* Email
+* Role (Admin | Manager | Staff)
+* Department
+* IsActive
 
-```sh
-npx nx g @nx/angular:app demo
+### Event
+
+* Id
+* Title
+* Description
+* EventCategory
+* event_type ('PHYSICAL','VIRTUAL')
+* location
+* Department
+* StartDate / EndDate
+* Status
+* CreatedBy
+
+### Assignment
+
+* Id
+* EventId
+* StaffUserId
+* Status (Assigned | Accepted | Declined)
+* DeclineReason (nullable)
+* Timestamp
+
+### Media
+
+* Id
+* EventId
+* UploadedBy
+* Type (Photo | Document | Link)
+* FilePath / ExternalUrl
+* Size
+* CreatedAt
+
+### AuditLog
+
+* Id
+* EntityType
+* EntityId
+* Action
+* PerformedBy
+* Timestamp
+
+---
+
+## 6. API Design Guidelines
+
+### REST Principles
+
+* Use RESTful endpoints
+* Enforce authorization at controller/service level
+* Validate role and department on every protected endpoint
+
+### Example Endpoints
+
+```
+POST   /api/events
+POST   /api/events/{id}/submit
+POST   /api/events/{id}/approve
+POST   /api/events/{id}/assignments
+POST   /api/assignments/{id}/accept
+POST   /api/assignments/{id}/decline
+POST   /api/events/{id}/media
+GET    /api/dashboard
 ```
 
-To generate a new library, use:
+---
 
-```sh
-npx nx g @nx/angular:lib mylib
+## 7. Media Upload Rules
+
+* Max file size: **5 MB**
+* Allowed types:
+
+  * Images
+  * Documents
+  * External links
+* Only assigned staff or communication managers may upload/delete
+* Backend must validate:
+
+  * Assignment exists
+  * Event status allows upload
+
+---
+
+## 8. Frontend Guidelines (Angular)
+
+### Recommended Structure
+
+```
+/app
+  /core        → auth, guards, services
+  /shared     → reusable components
+  /features
+    /events
+    /assignments
+    /media
+    /dashboard
 ```
 
-You can use `npx nx list` to get a list of installed plugins. Then, run `npx nx list <plugin-name>` to learn about more specific capabilities of a particular plugin. Alternatively, [install Nx Console](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) to browse plugins and generators in your IDE.
+### UI Rules
 
-[Learn more about Nx plugins &raquo;](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) | [Browse the plugin registry &raquo;](https://nx.dev/plugin-registry?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+* Hide actions user cannot perform (do not rely only on backend errors)
+* Display event status clearly
+* Show assignment acceptance/decline actions only to assigned staff
 
-## Set up CI!
+---
 
-### Step 1
+## 9. Database Guidelines
 
-To connect to Nx Cloud, run the following command:
+* Use migrations for schema changes
+* Enforce foreign keys
+* Prefer soft-delete or archive for events
+* Assignment and audit tables are **append-only**
 
-```sh
-npx nx connect
+---
+
+## 10. Installation and Running the Project
+
+### Prerequisites
+
+* Node.js (LTS)
+* npm
+* .NET SDK (latest LTS)
+* PostgreSQL
+
+### Clone Repository
+
+```bash
+git clone git@github.com:AmareUshule/event-management-platform.git
+cd event-management-platform
 ```
 
-Connecting to Nx Cloud ensures a [fast and scalable CI](https://nx.dev/ci/intro/why-nx-cloud?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) pipeline. It includes features such as:
+### Run Frontend
 
-- [Remote caching](https://nx.dev/ci/features/remote-cache?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task distribution across multiple machines](https://nx.dev/ci/features/distribute-task-execution?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Automated e2e test splitting](https://nx.dev/ci/features/split-e2e-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task flakiness detection and rerunning](https://nx.dev/ci/features/flaky-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-### Step 2
-
-Use the following command to configure a CI workflow for your workspace:
-
-```sh
-npx nx g ci-workflow
+```bash
+cd frontend
+npm install
+npm start
 ```
 
-[Learn more about Nx on CI](https://nx.dev/ci/intro/ci-with-nx#ready-get-started-with-your-provider?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+The frontend will be available at:
 
-## Install Nx Console
+```
+http://localhost:4200
+```
 
-Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
+### Run Backend
 
-[Install Nx Console &raquo;](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+```bash
+cd backend
+dotnet restore
+dotnet run
+```
 
-## Useful links
+The backend API will be available at:
 
-Learn more:
+```
+https://localhost:5001
+```
 
-- [Learn more about this workspace setup](https://nx.dev/getting-started/tutorials/angular-standalone-tutorial?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects)
-- [Learn about Nx on CI](https://nx.dev/ci/intro/ci-with-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Releasing Packages with Nx release](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [What are Nx plugins?](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+---
 
-And join the Nx community:
-- [Discord](https://go.nx.dev/community)
-- [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
-- [Our Youtube channel](https://www.youtube.com/@nxdevtools)
-- [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+## 11. Environment Configuration
+
+### Required Configuration (Example)
+
+```
+DB_CONNECTION_STRING=
+JWT_SECRET=
+FILE_STORAGE_PATH=
+MAX_UPLOAD_SIZE_MB=5
+```
+
+---
+
+## 11. Development Workflow
+
+1. Create feature branch
+2. Implement backend logic with policy checks
+3. Implement frontend UI with guards
+4. Add audit logging
+5. Test role-based access
+6. Create pull request
+
+---
+
+## 12. Testing Guidelines
+
+* Unit test authorization rules
+* Test approval + assignment atomicity
+* Test media upload permission boundaries
+* Verify dashboard data scoping
+
+---
+
+## 13. Reference Documents
+
+* Product Requirements Document (PRD)
+* System Architecture (to be added)
+* ERD (to be added)
+
+---
+
+## Project Status
+
+Design complete. Ready for:
+
+* ERD design
+* API contract definition
+* Sprint planning
+
+---
+
+**EEP Event Management System (EEMS)**
+Developer Documentation

@@ -1,46 +1,67 @@
-# See https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
+# =========================
+# Build & compiled output
+# =========================
+bin/
+obj/
+dist/
+out-tsc/
+tmp/
+publish/
 
-# compiled output
-dist
-tmp
-out-tsc
+# =========================
+# Dependencies
+# =========================
+node_modules/
 
-# dependencies
-node_modules
+# =========================
+# Angular / Nx
+# =========================
+.angular/
+.nx/cache/
+.nx/workspace-data/
 
-# IDEs and editors
-/.idea
-.project
-.classpath
-.c9/
-*.launch
-.settings/
-*.sublime-workspace
-
-# IDE - VSCode
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-
-# misc
-/.sass-cache
-/connect.lock
-/coverage
-/libpeerconnection.log
+# =========================
+# Logs
+# =========================
+Logs/
+*.log
 npm-debug.log
 yarn-error.log
-testem.log
-/typings
 
-# System Files
-.DS_Store
-Thumbs.db
+# =========================
+# Test & coverage
+# =========================
+coverage/
+TestResults/
 
-.nx/cache
-.nx/workspace-data
+# =========================
+# Environment & secrets
+# =========================
+appsettings.Development.json
+appsettings.Local.json
+secrets.json
 
-.angular
+# =========================
+# Entity Framework
+# =========================
+Migrations/*.cs
+!Migrations/*InitialCreate.cs
 
+# =========================
+# IDEs & Editors
+# =========================
+.vscode/
+.idea/
+
+# =========================
+# HTTP & temp files
+# =========================
+*.http
+*.tmp
+*.temp
+
+# =========================
+# Misc
+# =========================
 __screenshots__/
+Logs/

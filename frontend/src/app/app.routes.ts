@@ -1,3 +1,4 @@
+<<<<<<< HEAD
  
 
 import { Routes } from '@angular/router';
@@ -23,3 +24,14 @@ export const appRoutes: Routes = [
 
   { path: '**', redirectTo: '' },
 ];
+=======
+import { Route } from '@angular/router';
+import { HomeComponent } from './home.component';
+import { LoginComponent } from './login.component';
+
+export const appRoutes: Route[] = [
+	{ path: '', component: HomeComponent },
+	{ path: 'login', component: LoginComponent },
+	{ path: '**', redirectTo: '' },
+];
+>>>>>>> f84a1d540d0e6d261c1eeb1f979fde6af1ae5672
