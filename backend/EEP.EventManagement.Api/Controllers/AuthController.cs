@@ -1,8 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
 using MediatR;
 using EEP.EventManagement.Api.Application.Features.Auth.Commands;
+using EEP.EventManagement.Api.Application.Features.Auth.Queries;
 using EEP.EventManagement.Api.Application.Features.Auth.DTOs;
 using EEP.EventManagement.Api.Application.Features.Auth.Validators;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using System;
 
 namespace EEP.EventManagement.Api.Controllers
 {
@@ -30,6 +34,42 @@ namespace EEP.EventManagement.Api.Controllers
             var command = new RegisterUserCommand(dto);
             var result = await _mediator.Send(command);
             return Ok(result);
+        }
+
+        [HttpPut("{id}")]
+        public async Task<ActionResult<UserResponseDto>> UpdateUser(string id, [FromBody] UpdateUserDto userDto)
+        {
+            if (id != userDto.Id)
+            {
+                return BadRequest("User ID in URL and body do not match.");
+            }
+            var command = new UpdateUserCommand(userDto);
+            var response = await _mediator.Send(command);
+            return Ok(response);
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<ActionResult> DeleteUser(string id)
+        {
+            var command = new DeleteUserCommand(id);
+            await _mediator.Send(command);
+            return NoContent();
+        }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<UserResponseDto>> GetUserById(string id)
+        {
+            var query = new GetUserByIdQuery(id);
+            var response = await _mediator.Send(query);
+            return Ok(response);
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<List<UserResponseDto>>> GetAllUsers()
+        {
+            var query = new GetAllUsersQuery();
+            var response = await _mediator.Send(query);
+            return Ok(response);
         }
 
         // Optional: POST /login endpoint

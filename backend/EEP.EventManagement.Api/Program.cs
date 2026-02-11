@@ -28,18 +28,22 @@ builder.Services.AddDbContext<IdentityDbContext>(options =>
 
 // Application services
 builder.Services.AddScoped<IEventRepository, EventRepository>();
+builder.Services.AddScoped<IDepartmentRepository, DepartmentRepository>();
 
 // MediatR
 builder.Services.AddMediatR(cfg =>
 {
     cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
     cfg.RegisterServicesFromAssembly(typeof(RegisterUserCommand).Assembly); // Register application layer commands/queries
+    cfg.RegisterServicesFromAssembly(typeof(EEP.EventManagement.Api.Application.Features.Departments.Commands.CreateDepartmentCommand).Assembly);
 });
 
 // FluentValidation
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 builder.Services.AddValidatorsFromAssembly(typeof(RegisterUserValidator).Assembly);
+builder.Services.AddValidatorsFromAssembly(typeof(EEP.EventManagement.Api.Application.Features.Departments.Validators.CreateDepartmentCommandValidator).Assembly);
+builder.Services.AddValidatorsFromAssembly(typeof(EEP.EventManagement.Api.Application.Features.Auth.Validators.UpdateUserCommandValidator).Assembly);
 
 // ASP.NET Core Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole<Guid>>()
