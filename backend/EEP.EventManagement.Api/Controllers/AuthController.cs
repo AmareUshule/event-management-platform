@@ -72,6 +72,12 @@ namespace EEP.EventManagement.Api.Controllers
             return Ok(response);
         }
 
-        // Optional: POST /login endpoint
+        [HttpPost("login")]
+        public async Task<ActionResult<LoginResponseDto>> Login([FromBody] LoginRequestDto dto)
+        {
+            var command = new LoginUserCommand(dto);
+            var response = await _mediator.Send(command);
+            return Ok(response);
+        }
     }
 }
