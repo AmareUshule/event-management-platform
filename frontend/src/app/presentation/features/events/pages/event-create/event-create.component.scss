@@ -1,0 +1,456 @@
+@use '@angular/material' as mat;
+@use 'sass:color';
+
+// EEP Brand Colors
+$eep-green-900: #1B5E20;
+$eep-red-900: #B71C1C;
+$eep-gray-800: #424242;
+$eep-gray-200: #eeeeee;
+$eep-light-bg: #f8f9fa;
+
+// Main container
+.event-creation-wrapper {
+  min-height: 100vh;
+  background: linear-gradient(135deg, $eep-light-bg 0%, #ffffff 100%);
+  padding: 20px;
+}
+
+// Wizard container
+.wizard-container {
+  display: flex;
+  max-width: 1200px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  min-height: 80vh;
+}
+
+// Progress sidebar
+.progress-sidebar {
+  width: 320px;
+  background: linear-gradient(180deg, $eep-green-900 0%, color.adjust($eep-green-900, $lightness: -10%) 100%);
+  color: white;
+  padding: 40px 30px;
+  display: flex;
+  flex-direction: column;
+}
+
+.progress-header {
+  margin-bottom: 40px;
+  
+  h2 {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 600;
+    background: linear-gradient(45deg, color.adjust($eep-green-900, $lightness: 20%), color.adjust($eep-red-900, $lightness: 20%));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  
+  p {
+    color: rgba(255, 255, 255, 0.8);
+    margin-top: 8px;
+    font-size: 14px;
+  }
+}
+
+// Steps container
+.steps-container {
+  flex: 1;
+}
+
+.step-item {
+  display: flex;
+  align-items: center;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 15px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateX(5px);
+  }
+  
+  &.active {
+    background: rgba(255, 255, 255, 0.15);
+    border-left: 4px solid $eep-red-900;
+    
+    .step-icon {
+      background: $eep-red-900;
+      transform: scale(1.1);
+      box-shadow: 0 4px 12px rgba($eep-red-900, 0.3);
+    }
+    
+    .step-title {
+      color: white;
+      font-weight: 600;
+    }
+  }
+  
+  &.completed {
+    .step-icon {
+      background: $eep-green-900;
+      color: white;
+    }
+    
+    .step-title {
+      color: rgba(255, 255, 255, 0.9);
+    }
+  }
+}
+
+.step-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 15px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.step-info {
+  flex: 1;
+}
+
+.step-title {
+  font-weight: 500;
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.8);
+  transition: all 0.3s ease;
+}
+
+.step-description {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 4px;
+}
+
+// Progress indicator
+.progress-indicator {
+  margin-top: auto;
+  padding-top: 30px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.progress-bar {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, $eep-green-900, $eep-red-900);
+  transition: width 0.3s ease;
+  box-shadow: 0 2px 8px rgba($eep-red-900, 0.3);
+}
+
+.progress-text {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+  text-align: center;
+}
+
+// Current step display
+.current-step-display {
+  margin-bottom: 40px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid $eep-gray-200;
+  
+  .step-badge {
+    background: linear-gradient(135deg, $eep-green-900, $eep-red-900);
+    color: white;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    display: inline-block;
+  }
+  
+  .current-step-title {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 600;
+    color: $eep-gray-800;
+    background: linear-gradient(135deg, $eep-green-900, $eep-red-900);
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+}
+
+// Form content
+.form-content {
+  flex: 1;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow-y: auto;
+  
+  form {
+    flex: 1;
+    overflow-y: auto;
+    padding-bottom: 20px;
+  }
+}
+
+// Form grid layout - UPDATED with clean grid areas
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-areas:
+    "title description"
+    "category description";
+  gap: 24px;
+  margin-bottom: 40px;
+  
+  .full-width {
+    grid-column: 1 / -1;
+  }
+  
+  // Grid area assignments
+  > mat-form-field:nth-child(1) {
+    grid-area: title;
+  }
+  
+  > mat-form-field.description {
+    grid-area: description;
+  }
+  
+  > mat-form-field.category {
+    grid-area: category;
+  }
+}
+
+// Event type selector
+.event-type-selector {
+  margin-bottom: 30px;
+}
+
+.type-toggle-group {
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 2px solid $eep-gray-200;
+  
+  mat-button-toggle {
+    flex: 1;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border-right: 1px solid $eep-gray-200;
+    
+    &:last-child {
+      border-right: none;
+    }
+    
+    &.mat-button-toggle-checked {
+      background: linear-gradient(135deg, $eep-green-900, $eep-red-900);
+      color: white;
+    }
+  }
+}
+
+.location-fields {
+  margin-top: 24px;
+}
+
+// Form actions - FIXED navigation buttons (always visible)
+.form-actions {
+  display: flex;
+  justify-content: space-between;
+  padding: 20px 0 0 0;
+  margin-top: auto;
+  border-top: 2px solid $eep-gray-200;
+  background: white;
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  padding-top: 20px;
+  
+  button {
+    min-width: 140px;
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-weight: 500;
+    border-radius: 10px;
+    
+    &[color="primary"] {
+      background: linear-gradient(135deg, $eep-green-900, $eep-red-900);
+      color: white;
+      
+      &:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba($eep-red-900, 0.3);
+      }
+      
+      &:disabled {
+        opacity: 0.5;
+        background: $eep-gray-200;
+        color: $eep-gray-800;
+      }
+    }
+    
+    &.mat-stroked-button {
+      border-color: $eep-gray-800;
+      color: $eep-gray-800;
+      
+      &:hover {
+        background: $eep-gray-200;
+      }
+    }
+  }
+}
+
+// Animations
+.form-step {
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Date picker fixes
+::ng-deep .mat-datepicker-content {
+  z-index: 1000 !important;
+}
+
+::ng-deep .mat-datepicker-popup {
+  z-index: 1000 !important;
+}
+
+// Angular Material overrides
+:host ::ng-deep {
+  .mat-form-field-outline {
+    border-radius: 10px;
+  }
+  
+  .mat-form-field-appearance-outline .mat-form-field-outline {
+    color: $eep-gray-200;
+  }
+  
+  .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline-thick {
+    color: $eep-green-900;
+  }
+  
+  .mat-button-toggle-appearance-standard .mat-button-toggle-label-content {
+    line-height: 24px;
+  }
+  
+  .mat-datepicker-toggle button {
+    z-index: 10;
+  }
+  
+  // Input padding fixes
+  .mat-mdc-form-field-flex {
+    padding-left: 16px !important;
+  }
+  
+  .mat-mdc-form-field-infix {
+    padding: 14px 16px 14px 0 !important;
+  }
+  
+  .mat-mdc-input-element,
+  textarea.mat-mdc-input-element {
+    padding-left: 14px !important;
+    box-sizing: border-box;
+  }
+}
+
+// Responsive design
+@media (max-width: 992px) {
+  .wizard-container {
+    flex-direction: column;
+  }
+  
+  .progress-sidebar {
+    width: 100%;
+    padding: 30px 20px;
+  }
+  
+  .form-grid {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "title"
+      "category"
+      "description";
+  }
+  
+  .form-actions {
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px 0 0 0;
+    
+    button {
+      width: 100%;
+      margin: 0;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .form-content {
+    padding: 20px;
+  }
+  
+  .wizard-container {
+    border-radius: 0;
+    box-shadow: none;
+    min-height: 100vh;
+  }
+  
+  .form-actions {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 16px;
+    background: white;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+    border-top: 2px solid $eep-gray-200;
+    z-index: 50;
+    
+    button {
+      width: 100%;
+      margin-bottom: 8px;
+      
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+  }
+  
+  .event-creation-wrapper {
+    padding: 0;
+  }
+  
+  .form-content {
+    padding-bottom: 100px; // Space for fixed buttons
+  }
+}

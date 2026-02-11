@@ -1,0 +1,422 @@
+<div class="dashboard-container">
+  <!-- Loading Overlay -->
+  <div *ngIf="isLoading" class="loading-overlay">
+    <div class="loading-content">
+      <div class="loader-spinner"></div>
+      <p class="loading-text">Loading Event Portal...</p>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div *ngIf="!isLoading && user" class="main-content">
+    <!-- Top Navigation Bar -->
+    <nav class="top-nav">
+      <div class="nav-content">
+        <div class="nav-left">
+          <div class="brand-logo">
+            <div class="logo-icon">
+              <mat-icon>calendar_today</mat-icon>
+            </div>
+            <h1 class="brand-name">EventPortal</h1>
+          </div>
+          
+          <div class="nav-tabs">
+            <button class="nav-tab active">
+              <mat-icon>dashboard</mat-icon>
+              <span>Dashboard</span>
+            </button>
+            <button class="nav-tab">
+              <mat-icon>calendar_month</mat-icon>
+              <span>Calendar</span>
+            </button>
+            <button class="nav-tab">
+              <mat-icon>analytics</mat-icon>
+              <span>Analytics</span>
+            </button>
+            <button class="nav-tab">
+              <mat-icon>people</mat-icon>
+              <span>Attendees</span>
+            </button>
+          </div>
+        </div>
+        
+        <div class="nav-right">
+          <div class="notification-wrapper">
+            <button mat-icon-button class="nav-icon-btn" matTooltip="Notifications">
+              <mat-icon>notifications</mat-icon>
+              <div class="notification-badge"></div>
+            </button>
+          </div>
+          
+          <div class="user-profile" [matMenuTriggerFor]="userMenu">
+            <div class="user-avatar">
+              <mat-icon>person</mat-icon>
+            </div>
+            <div class="user-info">
+              <span class="user-name">{{ user?.fullName }}</span>
+              <span class="user-role">{{ roleDisplay }}</span>
+            </div>
+            <mat-icon>expand_more</mat-icon>
+          </div>
+          
+          <mat-menu #userMenu="matMenu">
+            <button mat-menu-item>
+              <mat-icon>person</mat-icon>
+              <span>My Profile</span>
+            </button>
+            <button mat-menu-item>
+              <mat-icon>settings</mat-icon>
+              <span>Settings</span>
+            </button>
+            <mat-divider></mat-divider>
+            <button mat-menu-item (click)="logout()">
+              <mat-icon>logout</mat-icon>
+              <span>Logout</span>
+            </button>
+          </mat-menu>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Dashboard Content -->
+    <main class="dashboard-main">
+      <!-- Dashboard Header -->
+      <div class="dashboard-header">
+        <div class="header-content">
+          <div class="welcome-section">
+            <h2 class="welcome-title">
+              {{ getWelcomeMessage() }}, 
+              <span class="highlight">{{ user?.fullName }}</span>
+            </h2>
+          </div>
+          
+          <button class="create-event-btn" (click)="navigateToCreateEvent()">
+            <mat-icon>add</mat-icon>
+            CREATE EVENT
+          </button>
+        </div>
+        
+        <!-- Stats Cards -->
+        <div class="stats-cards">
+          <div class="stat-card">
+            <div class="stat-icon total-events">
+              <mat-icon>event</mat-icon>
+            </div>
+            <div class="stat-details">
+              <h3 class="stat-value">{{ totalEvents }}</h3>
+              <p class="stat-label">Total Events</p>
+            </div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="stat-icon published">
+              <mat-icon>check_circle</mat-icon>
+            </div>
+            <div class="stat-details">
+              <h3 class="stat-value">{{ publishedEvents }}</h3>
+              <p class="stat-label">Published</p>
+            </div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="stat-icon draft">
+              <mat-icon>edit_note</mat-icon>
+            </div>
+            <div class="stat-details">
+              <h3 class="stat-value">{{ draftEvents }}</h3>
+              <p class="stat-label">Draft</p>
+            </div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="stat-icon today">
+              <mat-icon>today</mat-icon>
+            </div>
+            <div class="stat-details">
+              <h3 class="stat-value">{{ todaysEvents }}</h3>
+              <p class="stat-label">Today</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dashboard Content -->
+      <div class="dashboard-content">
+        <!-- Events Table Section -->
+        <div class="table-section">
+          <div class="section-header">
+            <div class="section-title">
+              <mat-icon>table_chart</mat-icon>
+              <h3>Event Management</h3>
+            </div>
+            
+            <div class="table-controls">
+              <!-- Event Tabs -->
+              <div class="event-tabs">
+                <button class="event-tab" [class.active]="selectedTabIndex === 0" (click)="onTabChange(0)">
+                  ALL
+                </button>
+                <button class="event-tab" [class.active]="selectedTabIndex === 1" (click)="onTabChange(1)">
+                  Published
+                </button>
+                <button class="event-tab" [class.active]="selectedTabIndex === 2" (click)="onTabChange(2)">
+                  Draft
+                </button>
+              </div>
+              
+              <!-- Date Filter -->
+              <div class="date-filter">
+                <button class="today-btn" (click)="filterByDate('today')">
+                  <mat-icon>today</mat-icon>
+                  Today
+                </button>
+                
+                <div class="custom-filter">
+                  <mat-form-field appearance="outline" class="time-field">
+                    <input matInput type="time" [(ngModel)]="timeFrom" placeholder="09:00">
+                  </mat-form-field>
+                  <span class="time-separator">-</span>
+                  <mat-form-field appearance="outline" class="time-field">
+                    <input matInput type="time" [(ngModel)]="timeTo" placeholder="17:00">
+                  </mat-form-field>
+                  
+                  <mat-form-field appearance="outline" class="date-field">
+                    <input matInput [matDatepicker]="picker" placeholder="Select date range">
+                    <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+                    <mat-datepicker #picker></mat-datepicker>
+                  </mat-form-field>
+                  
+                  <button class="apply-btn">
+                    Apply
+                  </button>
+                  <button class="cancel-btn">
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Events Table -->
+          <div class="events-table-wrapper">
+            <table mat-table [dataSource]="eventsDataSource" class="modern-table">
+              
+              <!-- # Column -->
+              <ng-container matColumnDef="id">
+                <th mat-header-cell *matHeaderCellDef>#</th>
+                <td mat-cell *matCellDef="let element; let i = index">
+                  <div class="index-badge">{{ i + 1 }}</div>
+                </td>
+              </ng-container>
+
+              <!-- Event Name Column -->
+              <ng-container matColumnDef="eventName">
+                <th mat-header-cell *matHeaderCellDef>Event Name</th>
+                <td mat-cell *matCellDef="let element">
+                  <div class="event-name-cell">
+                    <div class="event-icon">
+                      <mat-icon>event</mat-icon>
+                    </div>
+                    <div class="event-info">
+                      <span class="event-title">{{ element.name }}</span>
+                      <div class="event-status-badge" [class.published]="element.status === 'published'" 
+                           [class.draft]="element.status === 'draft'">
+                        {{ element.status | titlecase }}
+                      </div>
+                    </div>
+                  </div>
+                </td>
+              </ng-container>
+
+              <!-- Location Column -->
+              <ng-container matColumnDef="location">
+                <th mat-header-cell *matHeaderCellDef>Location</th>
+                <td mat-cell *matCellDef="let element">
+                  <div class="location-cell">
+                    <mat-icon class="location-icon">location_on</mat-icon>
+                    <span>{{ element.location }}</span>
+                  </div>
+                </td>
+              </ng-container>
+
+              <!-- Hours Column -->
+              <ng-container matColumnDef="hours">
+                <th mat-header-cell *matHeaderCellDef>Hours</th>
+                <td mat-cell *matCellDef="let element">
+                  <div class="hours-cell">
+                    <mat-icon class="time-icon">schedule</mat-icon>
+                    <span>{{ element.hours }}</span>
+                  </div>
+                </td>
+              </ng-container>
+
+              <!-- Date Column -->
+              <ng-container matColumnDef="date">
+                <th mat-header-cell *matHeaderCellDef>Date</th>
+                <td mat-cell *matCellDef="let element">
+                  <div class="date-cell">
+                    <mat-icon class="date-icon">calendar_today</mat-icon>
+                    <span>{{ element.date | date:'dd.MM.yyyy' }}</span>
+                  </div>
+                </td>
+              </ng-container>
+
+              <!-- Capacity Column -->
+              <ng-container matColumnDef="capacity">
+                <th mat-header-cell *matHeaderCellDef>Capacity</th>
+                <td mat-cell *matCellDef="let element">
+                  <div class="capacity-cell">
+                    <div class="capacity-progress">
+                      <div class="progress-bar" [style.width.%]="(element.capacity / 1500) * 100"></div>
+                    </div>
+                    <span class="capacity-value">{{ element.capacity | number }}</span>
+                  </div>
+                </td>
+              </ng-container>
+
+              <!-- Actions Column -->
+              <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef></th>
+                <td mat-cell *matCellDef="let element">
+                  <button class="action-btn" [matMenuTriggerFor]="actionsMenu">
+                    <mat-icon>more_vert</mat-icon>
+                  </button>
+                  <mat-menu #actionsMenu="matMenu">
+                    <button mat-menu-item>
+                      <mat-icon>edit</mat-icon>
+                      <span>Edit Event</span>
+                    </button>
+                    <button mat-menu-item>
+                      <mat-icon>visibility</mat-icon>
+                      <span>View Details</span>
+                    </button>
+                    <button mat-menu-item *ngIf="element.status === 'draft'">
+                      <mat-icon>publish</mat-icon>
+                      <span>Publish</span>
+                    </button>
+                    <mat-divider></mat-divider>
+                    <button mat-menu-item>
+                      <mat-icon color="warn">delete</mat-icon>
+                      <span>Delete</span>
+                    </button>
+                  </mat-menu>
+                </td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="displayedColumns" class="table-header"></tr>
+              <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="table-row"></tr>
+            </table>
+          </div>
+        </div>
+
+        <!-- Quick Stats & Actions Sidebar -->
+        <div class="sidebar">
+          <div class="sidebar-card">
+            <div class="sidebar-header">
+              <mat-icon>insights</mat-icon>
+              <h4>Event Insights</h4>
+            </div>
+            <div class="sidebar-content">
+              <div class="insight-item">
+                <div class="insight-label">Upcoming Events</div>
+                <div class="insight-value">12</div>
+              </div>
+              <div class="insight-item">
+                <div class="insight-label">Avg. Attendance</div>
+                <div class="insight-value">78%</div>
+              </div>
+              <div class="insight-item">
+                <div class="insight-label">Pending Approvals</div>
+                <div class="insight-value">3</div>
+              </div>
+              <div class="insight-item">
+                <div class="insight-label">Ticket Sales</div>
+                <div class="insight-value">$24.5K</div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="sidebar-card">
+            <div class="sidebar-header">
+              <mat-icon>rocket_launch</mat-icon>
+              <h4>Quick Actions</h4>
+            </div>
+            <div class="sidebar-content">
+              <button class="quick-action-btn">
+                <mat-icon>add_chart</mat-icon>
+                Generate Report
+              </button>
+              <button class="quick-action-btn">
+                <mat-icon>group_add</mat-icon>
+                Invite Staff
+              </button>
+              <button class="quick-action-btn">
+                <mat-icon>download</mat-icon>
+                Export Data
+              </button>
+              <button class="quick-action-btn">
+                <mat-icon>qr_code</mat-icon>
+                Generate QR Codes
+              </button>
+            </div>
+          </div>
+          
+          <div class="sidebar-card">
+            <div class="sidebar-header">
+              <mat-icon>schedule</mat-icon>
+              <h4>Today's Agenda</h4>
+            </div>
+            <div class="sidebar-content">
+              <div class="agenda-item">
+                <div class="agenda-time">10:00 AM</div>
+                <div class="agenda-details">
+                  <div class="agenda-title">Team Meeting</div>
+                  <div class="agenda-location">
+                    <mat-icon>location_on</mat-icon>
+                    Conference Room A
+                  </div>
+                </div>
+              </div>
+              <div class="agenda-item">
+                <div class="agenda-time">02:00 PM</div>
+                <div class="agenda-details">
+                  <div class="agenda-title">Client Presentation</div>
+                  <div class="agenda-location">
+                    <mat-icon>location_on</mat-icon>
+                    Main Hall
+                  </div>
+                </div>
+              </div>
+              <div class="agenda-item">
+                <div class="agenda-time">04:30 PM</div>
+                <div class="agenda-details">
+                  <div class="agenda-title">Vendor Review</div>
+                  <div class="agenda-location">
+                    <mat-icon>location_on</mat-icon>
+                    Meeting Room 3
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Not Authenticated -->
+  <div *ngIf="!isLoading && !user" class="auth-required">
+    <div class="auth-prompt">
+      <div class="auth-card">
+        <div class="auth-icon">
+          <mat-icon>lock</mat-icon>
+        </div>
+        <h2>Authentication Required</h2>
+        <p>Please sign in to access the Event Portal</p>
+        <button mat-raised-button color="primary" routerLink="/login">
+          Sign In
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

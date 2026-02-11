@@ -1,0 +1,108 @@
+<div class="auth-shell">
+  <div class="auth-panel">
+    <div class="auth-container">
+      <mat-card class="auth-card" appearance="outlined">
+        
+        <!-- Header -->
+        <div class="card-header">
+          <div class="header-logo">
+            <div class="header-logo-icon">
+              <mat-icon>event</mat-icon>
+            </div>
+            <span class="header-logo-text">EEP Event Portal</span>
+          </div>
+          <div class="header-content">
+            <h1 class="auth-title">Welcome Back</h1>
+            <p class="auth-subtitle">
+              Sign in to access the Event Management System
+            </p>
+          </div>
+        </div>
+
+        <mat-divider class="form-divider"></mat-divider>
+
+        <!-- Login Form -->
+        <div class="card-content-wrapper">
+          <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="auth-form">
+
+            <!-- Username -->
+            <mat-form-field appearance="fill" class="form-field">
+              <mat-label>Username</mat-label>
+              <mat-icon matPrefix>person</mat-icon>
+              <input 
+                matInput 
+                formControlName="username" 
+                placeholder="Enter your username"
+                autocomplete="username"
+                [attr.aria-describedby]="loginForm.get('username')?.invalid ? 'username-error' : null">
+              
+              <mat-error *ngIf="loginForm.get('username')?.hasError('required')" id="username-error">
+                Username is required
+              </mat-error>
+              <mat-error *ngIf="loginForm.get('username')?.hasError('minlength')">
+                Username must be at least 3 characters
+              </mat-error>
+            </mat-form-field>
+
+            <!-- Password -->
+            <mat-form-field appearance="fill" class="form-field">
+              <mat-label>Password</mat-label>
+              <mat-icon matPrefix>lock</mat-icon>
+              <input 
+                matInput  
+                [type]="hidePassword ? 'password' : 'text'" 
+                formControlName="password"
+                placeholder="Enter your password"
+                autocomplete="current-password"
+                [attr.aria-describedby]="loginForm.get('password')?.invalid ? 'password-error' : null">
+              <button 
+                mat-icon-button
+                matSuffix
+                type="button"
+                (click)="hidePassword = !hidePassword"
+                [attr.aria-label]="hidePassword ? 'Show password' : 'Hide password'"
+                [attr.aria-pressed]="!hidePassword">
+                <mat-icon>
+                  {{ hidePassword ? 'visibility_off' : 'visibility' }}
+                </mat-icon>
+              </button>
+              
+              <mat-error *ngIf="loginForm.get('password')?.hasError('required')" id="password-error">
+                Password is required
+              </mat-error>
+              <mat-error *ngIf="loginForm.get('password')?.hasError('minlength')">
+                Password must be at least 6 characters
+              </mat-error>
+            </mat-form-field>
+
+            <!-- Forgot Password -->
+            <div class="form-options">
+              <a class="forgot-link"
+                 href="mailto:it-support@eep.com.et?subject=Password%20Reset%20Request"
+                 title="Request password reset via email">
+                Forgot password?
+              </a>
+            </div>
+
+            <!-- Submit Button -->
+            <button 
+              mat-flat-button 
+              class="submit-btn" 
+              type="submit" 
+              [disabled]="loginForm.invalid || isLoading"
+              [attr.aria-busy]="isLoading">
+              <mat-icon *ngIf="!isLoading">login</mat-icon>
+              <mat-spinner diameter="20" *ngIf="isLoading"></mat-spinner>
+              <span>{{ isLoading ? 'Signing in...' : 'Sign In' }}</span>
+            </button>
+
+          </form>
+
+          <!-- ...existing code... -->
+
+        </div>
+
+      </mat-card>
+    </div>
+  </div>
+</div>

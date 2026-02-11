@@ -1,0 +1,161 @@
+<div class="event-creation-wrapper">
+  <div class="wizard-container">
+    <!-- Progress Steps Sidebar -->
+    <div class="progress-sidebar">
+      <div class="progress-header">
+        <h2>Create Event</h2>
+        <p>Fill in event details step by step</p>
+      </div>
+
+      <div class="steps-container">
+        <div *ngFor="let step of steps; let i = index" class="step-item" [class.active]="currentStep === i"
+          [class.completed]="i < currentStep" (click)="navigateToStep(i)">
+          <div class="step-icon">{{ i < currentStep ? '✓' : i + 1 }}</div>
+              <div class="step-info">
+                <div class="step-title">{{ step.label }}</div>
+                <div class="step-description">{{ stepDescriptions[i] }}</div>
+              </div>
+          </div>
+        </div>
+
+        <div class="progress-indicator">
+          <div class="progress-bar">
+            <div class="progress-fill" [style.width.%]="progressPercentage"></div>
+          </div>
+          <div class="progress-text">Step {{ currentStep + 1 }} of {{ steps.length }}</div>
+        </div>
+      </div>
+
+      <!-- Form Content Area -->
+      <div class="form-content">
+        <form [formGroup]="eventForm" (ngSubmit)="submitEvent()">
+          <!-- Current Step Display -->
+          <div class="current-step-display">
+            <span class="step-badge">Step {{ currentStep + 1 }}</span>
+            <h3 class="current-step-title">{{ steps[currentStep].label }}</h3>
+          </div>
+
+          <!-- Step 1: Basic Details -->
+          <div *ngIf="currentStep === 0" class="form-step">
+            <div class="form-grid">
+              <!-- Event Title -->
+              <mat-form-field appearance="outline">
+                <mat-label>Event Title *</mat-label>
+                <input matInput formControlName="title">
+              </mat-form-field>
+
+              <!-- Description (Right Column) -->
+              <mat-form-field appearance="outline" class="description">
+                <mat-label>Description</mat-label>
+                <textarea matInput formControlName="description" rows="5"></textarea>
+                <mat-hint align="end">
+                  {{ eventForm.get('description')?.value?.length || 0 }}/500
+                </mat-hint>
+              </mat-form-field>
+
+              <!-- Event Category (Below Title) -->
+              <mat-form-field appearance="outline" class="category">
+                <mat-label>Event Category *</mat-label>
+                <mat-select formControlName="eventCategoryId">
+                  <mat-option *ngFor="let category of eventCategories" [value]="category.id">
+                    {{ category.name }}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+          </div>
+
+          <!-- Step 2: Date & Time -->
+          <div *ngIf="currentStep === 1" class="form-step">
+            <div class="form-grid">
+              <mat-form-field appearance="outline">
+                <mat-label>Start Date & Time *</mat-label>
+                <input matInput [matDatepicker]="startPicker" formControlName="startDateTime">
+                <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+                <mat-datepicker #startPicker></mat-datepicker>
+                <mat-error *ngIf="eventForm.get('startDateTime')?.invalid">Start date is required</mat-error>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>End Date & Time *</mat-label>
+                <input matInput [matDatepicker]="endPicker" formControlName="endDateTime">
+                <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
+                <mat-datepicker #endPicker></mat-datepicker>
+                <mat-error *ngIf="eventForm.get('endDateTime')?.invalid">End date is required</mat-error>
+              </mat-form-field>
+            </div>
+          </div>
+
+          <!-- Step 3: Location -->
+          <div *ngIf="currentStep === 2" class="form-step">
+            <div class="event-type-selector">
+              <mat-button-toggle-group formControlName="eventType" class="type-toggle-group">
+                <mat-button-toggle value="physical">
+                  <mat-icon>location_on</mat-icon>
+                  Physical
+                </mat-button-toggle>
+                <mat-button-toggle value="virtual">
+                  <mat-icon>videocam</mat-icon>
+                  Virtual
+                </mat-button-toggle>
+              </mat-button-toggle-group>
+            </div>
+
+            <div class="location-fields">
+              <mat-form-field appearance="outline" class="full-width"
+                *ngIf="eventForm.get('eventType')?.value !== 'virtual'">
+                <mat-label>Address</mat-label>
+                <input matInput formControlName="address" placeholder="Enter physical address">
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="full-width"
+                *ngIf="eventForm.get('eventType')?.value !== 'physical'">
+                <mat-label>Meeting Link</mat-label>
+                <input matInput formControlName="meetingLink" placeholder="https://meet.eep.com/your-event">
+              </mat-form-field>
+            </div>
+          </div>
+
+          <!-- Step 4: Host Details -->
+          <div *ngIf="currentStep === 3" class="form-step">
+            <div class="form-grid">
+              <mat-form-field appearance="outline">
+                <mat-label>Host Department *</mat-label>
+                <mat-select formControlName="hostDepartment">
+                  <mat-select formControlName="departmentId" required>
+                    <mat-option *ngFor="let dept of departments" [value]="dept.id">
+                      {{dept.name}}
+                    </mat-option>
+                  </mat-select>
+
+                </mat-select>
+              </mat-form-field>
+            </div>
+          </div>
+        </form>
+
+        <!-- Navigation Buttons (Outside Form) -->
+        <div class="form-actions">
+          <button type="button" mat-stroked-button (click)="previousStep()" *ngIf="currentStep > 0">
+            <mat-icon>arrow_back</mat-icon>
+            Back
+          </button>
+
+          <button type="button" mat-stroked-button (click)="saveAsDraft()">
+            Save Draft
+          </button>
+
+          <button type="button" mat-raised-button color="primary" (click)="nextStep()"
+            *ngIf="currentStep < steps.length - 1" [disabled]="!isCurrentStepValid()">
+            Continue
+            <mat-icon>arrow_forward</mat-icon>
+          </button>
+
+          <button type="button" mat-raised-button color="primary" (click)="submitEvent()"
+            *ngIf="currentStep === steps.length - 1" [disabled]="!eventForm.valid">
+            Create Event
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
