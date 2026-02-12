@@ -11,6 +11,9 @@ namespace EEP.EventManagement.Api.Application.Features.Auth.Validators
             RuleFor(x => x.UserDto.Id)
                 .NotEmpty().WithMessage("{PropertyName} is required.");
 
+            RuleFor(x => x.UserDto.EmployeeId)
+                .NotEmpty().WithMessage("{PropertyName} is required.");
+
             RuleFor(x => x.UserDto.FirstName)
                 .NotEmpty().WithMessage("{PropertyName} is required.")
                 .MaximumLength(50).WithMessage("{PropertyName} must not exceed 50 characters.");
@@ -20,8 +23,7 @@ namespace EEP.EventManagement.Api.Application.Features.Auth.Validators
                 .MaximumLength(50).WithMessage("{PropertyName} must not exceed 50 characters.");
 
             RuleFor(x => x.UserDto.Email)
-                .NotEmpty().WithMessage("{PropertyName} is required.")
-                .EmailAddress().WithMessage("{PropertyName} must be a valid email address.");
+                .EmailAddress().WithMessage("{PropertyName} must be a valid email address.").When(x => !string.IsNullOrEmpty(x.UserDto.Email));
 
             RuleFor(x => x.UserDto.Role)
                 .NotEmpty().WithMessage("{PropertyName} is required.")
@@ -33,7 +35,7 @@ namespace EEP.EventManagement.Api.Application.Features.Auth.Validators
 
         private bool BeAValidRole(string role)
         {
-            string[] allowedRoles = { "Admin", "Manager", "expert", "cameraman" };
+            string[] allowedRoles = { "Admin", "Manager", "expert", "caman" };
             return allowedRoles.Contains(role);
         }
     }

@@ -9,6 +9,7 @@ namespace EEP.EventManagement.Api.Infrastructure.Security.Identity
     {
         public string FirstName { get; set; } = string.Empty;
         public string LastName { get; set; } = string.Empty;
+        public string EmployeeId { get; set; } = string.Empty;
 
         // Foreign key for Department
         public Guid? DepartmentId { get; set; }

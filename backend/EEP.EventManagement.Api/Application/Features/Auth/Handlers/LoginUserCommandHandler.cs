@@ -8,6 +8,7 @@ using EEP.EventManagement.Api.Application.Exceptions;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace EEP.EventManagement.Api.Application.Features.Auth.Handlers
 {
@@ -24,7 +25,7 @@ namespace EEP.EventManagement.Api.Application.Features.Auth.Handlers
 
         public async Task<LoginResponseDto> Handle(LoginUserCommand request, CancellationToken cancellationToken)
         {
-            var user = await _userManager.FindByEmailAsync(request.LoginDto.Email);
+            var user = await _userManager.Users.FirstOrDefaultAsync(u => u.EmployeeId == request.LoginDto.EmployeeId, cancellationToken);
             if (user == null)
             {
                 throw new UnauthorizedException("Invalid credentials.");

@@ -44,7 +44,8 @@ namespace EEP.EventManagement.Api.Application.Features.Auth.Handlers
             user.FirstName = dto.FirstName;
             user.LastName = dto.LastName;
             user.Email = dto.Email;
-            user.UserName = dto.Email; // Keep UserName same as Email
+            user.EmployeeId = dto.EmployeeId;
+            user.UserName = dto.EmployeeId; // Keep UserName same as EmployeeId
             user.DepartmentId = dto.DepartmentId;
 
             var result = await _userManager.UpdateAsync(user);
@@ -62,7 +63,7 @@ namespace EEP.EventManagement.Api.Application.Features.Auth.Handlers
             return new UserResponseDto
             {
                 Id = user.Id.ToString(),
-                Email = user.Email,
+                Email = user.Email ?? string.Empty,
                 Role = dto.Role,
                 DepartmentId = user.DepartmentId
             };

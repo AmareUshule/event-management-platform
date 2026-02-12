@@ -21,7 +21,7 @@ namespace EEP.EventManagement.Api.Infrastructure.Security.Authorization.Handlers
 
         protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, IsCommunicationManagerRequirement requirement)
         {
-            if (!context.User.Identity.IsAuthenticated)
+            if (context.User.Identity == null || !context.User.Identity.IsAuthenticated)
             {
                 context.Fail();
                 return;

@@ -21,8 +21,11 @@ namespace EEP.EventManagement.Api.Application.Features.Auth.Handlers
 
             var user = new ApplicationUser
             {
-                UserName = dto.Email,
+                UserName = dto.EmployeeId,
+                EmployeeId = dto.EmployeeId,
                 Email = dto.Email,
+                FirstName = dto.FirstName,
+                LastName = dto.LastName,
                 DepartmentId = dto.DepartmentId
             };
 
@@ -39,7 +42,7 @@ namespace EEP.EventManagement.Api.Application.Features.Auth.Handlers
             return new UserResponseDto
             {
                 Id = user.Id.ToString(),
-                Email = user.Email,
+                Email = user.Email ?? string.Empty,
                 Role = dto.Role,
                 DepartmentId = user.DepartmentId
             };
