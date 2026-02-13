@@ -33,28 +33,32 @@ namespace EEP.EventManagement.Api.Middlewares
             context.Response.ContentType = "application/json";
             HttpStatusCode statusCode = HttpStatusCode.InternalServerError;
             string message = "Internal Server Error.";
+            string result = string.Empty;
 
             switch (exception)
             {
                 case NotFoundException notFoundException:
                     statusCode = HttpStatusCode.NotFound;
                     message = notFoundException.Message;
+                    result = JsonSerializer.Serialize(new { message = message });
                     break;
                 case BadRequestException badRequestException:
                     statusCode = HttpStatusCode.BadRequest;
                     message = badRequestException.Message;
+                    result = JsonSerializer.Serialize(new { message = message, errors = badRequestException.Errors });
                     break;
                 case UnauthorizedException unauthorizedException:
                     statusCode = HttpStatusCode.Unauthorized;
                     message = unauthorizedException.Message;
+                    result = JsonSerializer.Serialize(new { message = message });
                     break;
                 default:
+                    result = JsonSerializer.Serialize(new { message = message });
                     break;
             }
 
             context.Response.StatusCode = (int)statusCode;
 
-            var result = JsonSerializer.Serialize(new { message = message });
             return context.Response.WriteAsync(result);
         }
     }

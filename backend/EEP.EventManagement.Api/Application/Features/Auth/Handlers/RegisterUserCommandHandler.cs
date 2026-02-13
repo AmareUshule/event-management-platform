@@ -3,6 +3,7 @@ using EEP.EventManagement.Api.Infrastructure.Security.Identity;
 using Microsoft.AspNetCore.Identity;
 using EEP.EventManagement.Api.Application.Features.Auth.DTOs;
 using EEP.EventManagement.Api.Application.Features.Auth.Commands;
+using EEP.EventManagement.Api.Application.Exceptions;
 
 namespace EEP.EventManagement.Api.Application.Features.Auth.Handlers
 {
@@ -33,7 +34,8 @@ namespace EEP.EventManagement.Api.Application.Features.Auth.Handlers
 
             if (!result.Succeeded)
             {
-                throw new Exception(string.Join("; ", result.Errors.Select(e => e.Description)));
+                var errors = result.Errors.Select(e => e.Description).ToList();
+                throw new BadRequestException("Registration failed", errors);
             }
 
             // Assign role

@@ -25,7 +25,7 @@ namespace EEP.EventManagement.Api.Application.Features.Auth.Handlers
 
         public async Task<LoginResponseDto> Handle(LoginUserCommand request, CancellationToken cancellationToken)
         {
-            var user = await _userManager.Users.FirstOrDefaultAsync(u => u.EmployeeId == request.LoginDto.EmployeeId, cancellationToken);
+            var user = await _userManager.FindByNameAsync(request.LoginDto.EmployeeId);
             if (user == null)
             {
                 throw new UnauthorizedException("Invalid credentials.");
@@ -46,6 +46,7 @@ namespace EEP.EventManagement.Api.Application.Features.Auth.Handlers
                 UserId = user.Id.ToString(),
                 Email = user.Email!,
                 Role = roles.FirstOrDefault() ?? string.Empty,
+                EmployeeId = user.EmployeeId,
                 DepartmentId = user.DepartmentId
             };
         }
