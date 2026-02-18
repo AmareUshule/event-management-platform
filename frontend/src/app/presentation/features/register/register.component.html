@@ -1,0 +1,264 @@
+<!-- register.component.html -->
+<!-- Modern, attractive registration UI with glassmorphism, refined animations and enhanced dropdowns -->
+<div class="registration-container">
+  <!-- Animated background pattern with depth -->
+  <div class="background-pattern"></div>
+  <div class="background-glow"></div>
+
+  <div class="registration-wrapper">
+    <!-- ========== BRAND SIDE — PREMIUM DARK GREEN WITH GLASS DETAILS ========== -->
+    <div class="brand-side">
+      <div class="brand-content">
+        <!-- Logo with micro-interaction -->
+        <div class="brand-logo-large">
+          <div class="logo-icon">
+            <mat-icon>calendar_today</mat-icon>
+          </div>
+          <h1 class="brand-name">EventPortal</h1>
+        </div>
+
+        <!-- Tagline with fade-in animation -->
+        <div class="brand-tagline">
+          <h2>Create and Manage</h2>
+        </div>
+
+        <!-- Feature list with hover effect -->
+        <div class="brand-features">
+          <div class="feature-item">
+            <mat-icon class="feature-icon green">check_circle</mat-icon>
+            <span>Smart event scheduling</span>
+          </div>
+          <div class="feature-item">
+            <mat-icon class="feature-icon green">analytics</mat-icon>
+            <span>Real-time analytics</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ========== FORM SIDE — ELEGANT, LIGHT, FLOATING EFFECT ========== -->
+    <div class="form-side">
+      <div class="form-wrapper">
+        <!-- Live time display with subtle background -->
+        <div class="time-display">
+          <mat-icon>schedule</mat-icon>
+          <span>{{ currentDate | date : 'HH:mm' }}</span>
+        </div>
+
+        <!-- Header with refined typography -->
+        <div class="registration-header">
+          <h1 class="registration-title">Create Account</h1>
+          <p class="registration-subtitle">Join EventPortal to start managing your events</p>
+        </div>
+
+        <!-- ========== SIGN-UP FORM — MODERN FIELDS, DROPDOWNS WITH ICONS ========== -->
+        <form [formGroup]="signUpForm" (ngSubmit)="onSignUp()" class="signup-form">
+          <div class="form-fields">
+            <!-- ---------- Employee ID ---------- -->
+            <mat-form-field appearance="outline" class="form-field">
+              <mat-label>Employee ID</mat-label>
+              <input matInput formControlName="employeeId" placeholder="Enter your employee ID" />
+              <mat-icon matPrefix class="field-icon">badge</mat-icon>
+              <button
+                *ngIf="employeeId?.value"
+                matSuffix
+                mat-icon-button
+                type="button"
+                class="clear-btn"
+                (click)="employeeId?.setValue('')"
+              >
+                <mat-icon>close</mat-icon>
+              </button>
+              <mat-error *ngIf="employeeId?.hasError('required')"> Employee ID is required </mat-error>
+              <mat-error *ngIf="employeeId?.hasError('pattern')"> Please enter numbers only </mat-error>
+              <mat-error *ngIf="employeeId?.hasError('minlength')"> Must be at least 4 digits </mat-error>
+            </mat-form-field>
+
+            <!-- ---------- Full Name ---------- -->
+            <mat-form-field appearance="outline" class="form-field">
+              <mat-label>Full name</mat-label>
+              <input matInput formControlName="fullName" placeholder="Enter your full name" />
+              <mat-icon matPrefix class="field-icon">person_outline</mat-icon>
+              <button
+                *ngIf="fullName?.value"
+                matSuffix
+                mat-icon-button
+                type="button"
+                class="clear-btn"
+                (click)="fullName?.setValue('')"
+              >
+                <mat-icon>close</mat-icon>
+              </button>
+              <mat-error *ngIf="fullName?.hasError('required')"> Full name is required </mat-error>
+              <mat-error *ngIf="fullName?.hasError('minlength')"> Must be at least 2 characters </mat-error>
+              <mat-error *ngIf="fullName?.hasError('pattern')"> Letters and spaces only </mat-error>
+            </mat-form-field>
+
+            <!-- ---------- Email ---------- -->
+            <mat-form-field appearance="outline" class="form-field">
+              <mat-label>E-mail</mat-label>
+              <input matInput formControlName="email" placeholder="Enter your email" type="email" />
+              <mat-icon matPrefix class="field-icon">mail_outline</mat-icon>
+              <button
+                *ngIf="email?.value"
+                matSuffix
+                mat-icon-button
+                type="button"
+                class="clear-btn"
+                (click)="email?.setValue('')"
+              >
+                <mat-icon>close</mat-icon>
+              </button>
+              <mat-error *ngIf="email?.hasError('required')"> Email is required </mat-error>
+              <mat-error *ngIf="email?.hasError('email')"> Please enter a valid email </mat-error>
+            </mat-form-field>
+
+            <!-- ---------- Role Dropdown — enhanced with custom icons via panelClass ---------- -->
+            <mat-form-field appearance="outline" class="form-field">
+              <mat-label>Role</mat-label>
+              <mat-select formControlName="role" panelClass="role-select-panel">
+                <mat-option *ngFor="let role of roleKeys" [value]="role">
+                  <span class="role-option">
+                    {{ role }}
+                  </span>
+                </mat-option>
+              </mat-select>
+              <mat-icon matPrefix class="field-icon">work_outline</mat-icon>
+              <mat-error *ngIf="role?.hasError('required')"> Role is required </mat-error>
+            </mat-form-field>
+
+            <!-- ---------- Department Dropdown — icons & rich styling ---------- -->
+            <mat-form-field appearance="outline" class="form-field">
+              <mat-label>Department</mat-label>
+              <mat-select formControlName="departmentId" panelClass="dept-select-panel">
+                <mat-option *ngFor="let dept of departmentList" [value]="dept.id">
+                  <span class="dept-option">
+                    {{ dept.name }}
+                  </span>
+                </mat-option>
+              </mat-select>
+              <mat-icon matPrefix class="field-icon">business</mat-icon>
+              <mat-error *ngIf="departmentId?.hasError('required')"> Department is required </mat-error>
+            </mat-form-field>
+
+            <!-- ---------- Password field with strength meter ---------- -->
+            <mat-form-field appearance="outline" class="form-field">
+              <mat-label>Password</mat-label>
+              <input
+                matInput
+                [type]="hidePassword ? 'password' : 'text'"
+                formControlName="password"
+                placeholder="Create a password"
+              />
+              <mat-icon matPrefix class="field-icon">lock_outline</mat-icon>
+              <button
+                mat-icon-button
+                matSuffix
+                type="button"
+                (click)="hidePassword = !hidePassword"
+                class="password-toggle"
+              >
+                <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+              </button>
+              <mat-error *ngIf="password?.hasError('required')"> Password is required </mat-error>
+              <mat-error *ngIf="password?.hasError('minlength')"> Must be at least 8 characters </mat-error>
+              <mat-error *ngIf="password?.hasError('pattern')">
+                Must contain uppercase, number & special character
+              </mat-error>
+            </mat-form-field>
+
+            <!-- Password strength indicator - smooth animated bars -->
+            <div class="password-strength" *ngIf="password?.value">
+              <span class="strength-label">Password strength:</span>
+              <div class="strength-bars">
+                <div
+                  class="strength-bar"
+                  [class.active]="passwordStrength >= 1"
+                  [class.weak]="passwordStrength === 1"
+                ></div>
+                <div
+                  class="strength-bar"
+                  [class.active]="passwordStrength >= 2"
+                  [class.fair]="passwordStrength === 2"
+                ></div>
+                <div
+                  class="strength-bar"
+                  [class.active]="passwordStrength >= 3"
+                  [class.good]="passwordStrength === 3"
+                ></div>
+                <div
+                  class="strength-bar"
+                  [class.active]="passwordStrength >= 4"
+                  [class.strong]="passwordStrength === 4"
+                ></div>
+              </div>
+              <span class="strength-text">{{ getPasswordStrengthLabel() }}</span>
+            </div>
+
+            <!-- ---------- Confirm Password ---------- -->
+            <mat-form-field appearance="outline" class="form-field">
+              <mat-label>Confirm Password</mat-label>
+              <input
+                matInput
+                [type]="hideConfirmPassword ? 'password' : 'text'"
+                formControlName="confirmPassword"
+                placeholder="Confirm your password"
+              />
+              <mat-icon matPrefix class="field-icon">lock_outline</mat-icon>
+              <button
+                mat-icon-button
+                matSuffix
+                type="button"
+                (click)="hideConfirmPassword = !hideConfirmPassword"
+                class="password-toggle"
+              >
+                <mat-icon>{{ hideConfirmPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+              </button>
+              <mat-error *ngIf="confirmPassword?.hasError('required')">
+                Please confirm your password
+              </mat-error>
+              <mat-error *ngIf="signUpForm.hasError('passwordMismatch') && confirmPassword?.touched">
+                Passwords do not match
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <!-- ---------- Terms & Conditions — modern checkbox with link ---------- -->
+          <div class="terms-section">
+            <mat-checkbox formControlName="agreeTerms" color="primary" class="terms-checkbox">
+              <span class="terms-text">I agree to the</span>
+              <a href="#" class="terms-link">Terms & Conditions</a>
+              <span class="terms-text">and</span>
+              <a href="#" class="terms-link">Privacy Policy</a>
+            </mat-checkbox>
+            <mat-error *ngIf="agreeTerms?.hasError('required') && agreeTerms?.touched">
+              You must agree to the terms and conditions
+            </mat-error>
+          </div>
+
+          <!-- ---------- Sign Up Button — gradient, animated ---------- -->
+          <button mat-raised-button type="submit" class="signup-btn" [disabled]="signUpForm.invalid || isLoading">
+            <div class="btn-content" *ngIf="!isLoading">
+              <mat-icon>person_add</mat-icon>
+              <span>Create Account</span>
+            </div>
+            <div class="btn-loader" *ngIf="isLoading">
+              <div class="loader-spinner"></div>
+              <span>Creating account...</span>
+            </div>
+          </button>
+
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== GLOBAL LOADING OVERLAY — subtle blur ========== -->
+  <div *ngIf="isLoading" class="loading-overlay">
+    <div class="loading-content">
+      <div class="loader-spinner"></div>
+      <p class="loading-text">Processing your request...</p>
+    </div>
+  </div>
+</div>

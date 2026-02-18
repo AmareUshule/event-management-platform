@@ -1,0 +1,386 @@
+<div class="dashboard-container">
+  <!-- Loading Overlay -->
+  <div *ngIf="isLoading" class="loading-overlay">
+    <div class="loading-content">
+      <div class="loader-spinner"></div>
+      <p class="loading-text">Loading Event Portal...</p>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div *ngIf="!isLoading && user" class="main-content">
+    <!-- Top Navigation Bar -->
+    <nav class="top-nav">
+      <div class="nav-content">
+        <div class="nav-left">
+          <div class="brand-logo">
+            <div class="logo-icon">
+              <mat-icon>calendar_today</mat-icon>
+            </div>
+            <h1 class="brand-name">EventPortal</h1>
+          </div>
+
+          <div class="nav-tabs">
+            <button class="nav-tab active">
+              <mat-icon>dashboard</mat-icon>
+              <span>Dashboard</span>
+            </button>
+            <button class="nav-tab">
+              <mat-icon>calendar_month</mat-icon>
+              <span>Calendar</span>
+            </button>
+            <button class="nav-tab">
+              <mat-icon>analytics</mat-icon>
+              <span>Analytics</span>
+            </button>
+            <button class="nav-tab">
+              <mat-icon>people</mat-icon>
+              <span>Attendees</span>
+            </button>
+          </div>
+        </div>
+
+
+        <div class="nav-right">
+          <div class="notification-wrapper">
+            <button mat-icon-button class="nav-icon-btn" matTooltip="Notifications">
+              <mat-icon>notifications</mat-icon>
+              <div class="notification-badge"></div>
+            </button>
+          </div>
+
+          <div class="user-profile" [matMenuTriggerFor]="userMenu">
+            <div class="user-avatar">
+              <mat-icon>person</mat-icon>
+            </div>
+            <div class="user-info">
+              <span class="user-name">{{ user?.fullName }}</span>
+              <span class="user-role">{{ roleDisplay }}</span>
+            </div>
+            <mat-icon>expand_more</mat-icon>
+          </div>
+
+          <mat-menu #userMenu="matMenu">
+            <button mat-menu-item>
+              <mat-icon>person</mat-icon>
+              <span>My Profile</span>
+            </button>
+            <button mat-menu-item>
+              <mat-icon>settings</mat-icon>
+              <span>Settings</span>
+            </button>
+            <button mat-menu-item [routerLink]="['/register']">
+              <mat-icon>person_add</mat-icon>
+              <span>Create New Account</span>
+            </button>
+            <mat-divider></mat-divider>
+            <button mat-menu-item (click)="logout()">
+              <mat-icon>logout</mat-icon>
+              <span>Logout</span>
+            </button>
+          </mat-menu>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Dashboard Content -->
+    <main class="dashboard-main">
+      <!-- Dashboard Header -->
+      <div class="dashboard-header">
+        <div class="header-content">
+          <button class="create-event-btn" (click)="navigateToCreateEvent()">
+            <mat-icon>add</mat-icon>
+            CREATE EVENT
+          </button>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="stats-cards">
+          <div class="stat-card">
+            <div class="stat-icon total-events">
+              <mat-icon>event</mat-icon>
+            </div>
+            <div class="stat-details">
+              <h3 class="stat-value">{{ totalEvents }}</h3>
+              <p class="stat-label">Total Events</p>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon published">
+              <mat-icon>check_circle</mat-icon>
+            </div>
+            <div class="stat-details">
+              <h3 class="stat-value">{{ publishedEvents }}</h3>
+              <p class="stat-label">Published</p>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon draft">
+              <mat-icon>edit_note</mat-icon>
+            </div>
+            <div class="stat-details">
+              <h3 class="stat-value">{{ draftEvents }}</h3>
+              <p class="stat-label">Draft</p>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon today">
+              <mat-icon>today</mat-icon>
+            </div>
+            <div class="stat-details">
+              <h3 class="stat-value">{{ todaysEvents }}</h3>
+              <p class="stat-label">This Week</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dashboard Content -->
+      <div class="dashboard-content">
+        <!-- Events Table Section -->
+        <div class="table-section">
+          <div class="section-header">
+            <div class="section-title">
+              <mat-icon>table_chart</mat-icon>
+              <h3>Event Management</h3>
+            </div>
+
+            <div class="table-controls">
+              <!-- Left side: Event Tabs -->
+              <div class="event-tabs">
+                <button class="event-tab" [class.active]="selectedTabIndex === 0" (click)="onTabChange(0)">
+                  ALL <span class="tab-count">{{ totalEvents }}</span>
+                </button>
+                <button class="event-tab" [class.active]="selectedTabIndex === 1" (click)="onTabChange(1)">
+                  Published <span class="tab-count">{{ publishedEvents }}</span>
+                </button>
+                <button class="event-tab" [class.active]="selectedTabIndex === 2" (click)="onTabChange(2)">
+                  Draft <span class="tab-count">{{ draftEvents }}</span>
+                </button>
+              </div>
+
+              <!-- Right side: Search and Filter Section -->
+              <div class="search-filter-section">
+                <!-- Date Filter -->
+                <div class="date-filter">
+                  <button class="today-btn" (click)="filterByDate('today')" matTooltip="Show today's events">
+                    <mat-icon>today</mat-icon>
+                    Today
+                  </button>
+                </div>
+
+                <!-- Search Input with Clear Button -->
+                <div class="search-box">
+                  <mat-icon class="search-icon">search</mat-icon>
+                  <input type="text" placeholder="Search events by name or location..." (keyup)="applySearch($event)"
+                    [(ngModel)]="searchTerm" class="search-input" />
+                  <button *ngIf="searchTerm" class="clear-search-btn" (click)="clearSearch()" matTooltip="Clear search">
+                    <mat-icon>close</mat-icon>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Search Results Info (below the header) -->
+            <div class="search-info" *ngIf="searchTerm">
+              <span class="search-term">Search results for: "{{ searchTerm }}"</span>
+              <span class="result-count">{{ eventsDataSource.length }} event(s) found</span>
+            </div>
+          </div>
+
+          <!-- Events Table -->
+          <div class="events-table-wrapper">
+            <table mat-table [dataSource]="eventsDataSource" class="modern-table">
+
+              <!-- # Column -->
+              <ng-container matColumnDef="id">
+                <th mat-header-cell *matHeaderCellDef>#</th>
+                <td mat-cell *matCellDef="let element; let i = index">
+                  <div class="index-badge">{{ i + 1 }}</div>
+                </td>
+              </ng-container>
+
+              <!-- Event Name Column -->
+              <ng-container matColumnDef="eventName">
+                <th mat-header-cell *matHeaderCellDef>Event Name</th>
+                <td mat-cell *matCellDef="let element">
+                  <div class="event-name-cell">
+                    <div class="event-icon">
+                      <mat-icon>event</mat-icon>
+                    </div>
+                    <div class="event-info">
+                      <span class="event-title">{{ element.name }}</span>
+                      <div class="event-status-badge" [class.published]="element.status === 'published'"
+                        [class.draft]="element.status === 'draft'">
+                        {{ element.status | titlecase }}
+                      </div>
+                    </div>
+                  </div>
+                </td>
+              </ng-container>
+
+              <!-- Location Column -->
+              <ng-container matColumnDef="location">
+                <th mat-header-cell *matHeaderCellDef>Location</th>
+                <td mat-cell *matCellDef="let element">
+                  <div class="location-cell">
+                    <mat-icon class="location-icon">location_on</mat-icon>
+                    <span>{{ element.location }}</span>
+                  </div>
+                </td>
+              </ng-container>
+
+              <!-- Date Column -->
+              <ng-container matColumnDef="date">
+                <th mat-header-cell *matHeaderCellDef>Date</th>
+                <td mat-cell *matCellDef="let element">
+                  <div class="date-cell">
+                    <mat-icon class="date-icon">calendar_today</mat-icon>
+                    <span>{{ element.date | date:'dd.MM.yyyy' }}</span>
+                  </div>
+                </td>
+              </ng-container>
+
+              <!-- Actions Column - Only Three Dot Menu -->
+              <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef>Actions</th>
+                <td mat-cell *matCellDef="let element">
+                  <button class="action-menu-btn" [matMenuTriggerFor]="actionsMenu" matTooltip="Actions">
+                    <mat-icon>more_vert</mat-icon>
+                  </button>
+
+                  <mat-menu #actionsMenu="matMenu" class="action-menu">
+                    <button mat-menu-item (click)="viewEvent(element)">
+                      <mat-icon>visibility</mat-icon>
+                      <span>View Details</span>
+                    </button>
+                    <button mat-menu-item (click)="editEvent(element)">
+                      <mat-icon>edit</mat-icon>
+                      <span>Edit Event</span>
+                    </button>
+                    <button mat-menu-item *ngIf="element.status === 'draft'" (click)="publishEvent(element)">
+                      <mat-icon>publish</mat-icon>
+                      <span>Publish Event</span>
+                    </button>
+                    <mat-divider></mat-divider>
+                    <button mat-menu-item (click)="deleteEvent(element)" class="delete-menu-item">
+                      <mat-icon color="warn">delete</mat-icon>
+                      <span>Delete Event</span>
+                    </button>
+                  </mat-menu>
+                </td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="displayedColumns" class="table-header"></tr>
+              <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="table-row"></tr>
+
+              <!-- No Data Row -->
+              <tr class="mat-row" *matNoDataRow>
+                <td class="mat-cell no-data-cell" [attr.colspan]="displayedColumns.length">
+                  <div class="no-data-content">
+                    <mat-icon>event_busy</mat-icon>
+                    <h4>No events found</h4>
+                    <p *ngIf="searchTerm">No events match your search "{{ searchTerm }}"</p>
+                    <p *ngIf="!searchTerm">No events available in this category</p>
+                    <button class="clear-filter-btn" *ngIf="searchTerm" (click)="clearSearch()">
+                      <mat-icon>clear</mat-icon>
+                      Clear Search
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <!-- Quick Stats & Actions Sidebar -->
+        <div class="sidebar">
+          <div class="sidebar-card">
+            <div class="sidebar-header">
+              <mat-icon>insights</mat-icon>
+              <h4>Event Insights</h4>
+            </div>
+            <div class="sidebar-content">
+              <div class="insight-item">
+                <div class="insight-label">Upcoming Events</div>
+                <div class="insight-value">12</div>
+              </div>
+
+              <div class="insight-item">
+                <div class="insight-label">Pending Approvals</div>
+                <div class="insight-value">3</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="sidebar-card">
+            <div class="sidebar-header">
+              <mat-icon>rocket_launch</mat-icon>
+              <h4>Quick Actions</h4>
+            </div>
+            <div class="sidebar-content">
+              <button class="quick-action-btn">
+                <mat-icon>add_chart</mat-icon>
+                Generate Report
+              </button>
+              <button class="quick-action-btn">
+                <mat-icon>group_add</mat-icon>
+                Invite Staff
+              </button>
+              <button class="quick-action-btn">
+                <mat-icon>download</mat-icon>
+                Export Data
+              </button>
+              <button class="quick-action-btn">
+                <mat-icon>qr_code</mat-icon>
+                Generate QR Codes
+              </button>
+            </div>
+          </div>
+
+          <div class="sidebar-card">
+            <div class="sidebar-header">
+              <mat-icon>schedule</mat-icon>
+              <h4>Today's Agenda</h4>
+            </div>
+            <div class="sidebar-content">
+              <div class="agenda-item">
+                <div class="agenda-time">10:00 AM</div>
+                <div class="agenda-details">
+                  <div class="agenda-title">Team Meeting</div>
+                  <div class="agenda-location">
+                    <mat-icon>location_on</mat-icon>
+                    Conference Room A
+                  </div>
+                </div>
+              </div>
+              <div class="agenda-item">
+                <div class="agenda-time">02:00 PM</div>
+                <div class="agenda-details">
+                  <div class="agenda-title">Client Presentation</div>
+                  <div class="agenda-location">
+                    <mat-icon>location_on</mat-icon>
+                    Main Hall
+                  </div>
+                </div>
+              </div>
+              <div class="agenda-item">
+                <div class="agenda-time">04:30 PM</div>
+                <div class="agenda-details">
+                  <div class="agenda-title">Vendor Review</div>
+                  <div class="agenda-location">
+                    <mat-icon>location_on</mat-icon>
+                    Meeting Room 3
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
