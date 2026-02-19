@@ -269,23 +269,6 @@ $gradient-eep: linear-gradient(135deg, $eep-green-900, $eep-red-900);
     justify-content: flex-end;
     align-items: center;
     margin: 0 0 2rem 0;
-
-    .forgot-link {
-      color: $eep-green-900;
-      text-decoration: none;
-      font-size: 14px;
-      font-weight: 500;
-      padding: 4px 8px;
-      border-radius: 4px;
-      transition: all 0.3s ease;
-      white-space: nowrap;
-      
-      &:hover {
-        color: $eep-green-800;
-        text-decoration: underline;
-        background-color: rgba($eep-green-900, 0.05);
-      }
-    }
   }
 }
 
