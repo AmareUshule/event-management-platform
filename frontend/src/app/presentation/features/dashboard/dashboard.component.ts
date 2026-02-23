@@ -327,4 +327,9 @@ export class DashboardComponent implements OnInit {
   getStatusClass(status: string): string {
     return status === 'published' ? 'published' : 'draft';
   }
+
+  // Add this method to check if user is admin
+isAdmin(): boolean {
+  return this.authService.isAdmin();
+}
 }

@@ -17,12 +17,18 @@ import { MatIconModule } from '@angular/material/icon';
   styleUrls: ['./home.component.scss'],
 })
 export class HomeComponent {
-  
+
   features = [
     {
       icon: 'calendar_today',
       title: 'Centralized Planning',
       description: 'Streamline event organization with intelligent scheduling and resource allocation',
+      isAccent: false
+    },
+    {
+      icon: 'campaign',
+      title: 'Internal Announcements',
+      description: 'Centralized platform for publishing official notices to employees.',
       isAccent: false
     },
     {
@@ -36,12 +42,6 @@ export class HomeComponent {
       title: 'Smart Notifications',
       description: 'Automated reminders and updates via email, SMS, and in-app notifications',
       isAccent: true
-    },
-    {
-      icon: 'cloud_upload',
-      title: 'Document Management',
-      description: 'Secure storage and version control for event-related documents and agendas',
-      isAccent: false
     },
   ];
 }

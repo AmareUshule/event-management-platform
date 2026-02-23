@@ -206,7 +206,7 @@ export class AuthService {
         PERMISSIONS.ASSIGN_CAMERA_MAN
       );
     }
-
+    
     // Manager with other departments
     if (this.isDepartmentManager()) {
       permissions.push(
@@ -236,31 +236,21 @@ export class AuthService {
     return [...new Set(permissions)];
   }
 
-  simulateLogin(): Observable<AuthUser> {
-    if (environment.mockAuth) {
-      const credentials: LoginCredentials = {
-        username: 'amare.ushule',
-        password: 'demo123'
-      };
-      
-      return this.login(credentials);
-    }
-    
-    this.router.navigate(['/login']);
-    return throwError(() => new Error('Auto-login not available in production'));
-  }
-
   // =============== PRIVATE METHODS ===============
 
   private authenticate(credentials: LoginCredentials): Observable<AuthResponse> {
+    // DEVELOPMENT vs PRODUCTION
     if (environment.mockAuth) {
+      // DEVELOPMENT: Use mock authentication
       return this.mockAuthentication(credentials);
     }
     
+    // PRODUCTION: Call real backend API
     return this.realAuthentication(credentials);
   }
 
   private realAuthentication(credentials: LoginCredentials): Observable<AuthResponse> {
+    // PRODUCTION: Actual API call to backend
     return this.http.post<AuthResponse>(`${this.API_URL}/login`, credentials).pipe(
       catchError(error => {
         const structuredError = {
@@ -273,6 +263,7 @@ export class AuthService {
   }
 
   private mockAuthentication(credentials: LoginCredentials): Observable<AuthResponse> {
+    // DEVELOPMENT: Mock authentication with simulated delay
     return defer(() => {
       try {
         const user = this.validateCredentials(credentials);
@@ -282,7 +273,7 @@ export class AuthService {
           user: user,
           refreshToken: this.generateRefreshToken(),
           expiresIn: 3600
-        }).pipe(delay(800));
+        }).pipe(delay(800)); // Simulate network delay
         
       } catch (error) {
         return throwError(() => error).pipe(delay(800));
@@ -291,7 +282,7 @@ export class AuthService {
   }
 
   private validateCredentials(credentials: LoginCredentials): AuthUser {
-    // Mock user database
+    // DEVELOPMENT: Mock user database for testing
     const mockUsers: Array<AuthUser & { password: string }> = [
       {
         employeeId: 1001,
@@ -361,21 +352,23 @@ export class AuthService {
       }
     ];
 
+    // DEVELOPMENT: Validate against mock database using employeeId
     const user = mockUsers.find(u => 
-      u.username.toLowerCase() === credentials.username.toLowerCase()
+      u.username.toLowerCase() === credentials.employeeId.toLowerCase() || 
+      u.employeeId.toString() === credentials.employeeId
     );
 
     if (!user) {
       throw {
         status: 401,
-        message: 'Invalid username or password'
+        message: 'Invalid Employee ID or password'
       };
     }
 
     if (user.password !== credentials.password) {
       throw {
         status: 401,
-        message: 'Invalid username or password'
+        message: 'Invalid Employee ID or password'
       };
     }
 
@@ -384,6 +377,7 @@ export class AuthService {
   }
 
   private generateMockToken(user: AuthUser): string {
+    // DEVELOPMENT: Generate mock JWT token
     const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
     const payload = btoa(JSON.stringify({
       sub: user.employeeId,
@@ -404,6 +398,7 @@ export class AuthService {
   }
 
   private handleAuthSuccess(response: AuthResponse): void {
+    // Store authentication data
     this.storage.setItem(this.TOKEN_KEY, response.token);
     this.storage.setItem(this.USER_KEY, JSON.stringify(response.user));
     
@@ -420,6 +415,7 @@ export class AuthService {
   }
 
   private loadUserFromStorage(): void {
+    // Load user from storage on app initialization
     try {
       const storedUser = this.storage.getItem(this.USER_KEY);
       const token = this.storage.getItem(this.TOKEN_KEY);
@@ -437,6 +433,7 @@ export class AuthService {
   }
 
   private isTokenExpired(): boolean {
+    // Check if token has expired
     const expiry = this.storage.getItem(this.TOKEN_EXPIRY_KEY);
     if (!expiry) return true;
     
@@ -444,6 +441,7 @@ export class AuthService {
   }
 
   private clearAuthData(): void {
+    // Clear all authentication data
     this.storage.removeItem(this.TOKEN_KEY);
     this.storage.removeItem(this.USER_KEY);
     this.storage.removeItem(this.TOKEN_EXPIRY_KEY);

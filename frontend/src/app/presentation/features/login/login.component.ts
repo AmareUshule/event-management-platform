@@ -45,19 +45,19 @@ export class LoginComponent {
   isLoading = false;
   environment = environment;
 
-  // Mock user credentials for testing
+  // Mock user credentials for testing - using employeeId
   mockUsers = [
-    { username: 'admin.user', password: 'demo123', role: 'Admin' },
-    { username: 'com.manager', password: 'demo123', role: 'Communication Manager' },
-    { username: 'it.manager', password: 'demo123', role: 'IT Manager' },
-    { username: 'hr.manager', password: 'demo123', role: 'HR Manager' },
-    { username: 'com.staff', password: 'demo123', role: 'Communication Staff' },
-    { username: 'employee.user', password: 'demo123', role: 'Employee' }
+    { employeeId: 'admin.user', password: 'demo123', role: 'Admin' },
+    { employeeId: 'com.manager', password: 'demo123', role: 'Communication Manager' },
+    { employeeId: 'it.manager', password: 'demo123', role: 'IT Manager' },
+    { employeeId: 'hr.manager', password: 'demo123', role: 'HR Manager' },
+    { employeeId: 'com.staff', password: 'demo123', role: 'Communication Staff' },
+    { employeeId: 'employee.user', password: 'demo123', role: 'Employee' }
   ];
 
   constructor() {
     this.loginForm = this.fb.group({
-      username: ['', [Validators.required, Validators.minLength(3)]],
+      employeeId: ['', [Validators.required, Validators.minLength(3)]],
       password: ['', [Validators.required, Validators.minLength(6)]]
     });
   }
@@ -67,7 +67,7 @@ export class LoginComponent {
       this.isLoading = true;
       
       const credentials = {
-        username: this.loginForm.value.username.trim(),
+        employeeId: this.loginForm.value.employeeId.trim(),
         password: this.loginForm.value.password
       };
       
@@ -89,7 +89,7 @@ export class LoginComponent {
           
           // Show appropriate error message
           if (error?.status === 401) {
-            this.showError('Invalid username or password. Please try again.');
+            this.showError('Invalid Employee ID or password. Please try again.');
           } else if (error?.status === 0) {
             this.showError('Unable to connect to authentication server.');
           } else {

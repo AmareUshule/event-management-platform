@@ -49,6 +49,7 @@
             </button>
           </div>
 
+          <!-- User Profile Menu -->
           <div class="user-profile" [matMenuTriggerFor]="userMenu">
             <div class="user-avatar">
               <mat-icon>person</mat-icon>
@@ -57,26 +58,58 @@
               <span class="user-name">{{ user?.fullName }}</span>
               <span class="user-role">{{ roleDisplay }}</span>
             </div>
-            <mat-icon>expand_more</mat-icon>
+            <mat-icon class="dropdown-icon">arrow_drop_down</mat-icon>
           </div>
 
-          <mat-menu #userMenu="matMenu">
+          <!-- Enhanced User Menu -->
+          <mat-menu #userMenu="matMenu" class="enhanced-user-menu" xPosition="before" yPosition="below">
+            <!-- User Header -->
+            <div class="menu-user-header">
+              <div class="menu-user-avatar">
+                {{ user?.fullName?.charAt(0) || 'U' }}
+              </div>
+              <div class="menu-user-info">
+                <div class="menu-user-name">{{ user?.fullName }}</div>
+                <div class="menu-user-email">{{ user?.email || 'user@eep.com' }}</div>
+                <div class="menu-user-role-badge">{{ roleDisplay }}</div>
+              </div>
+            </div>
+
+            <mat-divider></mat-divider>
+
+            <!-- Menu Items -->
             <button mat-menu-item>
               <mat-icon>person</mat-icon>
               <span>My Profile</span>
+              <span class="menu-shortcut">⌘P</span>
             </button>
+
             <button mat-menu-item>
               <mat-icon>settings</mat-icon>
               <span>Settings</span>
+              <span class="menu-shortcut">⌘,</span>
             </button>
-            <button mat-menu-item [routerLink]="['/register']">
+
+            <button mat-menu-item [routerLink]="['/register']" *ngIf="isAdmin()">
               <mat-icon>person_add</mat-icon>
               <span>Create New Account</span>
             </button>
+
             <mat-divider></mat-divider>
-            <button mat-menu-item (click)="logout()">
-              <mat-icon>logout</mat-icon>
+
+            <!-- Help & Support -->
+            <button mat-menu-item>
+              <mat-icon>help</mat-icon>
+              <span>Help & Support</span>
+            </button>
+
+            <mat-divider></mat-divider>
+
+            <!-- Logout with confirmation -->
+            <button mat-menu-item (click)="logout()" class="logout-menu-item">
+              <mat-icon color="warn">exit_to_app</mat-icon>
               <span>Logout</span>
+              <span class="menu-shortcut">⌘Q</span>
             </button>
           </mat-menu>
         </div>

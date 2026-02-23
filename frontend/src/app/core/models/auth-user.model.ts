@@ -1,13 +1,4 @@
-export interface AuthUser {
-  employeeId: number;
-  adObjectId: string;
-  username: string;
-  fullName: string;
-  email: string;
-  departmentId: number;
-  departmentName?: string;
-  roles: string[];
-}
+ 
 
 export interface AuthResponse {
   token: string;
@@ -16,8 +7,21 @@ export interface AuthResponse {
   expiresIn?: number;
 }
 
+ 
+// auth-user.model.ts
 export interface LoginCredentials {
-  username: string;
+  employeeId: string;  // This should be employeeId, not username
   password: string;
-  rememberMe?: boolean;
+}
+
+export interface AuthUser {
+  employeeId: number;
+  adObjectId: string;
+  username: string;
+  fullName: string;
+  email: string;
+  departmentId: number;
+  departmentName: string;
+  roles: string[];
+  // ... other properties
 }

@@ -1,120 +1,168 @@
-// register.component.scss
 // ============================================
-// MODERN & ATTRACTIVE UI — EventPortal Registration
-// ALL VARIABLES DEFINED AT THE TOP - NO UNDEFINED REFERENCES
+// PREMIUM REGISTRATION COMPONENT — EEP EventPortal
+// Complete color system with enhanced visual effects
 // ============================================
 
-// ------ COLOR SYSTEM ------
-$red-900: #b71c1c;
-$red-700: #d32f2f;
-$red-600: #e53935;
-$red-500: #f44336;
-$red-100: #ffebee;
+// ------ BRAND COLOR SYSTEM (EEP Preservation) ------
+$eep-green-900: #1B5E20;    // Primary brand green
+$eep-green-800: #2E7D32;    // Light green
+$eep-green-700: #388E3C;    // Medium green  
+$eep-green-600: #43A047;    // Bright green
+$eep-green-500: #4CAF50;    // Accent green
+$eep-green-400: #66BB6A;    // Light accent
+$eep-green-100: #E8F5E9;    // Background green
+$eep-green-300: #81C784;    // <-- ADD THIS LINE for the exact variable in error
 
-$green-900: #08240e;
-$green-800: #0e3a1a;
-$green-700: #1e5a3e;
-$green-600: #256f4b;
-$green-500: #2e7d5e;
-$green-400: #4c9a7a;
-$green-100: #e8f5e9;
+$eep-red-900: #B71C1C;      // Primary accent red
+$eep-red-800: #C62828;      // Dark red
+$eep-red-700: #D32F2F;      // Medium red
+$eep-red-600: #E53935;      // Bright red
+$eep-red-300: #F44336;      // Light red
+$eep-red-100: #FFEBEE;      // Background red
+$eep-red-500: #E53935;      // Background red
 
-$gray-900: #0b1a2e;
-$gray-800: #1e2a3a;
-$gray-700: #334155;
-$gray-600: #475569;
-$gray-500: #64748b;
-$gray-400: #94a3b8;
-$gray-300: #cbd5e1;
-$gray-200: #e2e8f0;
-$gray-100: #f1f5f9;
-$gray-50: #f8fafc;
-$white: #ffffff;
 
-// ------ SHADOW SYSTEM - ALL DEFINED BEFORE USE ------
-$shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05), 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-$shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.05);
-$shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-$shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
-$shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
-$shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.02);
+
+// ------ NEUTRAL PALETTE ------
+$gray-950: #0A1929;
+$gray-900: #132F4C;
+$gray-800: #173A5E;
+$gray-700: #1E4976;
+$gray-600: #2E5A8C;
+$gray-500: #4B7BA0;
+$gray-400: #7A9CBB;
+$gray-300: #A9C1D9;
+$gray-200: #D3E2F2;
+$gray-100: #F0F7FF;
+$gray-50: #F8FCFF;
+$white: #FFFFFF;
+
+// ------ SHADOW SYSTEM (Comprehensive) ------
+$shadow-xs: 0 2px 4px rgba(0, 0, 0, 0.02), 0 1px 2px rgba(0, 0, 0, 0.03);
+$shadow-sm: 0 4px 8px rgba(0, 0, 0, 0.03), 0 2px 4px rgba(0, 0, 0, 0.03);
+$shadow-md: 0 8px 16px rgba(0, 0, 0, 0.04), 0 4px 8px rgba(0, 0, 0, 0.04);
+$shadow-lg: 0 16px 24px rgba(0, 0, 0, 0.05), 0 6px 12px rgba(0, 0, 0, 0.05);
+$shadow-xl: 0 24px 40px rgba(0, 0, 0, 0.08), 0 8px 16px rgba(0, 0, 0, 0.06);
+$shadow-2xl: 0 32px 64px rgba(0, 0, 0, 0.12), 0 12px 24px rgba(0, 0, 0, 0.08);
+$shadow-inner: inset 0 2px 4px rgba(0, 0, 0, 0.02);
+
+// ------ ANIMATION TIMINGS ------
+$transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+$transition-base: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+$transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+$transition-bounce: 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 
 // ------ TYPOGRAPHY ------
 $font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+$font-mono: 'SF Mono', 'Fira Code', monospace;
 
 // ------ MIXINS ------
-@mixin flex-center {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+@mixin glass-effect {
+  background: rgba($white, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba($white, 0.5);
+  box-shadow: $shadow-lg;
 }
 
-@mixin flex-between {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+@mixin gradient-text($from, $to) {
+  background: linear-gradient(135deg, $from, $to);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-@mixin transition {
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+@mixin floating-animation($duration: 6s) {
+  animation: float $duration ease-in-out infinite;
 }
 
-// ========== GLOBAL CONTAINER ==========
+// ========== MAIN CONTAINER ==========
 .registration-container {
   min-height: 100vh;
   width: 100%;
-  background: radial-gradient(circle at 10% 20%, rgba($green-900, 0.02) 0%, transparent 35%),
-    radial-gradient(circle at 90% 70%, rgba($red-900, 0.02) 0%, transparent 35%),
-    linear-gradient(145deg, $gray-50 0%, $white 100%);
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 24px;
   font-family: $font-family;
+  background: $gray-50;
+  overflow: hidden;
 
-  .background-pattern {
+  .ambient-bg {
     position: absolute;
     inset: 0;
-    background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><circle cx="30" cy="40" r="18" fill="%2308240e" opacity="0.03"/><circle cx="160" cy="150" r="25" fill="%23b71c1c" opacity="0.02"/><path d="M50 120 L70 100 L90 120 L80 150 L60 150 Z" fill="%231e5a3e" opacity="0.02"/></svg>');
-    background-size: 180px 180px;
-    opacity: 0.6;
-    pointer-events: none;
-  }
+    overflow: hidden;
 
-  .background-glow {
-    position: absolute;
-    width: 70%;
-    height: 70%;
-    top: 15%;
-    left: 15%;
-    background: radial-gradient(circle, rgba($green-500, 0.02) 0%, transparent 70%);
-    filter: blur(60px);
-    pointer-events: none;
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.15;
+      
+      &.orb-1 {
+        width: 500px;
+        height: 500px;
+        background: $eep-green-600;
+        top: -200px;
+        left: -200px;
+        animation: orbFloat 20s ease-in-out infinite;
+      }
+      
+      &.orb-2 {
+        width: 600px;
+        height: 600px;
+        background: $eep-red-500;
+        bottom: -300px;
+        right: -200px;
+        animation: orbFloat 25s ease-in-out infinite reverse;
+      }
+      
+      &.orb-3 {
+        width: 400px;
+        height: 400px;
+        background: $eep-green-400;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        animation: orbPulse 15s ease-in-out infinite;
+      }
+    }
+
+    .grid-pattern {
+      position: absolute;
+      inset: 0;
+      background-image: 
+        linear-gradient(rgba($eep-green-900, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba($eep-green-900, 0.02) 1px, transparent 1px);
+      background-size: 50px 50px;
+      mask-image: radial-gradient(circle at 50% 50%, black, transparent 70%);
+    }
   }
 }
 
-// ========== MAIN WRAPPER — GLASS CARD ==========
+// ========== MAIN WRAPPER ==========
 .registration-wrapper {
   display: flex;
   width: 100%;
-  max-width: 1320px;
-  background: rgba($white, 0.75);
+  max-width: 1400px;
+  background: rgba($white, 0.7);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-radius: 40px;
-  box-shadow: $shadow-xl, 0 0 0 1px rgba($white, 0.6);
+  border-radius: 48px;
+  box-shadow: $shadow-2xl, 0 0 0 1px rgba($white, 0.6);
   overflow: hidden;
   position: relative;
-  z-index: 30;
-  border: 1px solid rgba($white, 0.5);
+  z-index: 10;
+  border: 1px solid rgba($white, 0.3);
+  animation: containerAppear 0.8s $transition-bounce;
 }
 
-// ========== BRAND SIDE — DEEP GREEN, ELEGANT ==========
+// ========== BRAND SIDE — LUXURY DARK GREEN ==========
 .brand-side {
   flex: 1 1 45%;
-  background: linear-gradient(165deg, $green-900 0%, #0c341a 60%, #1a4a2a 100%);
-  padding: 56px 44px;
+  background: linear-gradient(145deg, $eep-green-900 0%, #0F3A1F 60%, #1E4A2A 100%);
+  padding: 48px 44px;
   display: flex;
   align-items: center;
   position: relative;
@@ -125,23 +173,44 @@ $font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sa
     content: '';
     position: absolute;
     inset: 0;
-    background-image: radial-gradient(circle at 20% 30%, rgba($white, 0.08) 0%, transparent 40%),
-      radial-gradient(circle at 80% 70%, rgba($red-900, 0.15) 0%, transparent 45%);
+    background: 
+      radial-gradient(circle at 20% 30%, rgba($white, 0.08) 0%, transparent 50%),
+      radial-gradient(circle at 80% 70%, rgba($eep-red-900, 0.12) 0%, transparent 50%);
     z-index: 1;
-    pointer-events: none;
   }
 
   &::after {
     content: '';
     position: absolute;
-    bottom: -30px;
-    right: -30px;
-    width: 260px;
-    height: 260px;
-    background: rgba($red-900, 0.2);
+    bottom: -100px;
+    right: -100px;
+    width: 400px;
+    height: 400px;
+    background: rgba($eep-red-900, 0.15);
     border-radius: 50%;
-    filter: blur(70px);
-    z-index: 0;
+    filter: blur(100px);
+    animation: glowPulse 8s ease-in-out infinite;
+  }
+
+  // Floating particles
+  .particles {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+
+    .particle {
+      position: absolute;
+      width: calc(var(--size) * 1px);
+      height: calc(var(--size) * 1px);
+      left: var(--left);
+      top: var(--top);
+      background: rgba($white, 0.1);
+      border-radius: 50%;
+      filter: blur(8px);
+      animation: particleFloat 10s linear infinite;
+      animation-delay: var(--delay);
+    }
   }
 
   .brand-content {
@@ -151,168 +220,379 @@ $font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sa
     width: 100%;
     display: flex;
     flex-direction: column;
-    gap: 28px;
+    gap: 32px;
   }
 
+  // Logo section
   .brand-logo-large {
     display: flex;
     align-items: center;
-    gap: 16px;
-    margin-bottom: 8px;
-    animation: fadeInLeft 0.7s ease;
+    gap: 20px;
+    animation: slideInLeft 0.8s ease;
 
     .logo-icon {
-      @include flex-center;
-      width: 56px;
-      height: 56px;
-      background: rgba($white, 0.14);
+      position: relative;
+      width: 72px;
+      height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba($white, 0.15);
       backdrop-filter: blur(8px);
-      border-radius: 18px;
-      border: 1px solid rgba($white, 0.25);
-      box-shadow: 0 12px 18px -8px rgba(0, 0, 0, 0.3);
+      border-radius: 24px;
+      border: 1px solid rgba($white, 0.3);
+      box-shadow: $shadow-lg;
+
+      &.pulse-animation {
+        animation: pulseRing 2s infinite;
+      }
 
       mat-icon {
-        font-size: 30px;
-        width: 30px;
-        height: 30px;
+        font-size: 36px;
+        width: 36px;
+        height: 36px;
         color: $white;
-        filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+        filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+        animation: iconFloat 3s ease-in-out infinite;
+      }
+
+      .ripple {
+        position: absolute;
+        inset: -8px;
+        border-radius: 50%;
+        border: 1px solid rgba($white, 0.3);
+        animation: ripple 2s ease-out infinite;
       }
     }
 
-    .brand-name {
-      font-size: 32px;
-      font-weight: 800;
-      letter-spacing: -0.02em;
-      background: linear-gradient(to right, #ffffff, #e0f2e9);
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin: 0;
+    .logo-text-wrapper {
+      display: flex;
+      flex-direction: column;
+
+      .brand-name {
+        font-size: 36px;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        background: linear-gradient(to right, $white, #E0F2E9);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin: 0;
+        line-height: 1.2;
+      }
+
+      .brand-badge {
+        font-size: 11px;
+        font-weight: 600;
+        padding: 2px 8px;
+        background: rgba($eep-red-500, 0.2);
+        border-radius: 30px;
+        color: $white;
+        letter-spacing: 0.5px;
+        align-self: flex-start;
+        margin-top: 4px;
+        border: 1px solid rgba($white, 0.2);
+      }
     }
   }
 
+  // Tagline section
   .brand-tagline {
-    animation: fadeInUp 0.8s 0.1s both;
+    animation: fadeInUp 0.8s 0.2s both;
 
-    h2 {
-      font-size: 36px;
-      font-weight: 600;
-      line-height: 1.1;
-      margin: 0 0 18px;
-      background: linear-gradient(145deg, white 80%, rgba($white, 0.75));
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
-      letter-spacing: -0.02em;
+    .typewriter-container {
+      margin-bottom: 12px;
+
+      .typewriter-text {
+        font-size: 44px;
+        font-weight: 700;
+        line-height: 1.2;
+        margin: 0;
+        background: linear-gradient(145deg, $white, rgba($white, 0.8));
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        position: relative;
+        display: inline-block;
+
+        &::after {
+          content: '|';
+          position: absolute;
+          right: -12px;
+          color: $white;
+          animation: cursorBlink 1s infinite;
+        }
+      }
     }
 
-    p {
-      font-size: 12px;
-      line-height: 1.6;
+    .brand-description {
+      font-size: 16px;
       color: rgba($white, 0.8);
-      max-width: 380px;
-      font-weight: 400;
-      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+      margin: 0;
+      line-height: 1.6;
     }
   }
 
+  // Enhanced features
   .brand-features {
     display: flex;
     flex-direction: column;
-    gap: 18px;
-    margin: 16px 0 24px;
+    gap: 20px;
+    margin: 8px 0;
 
     .feature-item {
       display: flex;
       align-items: center;
-      gap: 14px;
-      padding: 6px 0;
-      @include transition;
-      transform: translateX(0);
+      gap: 16px;
+      padding: 8px;
+      border-radius: 16px;
+      transition: $transition-base;
+      cursor: default;
 
       &:hover {
+        background: rgba($white, 0.1);
         transform: translateX(8px);
+        backdrop-filter: blur(4px);
       }
 
-      .feature-icon {
-        font-size: 22px;
-        width: 22px;
-        height: 22px;
-        padding: 6px;
-        border-radius: 10px;
-        background: rgba($white, 0.1);
-        backdrop-filter: blur(2px);
+      .feature-icon-wrapper {
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 14px;
+        background: rgba($white, 0.15);
+        backdrop-filter: blur(4px);
+        transition: $transition-base;
 
         &.green {
-          color: #a5d6a5;
+          background: rgba($eep-green-500, 0.2);
+          .feature-icon { color: $eep-green-300; }
         }
+
         &.red {
-          color: #ffcdd2;
+          background: rgba($eep-red-500, 0.2);
+          .feature-icon { color: $eep-red-300; }
+        }
+
+        .feature-icon {
+          font-size: 24px;
+          width: 24px;
+          height: 24px;
+          transition: $transition-base;
         }
       }
 
-      span {
-        font-size: 16px;
-        font-weight: 550;
-        color: rgba($white, 0.96);
+      .feature-content {
+        display: flex;
+        flex-direction: column;
+
+        .feature-text {
+          font-size: 16px;
+          font-weight: 600;
+          color: $white;
+          margin-bottom: 4px;
+        }
+
+        .feature-stats {
+          font-size: 13px;
+          color: rgba($white, 0.7);
+          font-weight: 500;
+        }
+      }
+    }
+  }
+
+  // Social proof
+  .social-proof {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 16px;
+    background: rgba($white, 0.1);
+    backdrop-filter: blur(8px);
+    border-radius: 60px;
+    border: 1px solid rgba($white, 0.2);
+    animation: slideInUp 0.8s 0.4s both;
+
+    .avatar-stack {
+      display: flex;
+      align-items: center;
+
+      .avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        border: 2px solid $white;
+        margin-left: calc(var(--index) * -8px);
+        transition: $transition-base;
+        box-shadow: $shadow-md;
+
+        &:hover {
+          transform: translateY(-4px) scale(1.1);
+          z-index: 10;
+        }
+
+        img {
+          width: 100%;
+          height: 100%;
+          border-radius: 50%;
+          object-fit: cover;
+        }
+      }
+    }
+
+    .proof-text {
+      font-size: 14px;
+      color: rgba($white, 0.9);
+
+      .highlight {
+        font-weight: 700;
+        color: $white;
+        background: rgba($eep-green-500, 0.3);
+        padding: 2px 8px;
+        border-radius: 30px;
+        margin-right: 4px;
+      }
+    }
+  }
+
+  // Testimonial
+  .testimonial-banner {
+    margin-top: 16px;
+    padding: 20px;
+    background: rgba($white, 0.08);
+    backdrop-filter: blur(8px);
+    border-radius: 20px;
+    border-left: 4px solid $eep-red-500;
+    animation: fadeInUp 0.8s 0.6s both;
+
+    .quote-icon {
+      color: rgba($white, 0.3);
+      font-size: 28px;
+      margin-bottom: 8px;
+    }
+
+    p {
+      font-size: 15px;
+      font-style: italic;
+      color: $white;
+      margin: 0 0 12px;
+      line-height: 1.5;
+    }
+
+    .testimonial-author {
+      font-size: 13px;
+      color: rgba($white, 0.7);
+      
+      strong {
+        color: $white;
+        font-weight: 600;
       }
     }
   }
 }
 
-// ========== FORM SIDE — CLEAN, FLOATING ==========
+// ========== FORM SIDE ==========
 .form-side {
   flex: 1 1 55%;
-  background: rgba($white, 0.6);
+  background: rgba($white, 0.7);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  padding: 52px 48px;
+  padding: 48px 48px;
   display: flex;
   align-items: center;
   justify-content: center;
 
   .form-wrapper {
     width: 100%;
-    max-width: 440px;
+    max-width: 480px;
     margin: 0 auto;
   }
 
-  .time-display {
-    display: inline-flex;
+  .form-header-stats {
+    display: flex;
     align-items: center;
-    gap: 10px;
-    background: rgba($gray-100, 0.7);
-    backdrop-filter: blur(4px);
-    padding: 10px 20px;
-    border-radius: 100px;
-    border: 1px solid rgba($white, 0.8);
-    box-shadow: $shadow-sm;
+    justify-content: space-between;
     margin-bottom: 32px;
 
-    mat-icon {
-      font-size: 18px;
-      width: 18px;
-      height: 18px;
-      color: $green-700;
+    .live-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba($eep-green-500, 0.1);
+      padding: 8px 16px;
+      border-radius: 30px;
+      border: 1px solid rgba($eep-green-500, 0.2);
+
+      .pulse-dot {
+        width: 8px;
+        height: 8px;
+        background: $eep-green-600;
+        border-radius: 50%;
+        animation: pulse 1.5s ease infinite;
+      }
+
+      span {
+        font-size: 13px;
+        font-weight: 600;
+        color: $eep-green-800;
+      }
     }
-    span {
-      font-size: 15px;
+
+    .time-display {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: $gray-100;
+      border-radius: 30px;
       font-weight: 600;
-      color: $gray-800;
+      color: $gray-700;
+
+      mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+        color: $eep-green-700;
+      }
     }
   }
 }
 
 // ========== REGISTRATION HEADER ==========
 .registration-header {
-  margin-bottom: 36px;
+  margin-bottom: 32px;
+
+  .header-badge {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+
+    .badge-text {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 10px;
+      background: $eep-green-500;
+      color: $white;
+      border-radius: 20px;
+      letter-spacing: 0.5px;
+    }
+
+    .badge-step {
+      font-size: 12px;
+      color: $gray-500;
+      font-weight: 500;
+    }
+  }
 
   .registration-title {
-    font-size: 34px;
+    font-size: 38px;
     font-weight: 800;
     letter-spacing: -0.02em;
-    background: linear-gradient(145deg, $gray-900, #254358);
+    background: linear-gradient(145deg, $gray-900, $eep-green-800);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -322,274 +602,410 @@ $font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sa
   .registration-subtitle {
     font-size: 16px;
     color: $gray-600;
-    margin: 0;
-    font-weight: 400;
+    margin: 0 0 24px;
+  }
+
+  .form-progress {
+    display: flex;
+    gap: 8px;
+
+    .progress-step {
+      height: 4px;
+      flex: 1;
+      background: $gray-200;
+      border-radius: 4px;
+      transition: $transition-base;
+
+      &.active {
+        background: linear-gradient(90deg, $eep-green-600, $eep-red-500);
+        transform: scaleX(1.1);
+        transform-origin: left;
+      }
+    }
   }
 }
 
-// ========== FORM FIELDS — MODERN MATERIAL OUTLINE ==========
+// ========== PREMIUM FORM FIELDS ==========
 .form-fields {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
   margin-bottom: 24px;
 }
 
-.form-field {
+.premium-field {
   width: 100%;
 
-  // Custom styling for mat-form-field
   ::ng-deep {
     .mat-form-field-wrapper {
       padding-bottom: 0;
     }
 
     .mat-form-field-outline {
-      color: $gray-300;
-      background: rgba($white, 0.8);
+      background: $white;
       border-radius: 16px;
+      color: $gray-300;
     }
 
     .mat-form-field-outline-thick {
-      color: $green-600;
+      color: $eep-green-600;
+    }
+
+    .mat-form-field-flex {
+      align-items: center;
+    }
+
+    .mat-form-field-infix {
+      padding: 14px 0 14px 4px;
+    }
+
+    .mat-input-element {
+      color: $gray-900;
+      font-weight: 500;
+      font-size: 15px;
     }
 
     .mat-form-field-label {
       color: $gray-600;
       font-weight: 500;
     }
-
-    .mat-input-element {
-      color: $gray-900;
-      font-size: 15px;
-      font-weight: 500;
-      caret-color: $green-700;
-    }
-
-    .mat-form-field-infix {
-      padding: 14px 0 14px 4px;
-    }
   }
 
   .field-icon {
     color: $gray-500;
-    font-size: 20px;
     margin-right: 8px;
-    transition: color 0.2s;
+    transition: $transition-base;
   }
 
   &:focus-within .field-icon {
-    color: $green-700;
+    color: $eep-green-700;
+  }
+
+  .validation-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    
+    &.success {
+      color: $eep-green-600;
+      animation: scaleIn 0.3s ease;
+    }
+  }
+
+  .error-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    margin-right: 4px;
+    color: $eep-red-500;
   }
 
   .password-toggle {
     color: $gray-500;
+    transition: $transition-base;
+
+    &.active {
+      color: $eep-green-700;
+    }
+
     &:hover {
-      color: $green-800;
+      color: $eep-green-800;
     }
   }
 
-  .clear-btn {
-    color: $gray-400;
-    transform: scale(0.9);
-    &:hover {
-      color: $gray-700;
-    }
+  .suggestion-hint {
+    font-size: 12px;
+    color: $eep-green-600;
+    margin-top: 4px;
+    font-weight: 500;
   }
 }
 
-// ========== PASSWORD STRENGTH — LIVELY BARS ==========
-.password-strength {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-top: 8px;
-  padding: 0 6px;
-
-  .strength-label {
-    font-size: 13px;
-    font-weight: 550;
-    color: $gray-700;
-    white-space: nowrap;
-  }
-
-  .strength-bars {
-    display: flex;
-    gap: 6px;
-    flex: 1;
-
-    .strength-bar {
-      height: 6px;
-      flex: 1;
-      background: $gray-200;
-      border-radius: 12px;
-      @include transition;
-      transform-origin: left;
-
-      &.active {
-        background: $gray-400;
-        &.weak {
-          background: $red-500;
-          box-shadow: 0 0 5px rgba($red-500, 0.5);
-        }
-        &.fair {
-          background: #ff9800;
-          box-shadow: 0 0 5px rgba(#ff9800, 0.4);
-        }
-        &.good {
-          background: $green-500;
-          box-shadow: 0 0 5px rgba($green-500, 0.4);
-        }
-        &.strong {
-          background: $green-700;
-          box-shadow: 0 0 6px rgba($green-700, 0.5);
-        }
-      }
-    }
-  }
-
-  .strength-text {
-    font-size: 13px;
-    font-weight: 700;
-    min-width: 90px;
-    color: $gray-800;
-  }
-}
-
-// ========== DROPDOWN PANELS — RICH, ICONIC, BEAUTIFUL ==========
+// ========== PREMIUM SELECT PANELS ==========
 ::ng-deep {
-  .role-select-panel,
-  .dept-select-panel {
+  .premium-select-panel {
     background: rgba($white, 0.98);
-    backdrop-filter: blur(12px);
+    backdrop-filter: blur(16px);
     border-radius: 24px !important;
-    box-shadow: $shadow-2xl, 0 0 0 1px rgba($white, 0.7) !important;
-    padding: 10px !important;
+    box-shadow: $shadow-2xl !important;
+    padding: 12px !important;
     margin-top: 8px !important;
-    border: 1px solid rgba($green-100, 0.7) !important;
+    border: 1px solid rgba($gray-300, 0.3) !important;
 
     .mat-option {
-      border-radius: 16px !important;
-      margin: 6px 0 !important;
-      padding: 14px 18px !important;
+      border-radius: 14px !important;
+      margin: 4px 0 !important;
+      padding: 12px 16px !important;
       height: auto !important;
-      line-height: 1.5 !important;
-      font-size: 15px;
-      font-weight: 550;
-      color: $gray-800;
-      @include transition;
+      transition: $transition-base;
 
       &:hover {
-        background: rgba($green-600, 0.08) !important;
-        transform: translateX(6px);
+        background: rgba($eep-green-600, 0.08) !important;
+        transform: translateX(4px);
       }
 
       &.mat-selected {
-        background: rgba($green-700, 0.14) !important;
-        border-left: 6px solid $green-700;
+        background: rgba($eep-green-700, 0.12) !important;
+        border-left: 4px solid $eep-green-700;
+      }
+    }
+  }
+
+  .role-option, .dept-option {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .role-option {
+    .role-icon {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 18px;
+
+      &.admin {
+        background: linear-gradient(135deg, $eep-red-600, $eep-red-800);
+        color: $white;
+      }
+      &.manager {
+        background: linear-gradient(135deg, $eep-green-600, $eep-green-800);
+        color: $white;
+      }
+      &.staff {
+        background: linear-gradient(135deg, $gray-600, $gray-800);
+        color: $white;
+      }
+      &.employee {
+        background: linear-gradient(135deg, $eep-green-400, $eep-green-600);
+        color: $white;
+      }
+    }
+
+    .role-info {
+      display: flex;
+      flex-direction: column;
+
+      .role-name {
         font-weight: 700;
+        font-size: 15px;
+        color: $gray-900;
+        margin-bottom: 2px;
       }
 
-      .role-option,
-      .dept-option {
-        display: flex;
-        align-items: center;
-        gap: 14px;
+      .role-desc {
+        font-size: 12px;
+        color: $gray-600;
       }
-  
+    }
+  }
+
+  .dept-option {
+    .dept-color {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+    }
+
+    .dept-info {
+      display: flex;
+      flex-direction: column;
+
+      .dept-name {
+        font-weight: 700;
+        font-size: 15px;
+        color: $gray-900;
+        margin-bottom: 2px;
+      }
+
+      .dept-code {
+        font-size: 12px;
+        color: $gray-600;
+        font-family: $font-mono;
+      }
+    }
+  }
+}
+
+// ========== ENHANCED PASSWORD STRENGTH ==========
+.password-strength-modern {
+  margin: 8px 0 16px;
+  padding: 16px;
+  background: rgba($gray-100, 0.5);
+  border-radius: 16px;
+  border: 1px solid $gray-200;
+
+  .strength-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+
+    .strength-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: $gray-700;
+    }
+
+    .strength-score {
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 30px;
+
+      &.weak { background: rgba($eep-red-500, 0.1); color: $eep-red-700; }
+      &.fair { background: rgba(#FF9800, 0.1); color: #F57C00; }
+      &.good { background: rgba($eep-green-500, 0.1); color: $eep-green-700; }
+      &.strong { background: rgba($eep-green-600, 0.15); color: $eep-green-800; }
+    }
+  }
+
+  .strength-bars-enhanced {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+
+    .strength-segment {
+      height: 6px;
+      flex: 1;
+      border-radius: 6px;
+      background: $gray-200;
+      transition: $transition-base;
+      transform-origin: left;
+
+      &.active {
+        transform: scaleY(1.2);
+      }
+    }
+  }
+
+  .strength-requirements {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+
+    .requirement {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: $gray-600;
+
+      mat-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+        color: $gray-400;
+      }
+
+      &.valid {
+        color: $eep-green-700;
+
+        mat-icon {
+          color: $eep-green-600;
+        }
+      }
     }
   }
 }
 
 // ========== TERMS SECTION ==========
-.terms-section {
-  margin-bottom: 28px;
+.terms-section-modern {
+  margin-bottom: 24px;
 
-  .terms-checkbox {
+  .premium-checkbox {
     ::ng-deep {
       .mat-checkbox-frame {
         border-color: $gray-400;
         border-radius: 6px;
       }
+
       .mat-checkbox-background {
-        background-color: $green-700;
+        background: linear-gradient(135deg, $eep-green-600, $eep-green-800);
       }
+
       .mat-checkbox-label {
         color: $gray-700;
         font-size: 14px;
-        line-height: 1.5;
       }
     }
   }
 
-  .terms-text {
-    color: $gray-700;
-  }
-
-  .terms-link {
-    color: $green-800;
-    text-decoration: none;
-    font-weight: 700;
-    margin: 0 4px;
-    border-bottom: 1.5px solid transparent;
-    @include transition;
-
-    &:hover {
-      border-bottom-color: $green-700;
-      color: $green-900;
-    }
-  }
-
-  mat-error {
-    font-size: 12px;
-    margin-top: 6px;
-    color: $red-600;
-    display: flex;
+  .checkbox-content {
+    display: inline-flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 4px;
+
+    .terms-link {
+      color: $eep-green-700;
+      text-decoration: none;
+      font-weight: 600;
+      border-bottom: 1px solid transparent;
+      transition: $transition-base;
+
+      &:hover {
+        border-bottom-color: $eep-green-700;
+        color: $eep-green-800;
+      }
+    }
   }
 }
 
-// ========== SIGNUP BUTTON — PREMIUM GRADIENT ==========
-.signup-btn {
+// ========== PREMIUM SIGNUP BUTTON ==========
+.signup-btn-premium {
   width: 100%;
   height: 56px;
-  background: linear-gradient(105deg, $green-900 0%, $green-700 100%);
+  background: linear-gradient(105deg, $eep-green-900 0%, $eep-green-700 100%);
   color: $white;
   font-size: 17px;
   font-weight: 700;
   border-radius: 18px;
   border: none;
   margin-bottom: 20px;
-  @include transition;
-  box-shadow: 0 12px 22px -10px rgba($green-900, 0.4);
-  letter-spacing: 0.3px;
+  position: relative;
+  overflow: hidden;
+  transition: $transition-base;
+  box-shadow: 0 12px 24px -8px rgba($eep-green-900, 0.4);
 
   &:hover:not([disabled]) {
-    background: linear-gradient(105deg, #0f4220 0%, $green-600 100%);
-    transform: translateY(-3px) scale(1.02);
-    box-shadow: 0 22px 28px -12px rgba($green-900, 0.5);
-  }
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 20px 32px -8px rgba($eep-green-900, 0.5);
 
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    filter: grayscale(0.4);
-  }
-
-  .btn-content {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-
-    mat-icon {
-      font-size: 22px;
+    .btn-ripple {
+      transform: translateY(-50%) scale(1);
     }
   }
 
+  &:active:not([disabled]) {
+    transform: translateY(0) scale(0.98);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    filter: grayscale(0.3);
+  }
+
+  &.loading {
+    background: $eep-green-800;
+  }
+
+  .btn-content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
   .btn-loader {
-    @include flex-center;
+    display: flex;
+    align-items: center;
     gap: 12px;
 
     .loader-spinner {
@@ -601,95 +1017,237 @@ $font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sa
       animation: spin 0.8s linear infinite;
     }
   }
+
+  .btn-ripple {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: 200%;
+    background: linear-gradient(90deg, transparent, rgba($white, 0.2), transparent);
+    transform: translateY(-50%) translateX(-100%) rotate(25deg);
+    transition: transform 0.6s ease;
+    z-index: 1;
+  }
+}
+
+// ========== SOCIAL LOGIN ==========
+.social-login {
+  margin: 24px 0;
+
+  .divider {
+    position: relative;
+    text-align: center;
+    margin: 20px 0;
+
+    &::before, &::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      width: calc(50% - 70px);
+      height: 1px;
+      background: $gray-200;
+    }
+
+    &::before { left: 0; }
+    &::after { right: 0; }
+
+    span {
+      background: $white;
+      padding: 0 12px;
+      color: $gray-500;
+      font-size: 13px;
+    }
+  }
+
+  .social-buttons {
+    display: flex;
+    gap: 12px;
+
+    .social-btn {
+      flex: 1;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: $white;
+      border: 1px solid $gray-200;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: $transition-base;
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: $shadow-lg;
+        border-color: transparent;
+
+        &.google { background: #4285F4; color: $white; }
+        &.microsoft { background: #2F2F2F; color: $white; }
+      }
+
+      svg {
+        width: 20px;
+        height: 20px;
+      }
+
+      span {
+        font-weight: 600;
+        font-size: 14px;
+      }
+    }
+  }
 }
 
 // ========== LOGIN LINK ==========
-.login-link-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
+.login-link {
+  text-align: center;
   margin-top: 24px;
   padding-top: 24px;
-  border-top: 1px solid rgba($gray-300, 0.7);
+  border-top: 1px solid $gray-200;
 
   span {
     color: $gray-600;
-    font-size: 15px;
+    font-size: 14px;
+    margin-right: 8px;
   }
 
-  .login-link {
-    background: none;
-    border: none;
-    color: $green-800;
-    font-size: 16px;
+  a {
+    color: $eep-green-700;
+    text-decoration: none;
     font-weight: 700;
-    cursor: pointer;
-    padding: 8px 20px;
-    border-radius: 40px;
-    @include transition;
+    font-size: 15px;
+    transition: $transition-base;
 
     &:hover {
-      background: rgba($green-700, 0.08);
-      color: $green-900;
+      color: $eep-green-900;
+      text-decoration: underline;
     }
   }
 }
 
-// ========== LOADING OVERLAY ==========
-.loading-overlay {
+// ========== PREMIUM LOADING OVERLAY ==========
+.loading-overlay-premium {
   position: fixed;
   inset: 0;
   background: rgba($white, 0.8);
-  backdrop-filter: blur(8px);
-  @include flex-center;
+  backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   z-index: 9999;
 
   .loading-content {
-    @include flex-center;
-    flex-direction: column;
-    gap: 20px;
-    padding: 40px 48px;
-    background: rgba($white, 0.9);
-    backdrop-filter: blur(16px);
-    border-radius: 36px;
-    box-shadow: $shadow-2xl, 0 0 0 1px rgba($white, 0.8);
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    padding: 40px 56px;
+    background: $white;
+    border-radius: 40px;
+    box-shadow: $shadow-2xl;
+    border: 1px solid rgba($gray-200, 0.5);
+    animation: slideInUp 0.5s ease;
 
-    .loader-spinner {
-      width: 54px;
-      height: 54px;
-      border: 4px solid rgba($green-900, 0.08);
-      border-top-color: $green-700;
-      border-right-color: $red-700;
+    .loader-ring {
+      width: 64px;
+      height: 64px;
+      border: 4px solid rgba($eep-green-600, 0.1);
+      border-top-color: $eep-green-700;
+      border-right-color: $eep-red-600;
       border-radius: 50%;
-      animation: spin 1.1s linear infinite;
+      animation: spin 1s linear infinite;
     }
 
-    .loading-text {
-      color: $gray-800;
-      font-size: 18px;
-      font-weight: 600;
-      margin: 0;
+    .loader-text {
+      display: flex;
+      flex-direction: column;
+
+      .loader-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: $gray-900;
+        margin-bottom: 4px;
+      }
+
+      .loader-subtitle {
+        font-size: 14px;
+        color: $gray-600;
+      }
     }
   }
 }
 
 // ========== ANIMATIONS ==========
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
 }
-@keyframes fadeInLeft {
+
+@keyframes orbFloat {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  33% { transform: translate(30px, -30px) rotate(120deg); }
+  66% { transform: translate(-20px, 20px) rotate(240deg); }
+}
+
+@keyframes orbPulse {
+  0%, 100% { opacity: 0.15; transform: translate(-50%, -50%) scale(1); }
+  50% { opacity: 0.25; transform: translate(-50%, -50%) scale(1.2); }
+}
+
+@keyframes particleFloat {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  33% { transform: translate(30px, -30px) rotate(120deg); }
+  66% { transform: translate(-20px, 20px) rotate(240deg); }
+  100% { transform: translate(0, 0) rotate(360deg); }
+}
+
+@keyframes pulseRing {
+  0% { box-shadow: 0 0 0 0 rgba($white, 0.4); }
+  70% { box-shadow: 0 0 0 20px rgba($white, 0); }
+  100% { box-shadow: 0 0 0 0 rgba($white, 0); }
+}
+
+@keyframes ripple {
+  0% { opacity: 1; transform: scale(0.5); }
+  100% { opacity: 0; transform: scale(2); }
+}
+
+@keyframes iconFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+@keyframes cursorBlink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes slideInLeft {
   from {
     opacity: 0;
-    transform: translateX(-20px);
+    transform: translateX(-30px);
   }
   to {
     opacity: 1;
     transform: translateX(0);
   }
 }
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -701,14 +1259,48 @@ $font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sa
   }
 }
 
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes containerAppear {
+  0% {
+    opacity: 0;
+    transform: scale(0.95) translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 // ========== RESPONSIVE ==========
 @media (max-width: 1024px) {
-  .registration-wrapper {
-    max-width: 900px;
-  }
   .brand-side {
-    .brand-tagline h2 {
-      font-size: 32px;
+    .typewriter-text {
+      font-size: 36px !important;
     }
   }
 }
@@ -718,54 +1310,43 @@ $font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sa
     flex-direction: column;
     max-width: 500px;
   }
+
   .brand-side {
-    padding: 44px 32px;
-    .brand-footer {
-      position: relative;
-      bottom: auto;
-      left: auto;
-      margin-top: 24px;
-    }
+    padding: 40px 32px;
   }
+
   .form-side {
-    padding: 44px 32px;
+    padding: 40px 32px;
+  }
+
+  .social-buttons {
+    flex-direction: column;
   }
 }
 
 @media (max-width: 480px) {
   .registration-container {
-    padding: 16px;
+    padding: 12px;
   }
-  .brand-side {
-    padding: 36px 24px;
-    .brand-tagline h2 {
-      font-size: 32px;
-    }
-  }
-  .form-side {
-    padding: 36px 24px;
-  }
-}
 
-// ========== DARK MODE PREFERENCE ==========
-@media (prefers-color-scheme: dark) {
-  .registration-container {
-    background: radial-gradient(circle at 10% 20%, rgba($green-900, 0.2) 0%, transparent 40%),
-      radial-gradient(circle at 90% 70%, rgba($red-900, 0.15) 0%, transparent 40%), $gray-900;
+  .brand-side {
+    padding: 32px 20px;
+
+    .typewriter-text {
+      font-size: 32px !important;
+    }
   }
-  .registration-wrapper {
-    background: rgba($gray-800, 0.8);
-    backdrop-filter: blur(24px);
-    border-color: rgba($gray-600, 0.5);
-  }
+
   .form-side {
-    background: rgba($gray-900, 0.5);
-    .time-display {
-      background: $gray-800;
-      color: $gray-300;
-    }
-    .registration-title {
-      -webkit-text-fill-color: $gray-100;
-    }
+    padding: 32px 20px;
+  }
+
+  .registration-title {
+    font-size: 32px !important;
+  }
+
+  .social-proof {
+    flex-direction: column;
+    align-items: flex-start !important;
   }
 }
