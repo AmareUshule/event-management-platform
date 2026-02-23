@@ -1,4 +1,3 @@
-
 using EEP.EventManagement.Api.Application.Features.Events.DTOs;
 using EEP.EventManagement.Api.Application.Features.Events.Queries;
 using EEP.EventManagement.Api.Infrastructure.Repositories.Interfaces;
@@ -23,8 +22,14 @@ namespace EEP.EventManagement.Api.Application.Features.Events.Handlers
             {
                 Id = e.Id,
                 Title = e.Title,
-                EventDate = e.EventDate,
-                Status = e.Status.ToString()
+                Description = e.Description,
+                StartDate = e.StartDate,
+                EndDate = e.EndDate,
+                DepartmentId = e.DepartmentId,
+                Status = e.Status.ToString(),
+                CreatedBy = e.CreatedBy,
+                ApprovedBy = e.ApprovedBy,
+                EventPlace = e.EventPlace
             }).ToList();
         }
     }
