@@ -65,7 +65,8 @@ namespace EEP.EventManagement.Api.Application.Features.Auth.Handlers
                 Id = user.Id.ToString(),
                 Email = user.Email ?? string.Empty,
                 Role = dto.Role,
-                DepartmentId = user.DepartmentId
+                DepartmentId = user.DepartmentId,
+                EmployeeId = user.EmployeeId
             };
         }
     }
