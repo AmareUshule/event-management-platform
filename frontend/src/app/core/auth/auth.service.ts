@@ -1,10 +1,10 @@
-import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { inject, Injectable } from '@angular/core';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { BehaviorSubject, Observable, throwError, of, defer } from 'rxjs';
-import { catchError, map, tap, delay } from 'rxjs/operators';
+import { BehaviorSubject, Observable, throwError } from 'rxjs';
+import { catchError, map, tap } from 'rxjs/operators';
 
-import { AuthUser, AuthResponse, LoginCredentials } from '../models/auth-user.model';
+import { AuthUser, LoginCredentials } from '../models/auth-user.model';
 import { StorageService } from '../services/storage.service';
 import { environment } from '../../../environments/environment';
 
@@ -12,13 +12,25 @@ import { DEPARTMENTS } from '../constants/departments.constants';
 import { ROLES } from '../constants/roles.constants';
 import { PERMISSIONS } from '../constants/permissions.constants';
 
+// Interface matching your actual backend response
+export interface BackendAuthResponse {
+  token: string;
+  userId: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  role: string; // This comes as "Admin" from backend
+  employeeId: string;
+  departmentId: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private http = inject(HttpClient);
   private router = inject(Router);
   private storage = inject(StorageService);
   
-  private readonly API_URL = `${environment.apiUrl}/auth`;
+  private readonly API_URL = `${environment.apiUrl}/api/Auth`;
   private readonly TOKEN_KEY = 'eep_auth_token';
   private readonly USER_KEY = 'eep_auth_user';
   private readonly TOKEN_EXPIRY_KEY = 'eep_token_expiry';
@@ -29,6 +41,23 @@ export class AuthService {
   private isLoadingSubject = new BehaviorSubject<boolean>(false);
   public isLoading$ = this.isLoadingSubject.asObservable();
 
+  // Department GUID to ID mapping (update with actual GUIDs from your database)
+  private readonly departmentGuidToIdMap: Record<string, number> = {
+    '4cfbbaf2-e974-46de-b5bd-1187669f1204': DEPARTMENTS.INFORMATION_TECHNOLOGY,
+    // Add other department GUID mappings here based on your database
+  };
+
+  // Department ID to name mapping
+  private readonly departmentIdToNameMap: Record<number, string> = {
+    [DEPARTMENTS.INFORMATION_TECHNOLOGY]: 'Information Technology',
+    [DEPARTMENTS.COMMUNICATION]: 'Communication',
+    [DEPARTMENTS.HUMAN_RESOURCES]: 'Human Resources',
+    [DEPARTMENTS.FINANCE]: 'Finance',
+    [DEPARTMENTS.MARKETING]: 'Marketing',
+    [DEPARTMENTS.OPERATIONS]: 'Operations',
+    [DEPARTMENTS.GENERAL_STAFF]: 'General Staff'
+  };
+
   constructor() {
     this.loadUserFromStorage();
   }
@@ -38,23 +67,31 @@ export class AuthService {
   login(credentials: LoginCredentials): Observable<AuthUser> {
     this.setLoading(true);
     
-    return this.authenticate(credentials).pipe(
+    return this.http.post<BackendAuthResponse>(`${this.API_URL}/login`, {
+      employeeId: credentials.employeeId,
+      password: credentials.password
+    }).pipe(
       tap(response => {
+        console.log('Login response:', response);
         this.handleAuthSuccess(response);
         this.setLoading(false);
       }),
-      map(response => response.user),
+      map(response => this.mapBackendResponseToAuthUser(response)),
       catchError(error => {
         this.setLoading(false);
-        return throwError(() => error);
+        return throwError(() => this.handleError(error));
       })
     );
   }
 
   logout(): void {
-    if (!environment.mockAuth) {
-      this.http.post(`${this.API_URL}/logout`, {}).subscribe({
-        error: () => {}
+    const token = this.getToken();
+    
+    if (token) {
+      this.http.post(`${this.API_URL}/logout`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      }).subscribe({
+        error: () => {} // Silent fail for logout
       });
     }
     
@@ -107,11 +144,11 @@ export class AuthService {
   }
 
   isAdmin(): boolean {
-    return this.hasRole(ROLES.ADMIN);
+    return this.hasRole(ROLES.Admin);
   }
 
   isManager(): boolean {
-    return this.hasRole(ROLES.MANAGER);
+    return this.hasRole(ROLES.Manager);
   }
 
   isCommunicationManager(): boolean {
@@ -125,11 +162,26 @@ export class AuthService {
   }
 
   isStaff(): boolean {
-    return this.hasRole(ROLES.STAFF);
+    return this.hasRole(ROLES.Staff);
   }
 
   isEmployee(): boolean {
-    return this.hasRole(ROLES.EMPLOYEE);
+    return this.hasRole(ROLES.Employee);
+  }
+
+  // Get department GUID from current user (if needed for API calls)
+  getDepartmentGuid(): string | null {
+    const user = this.getCurrentUser();
+    if (!user) return null;
+    
+    // You'll need to store this mapping or get it from the backend
+    // This is a reverse lookup from department ID to GUID
+    const reverseMap: Record<number, string> = {
+      [DEPARTMENTS.INFORMATION_TECHNOLOGY]: '4cfbbaf2-e974-46de-b5bd-1187669f1204',
+      // Add other mappings
+    };
+    
+    return reverseMap[user.departmentId] || null;
   }
 
   // =============== PERMISSION METHODS ===============
@@ -183,7 +235,6 @@ export class AuthService {
 
     if (!user) return permissions;
 
-    // Admin: Full access
     if (this.isAdmin()) {
       permissions.push(
         PERMISSIONS.CREATE_EVENT,
@@ -195,7 +246,6 @@ export class AuthService {
       );
     }
 
-    // Manager with Communication Department
     if (this.isCommunicationManager()) {
       permissions.push(
         PERMISSIONS.CREATE_DEPARTMENT_EVENT,
@@ -207,7 +257,6 @@ export class AuthService {
       );
     }
     
-    // Manager with other departments
     if (this.isDepartmentManager()) {
       permissions.push(
         PERMISSIONS.CREATE_DEPARTMENT_EVENT,
@@ -217,7 +266,6 @@ export class AuthService {
       );
     }
 
-    // Staff (Communication Expert / Camera Man)
     if (this.isStaff() && this.isInCommunicationDepartment()) {
       permissions.push(
         PERMISSIONS.CREATE_COMMUNICATION_EVENT,
@@ -225,7 +273,6 @@ export class AuthService {
       );
     }
 
-    // Employee (basic viewer)
     if (this.isEmployee()) {
       permissions.push(
         PERMISSIONS.VIEW_EVENTS,
@@ -238,184 +285,139 @@ export class AuthService {
 
   // =============== PRIVATE METHODS ===============
 
-  private authenticate(credentials: LoginCredentials): Observable<AuthResponse> {
-    // DEVELOPMENT vs PRODUCTION
-    if (environment.mockAuth) {
-      // DEVELOPMENT: Use mock authentication
-      return this.mockAuthentication(credentials);
+  /**
+   * Maps the backend response to your AuthUser model
+   */
+  private mapBackendResponseToAuthUser(response: BackendAuthResponse): AuthUser {
+  // Extract numeric employeeId from string (e.g., "ep710327" -> 710327)
+  const employeeId = this.extractNumericEmployeeId(response.employeeId);
+  
+  // Map department GUID to internal department ID
+  const departmentId = this.mapDepartmentGuidToId(response.departmentId);
+  
+  // Create full name from firstName and lastName
+  const fullName = `${response.firstName} ${response.lastName}`.trim();
+  
+  // Create username from employeeId or email
+  const username = response.employeeId || response.email.split('@')[0];
+  
+  // IMPORTANT: Direct mapping - backend sends "Admin", your ROLES.Admin is "Admin"
+  // Make sure no transformation is happening
+  const role = response.role; // This should be "Admin"
+   
+  
+  return {
+    employeeId: employeeId,
+    adObjectId: response.userId,
+    username: username,
+    fullName: fullName,
+    email: response.email,
+    departmentId: departmentId,
+    departmentName: this.getDepartmentName(departmentId),
+    roles: [role] // Directly use the role from backend
+  };
+}
+
+   
+
+  /**
+   * Extracts numeric part from employeeId string
+   * Example: "ep710327" -> 710327
+   */
+  private extractNumericEmployeeId(employeeId: string): number {
+    // Remove all non-numeric characters and parse
+    const numericPart = employeeId.replace(/\D/g, '');
+    return numericPart ? parseInt(numericPart, 10) : 0;
+  }
+
+  /**
+   * Maps department GUID to internal department ID
+   */
+  private mapDepartmentGuidToId(departmentGuid: string): number {
+    // Try to find the department ID from the mapping
+    const departmentId = this.departmentGuidToIdMap[departmentGuid];
+    
+    if (departmentId) {
+      return departmentId;
     }
     
-    // PRODUCTION: Call real backend API
-    return this.realAuthentication(credentials);
+    // If not found, log warning and return default
+    console.warn(`Unknown department GUID: ${departmentGuid}. Using GENERAL_STAFF as default.`);
+    return DEPARTMENTS.GENERAL_STAFF;
   }
 
-  private realAuthentication(credentials: LoginCredentials): Observable<AuthResponse> {
-    // PRODUCTION: Actual API call to backend
-    return this.http.post<AuthResponse>(`${this.API_URL}/login`, credentials).pipe(
-      catchError(error => {
-        const structuredError = {
-          status: error.status || 500,
-          message: error.message || 'Authentication failed'
-        };
-        return throwError(() => structuredError);
-      })
-    );
+  /**
+   * Gets department name from department ID
+   */
+  private getDepartmentName(departmentId: number): string {
+    return this.departmentIdToNameMap[departmentId] || 'Unknown Department';
   }
 
-  private mockAuthentication(credentials: LoginCredentials): Observable<AuthResponse> {
-    // DEVELOPMENT: Mock authentication with simulated delay
-    return defer(() => {
-      try {
-        const user = this.validateCredentials(credentials);
-        
-        return of({
-          token: this.generateMockToken(user),
-          user: user,
-          refreshToken: this.generateRefreshToken(),
-          expiresIn: 3600
-        }).pipe(delay(800)); // Simulate network delay
-        
-      } catch (error) {
-        return throwError(() => error).pipe(delay(800));
-      }
-    });
-  }
-
-  private validateCredentials(credentials: LoginCredentials): AuthUser {
-    // DEVELOPMENT: Mock user database for testing
-    const mockUsers: Array<AuthUser & { password: string }> = [
-      {
-        employeeId: 1001,
-        adObjectId: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
-        username: 'admin.user',
-        fullName: 'System Administrator',
-        email: 'admin@eep.com',
-        departmentId: DEPARTMENTS.INFORMATION_TECHNOLOGY,
-        departmentName: 'Information Technology',
-        roles: [ROLES.ADMIN],
-        password: 'demo123'
-      },
-      {
-        employeeId: 1002,
-        adObjectId: 'b2c3d4e5-f6g7-8901-bcde-f23456789012',
-        username: 'com.manager',
-        fullName: 'Communication Manager',
-        email: 'com.manager@eep.com',
-        departmentId: DEPARTMENTS.COMMUNICATION,
-        departmentName: 'Communication',
-        roles: [ROLES.MANAGER],
-        password: 'demo123'
-      },
-      {
-        employeeId: 1003,
-        adObjectId: 'c3d4e5f6-g7h8-9012-cdef-345678901234',
-        username: 'it.manager',
-        fullName: 'IT Department Manager',
-        email: 'it.manager@eep.com',
-        departmentId: DEPARTMENTS.INFORMATION_TECHNOLOGY,
-        departmentName: 'Information Technology',
-        roles: [ROLES.MANAGER],
-        password: 'demo123'
-      },
-      {
-        employeeId: 1004,
-        adObjectId: 'd4e5f6g7-h8i9-0123-defg-456789012345',
-        username: 'hr.manager',
-        fullName: 'HR Department Manager',
-        email: 'hr.manager@eep.com',
-        departmentId: DEPARTMENTS.HUMAN_RESOURCES,
-        departmentName: 'Human Resources',
-        roles: [ROLES.MANAGER],
-        password: 'demo123'
-      },
-      {
-        employeeId: 1005,
-        adObjectId: 'e5f6g7h8-i9j0-1234-efgh-567890123456',
-        username: 'com.staff',
-        fullName: 'Communication Expert',
-        email: 'com.staff@eep.com',
-        departmentId: DEPARTMENTS.COMMUNICATION,
-        departmentName: 'Communication',
-        roles: [ROLES.STAFF],
-        password: 'demo123'
-      },
-      {
-        employeeId: 1006,
-        adObjectId: 'f6g7h8i9-j0k1-2345-fghi-678901234567',
-        username: 'employee.user',
-        fullName: 'Regular Employee',
-        email: 'employee@eep.com',
-        departmentId: DEPARTMENTS.GENERAL_STAFF,
-        departmentName: 'General Staff',
-        roles: [ROLES.EMPLOYEE],
-        password: 'demo123'
-      }
-    ];
-
-    // DEVELOPMENT: Validate against mock database using employeeId
-    const user = mockUsers.find(u => 
-      u.username.toLowerCase() === credentials.employeeId.toLowerCase() || 
-      u.employeeId.toString() === credentials.employeeId
-    );
-
-    if (!user) {
-      throw {
-        status: 401,
-        message: 'Invalid Employee ID or password'
-      };
-    }
-
-    if (user.password !== credentials.password) {
-      throw {
-        status: 401,
-        message: 'Invalid Employee ID or password'
-      };
-    }
-
-    const { password, ...userWithoutPassword } = user;
-    return userWithoutPassword;
-  }
-
-  private generateMockToken(user: AuthUser): string {
-    // DEVELOPMENT: Generate mock JWT token
-    const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
-    const payload = btoa(JSON.stringify({
-      sub: user.employeeId,
-      username: user.username,
-      roles: user.roles,
-      department: user.departmentId,
-      departmentName: user.departmentName,
-      exp: Math.floor(Date.now() / 1000) + 3600,
-      iat: Math.floor(Date.now() / 1000)
-    }));
-    const signature = 'mock-signature-' + Date.now();
+  /**
+   * Handles HTTP errors
+   */
+  private handleError(error: HttpErrorResponse | any): any {
+    console.error('Auth Service Error:', error);
     
-    return `${header}.${payload}.${signature}`;
+    let errorMessage = 'Login failed. Please try again.';
+    const status = error.status || 0;
+    
+    if (status === 0) {
+      errorMessage = 'Unable to connect to authentication server. Please check:\n• Server is running\n• Network connection\n• CORS configuration';
+    } else if (status === 401) {
+      errorMessage = 'Invalid Employee ID or password.';
+    } else if (status === 403) {
+      errorMessage = 'Your account does not have permission to access the system.';
+    } else if (status === 400) {
+      errorMessage = 'Invalid request. Please check your input.';
+    } else if (status === 404) {
+      errorMessage = 'Authentication service not found.';
+    } else if (status === 500) {
+      errorMessage = 'Server error. Please try again later.';
+    }
+    
+    return {
+      status: status,
+      message: errorMessage,
+      originalError: error
+    };
   }
 
-  private generateRefreshToken(): string {
-    return 'refresh-token-' + Date.now() + '-' + Math.random().toString(36).substr(2);
-  }
-
-  private handleAuthSuccess(response: AuthResponse): void {
-    // Store authentication data
+  /**
+   * Handles successful authentication
+   */
+  private handleAuthSuccess(response: BackendAuthResponse): void {
+    // Store token
     this.storage.setItem(this.TOKEN_KEY, response.token);
-    this.storage.setItem(this.USER_KEY, JSON.stringify(response.user));
     
-    if (response.expiresIn) {
-      const expiryTime = Date.now() + (response.expiresIn * 1000);
+    // Transform and store user data
+    const user = this.mapBackendResponseToAuthUser(response);
+    this.storage.setItem(this.USER_KEY, JSON.stringify(user));
+    
+    // Set token expiry from JWT if possible
+    try {
+      const tokenPayload = JSON.parse(atob(response.token.split('.')[1]));
+      if (tokenPayload.exp) {
+        const expiryTime = tokenPayload.exp * 1000; // Convert to milliseconds
+        this.storage.setItem(this.TOKEN_EXPIRY_KEY, expiryTime.toString());
+      } else {
+        // If no exp in token, set default (24 hours)
+        const expiryTime = Date.now() + (24 * 60 * 60 * 1000);
+        this.storage.setItem(this.TOKEN_EXPIRY_KEY, expiryTime.toString());
+      }
+    } catch (e) {
+      // If can't decode token, set default expiry (24 hours)
+      const expiryTime = Date.now() + (24 * 60 * 60 * 1000);
       this.storage.setItem(this.TOKEN_EXPIRY_KEY, expiryTime.toString());
     }
     
-    if (response.refreshToken) {
-      this.storage.setItem('eep_refresh_token', response.refreshToken);
-    }
-    
-    this.currentUserSubject.next(response.user);
+    this.currentUserSubject.next(user);
   }
 
+  /**
+   * Loads user from storage on app initialization
+   */
   private loadUserFromStorage(): void {
-    // Load user from storage on app initialization
     try {
       const storedUser = this.storage.getItem(this.USER_KEY);
       const token = this.storage.getItem(this.TOKEN_KEY);
@@ -432,16 +434,20 @@ export class AuthService {
     }
   }
 
+  /**
+   * Checks if token has expired
+   */
   private isTokenExpired(): boolean {
-    // Check if token has expired
     const expiry = this.storage.getItem(this.TOKEN_EXPIRY_KEY);
     if (!expiry) return true;
     
     return Date.now() > parseInt(expiry, 10);
   }
 
+  /**
+   * Clears all authentication data
+   */
   private clearAuthData(): void {
-    // Clear all authentication data
     this.storage.removeItem(this.TOKEN_KEY);
     this.storage.removeItem(this.USER_KEY);
     this.storage.removeItem(this.TOKEN_EXPIRY_KEY);
@@ -449,6 +455,9 @@ export class AuthService {
     this.currentUserSubject.next(null);
   }
 
+  /**
+   * Sets loading state
+   */
   private setLoading(isLoading: boolean): void {
     this.isLoadingSubject.next(isLoading);
   }

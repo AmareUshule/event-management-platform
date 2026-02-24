@@ -15,6 +15,9 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { AuthService } from '../../../core/auth/auth.service';
 import { environment } from '../../../../environments/environment';
+import { AuthUser } from '../../../core/models/auth-user.model';
+import { ROLES } from '../../../core/constants/roles.constants';
+import { DEPARTMENTS } from '../../../core/constants/departments.constants';
 
 @Component({
   selector: 'app-login',
@@ -45,16 +48,6 @@ export class LoginComponent {
   isLoading = false;
   environment = environment;
 
-  // Mock user credentials for testing - using employeeId
-  mockUsers = [
-    { employeeId: 'admin.user', password: 'demo123', role: 'Admin' },
-    { employeeId: 'com.manager', password: 'demo123', role: 'Communication Manager' },
-    { employeeId: 'it.manager', password: 'demo123', role: 'IT Manager' },
-    { employeeId: 'hr.manager', password: 'demo123', role: 'HR Manager' },
-    { employeeId: 'com.staff', password: 'demo123', role: 'Communication Staff' },
-    { employeeId: 'employee.user', password: 'demo123', role: 'Employee' }
-  ];
-
   constructor() {
     this.loginForm = this.fb.group({
       employeeId: ['', [Validators.required, Validators.minLength(3)]],
@@ -65,36 +58,30 @@ export class LoginComponent {
   onSubmit(): void {
     if (this.loginForm.valid) {
       this.isLoading = true;
-      
+
       const credentials = {
         employeeId: this.loginForm.value.employeeId.trim(),
         password: this.loginForm.value.password
       };
-      
+
       this.authService.login(credentials).subscribe({
         next: (user) => {
           this.isLoading = false;
+          // Use fullName which is now properly mapped from firstName + lastName
           this.showSuccess(`Welcome back, ${user.fullName}!`);
-          
+
           // Role-based redirect
           const returnUrl = this.route.snapshot.queryParams['returnUrl'] || this.getDefaultRoute(user);
           this.router.navigateByUrl(returnUrl);
         },
         error: (error) => {
           this.isLoading = false;
-          
+
           // Clear password field for security
           this.loginForm.get('password')?.setValue('');
           this.loginForm.get('password')?.markAsTouched();
-          
-          // Show appropriate error message
-          if (error?.status === 401) {
-            this.showError('Invalid Employee ID or password. Please try again.');
-          } else if (error?.status === 0) {
-            this.showError('Unable to connect to authentication server.');
-          } else {
-            this.showError('Login failed. Please try again.');
-          }
+
+          this.showError(error.message || 'Login failed. Please try again.');
         }
       });
     } else {
@@ -102,33 +89,37 @@ export class LoginComponent {
     }
   }
 
-  private getDefaultRoute(user: any): string {
-    // Role-based routing
-    if (user.roles.includes('ADMIN')) {
-      return '/admin/dashboard';
-    } else if (user.roles.includes('MANAGER')) {
-      if (user.departmentId === 2) { // Communication department
-        return '/communication/dashboard';
-      }
-      return '/manager/dashboard';
-    } else if (user.roles.includes('STAFF')) {
-      return '/staff/dashboard';
-    } else {
-      return '/dashboard';
+private getDefaultRoute(user: AuthUser): string {
+  // Role-based routing using your ROLES constant
+  if (user.roles?.includes(ROLES.Admin)) {
+    return '/admin/dashboard';
+  } else if (user.roles?.includes(ROLES.Manager)) {
+    if (user.departmentId === DEPARTMENTS.COMMUNICATION) {
+      return '/communication/dashboard';
     }
+    return '/manager/dashboard';
+  } else if (user.roles?.includes(ROLES.Staff)) { 
+    return '/staff/dashboard';
+  } else {
+    return '/dashboard';
   }
+}
 
   private showSuccess(message: string): void {
     this.snackBar.open(message, 'Close', {
       duration: 3000,
-      panelClass: ['success-snackbar']
+      panelClass: ['success-snackbar'],
+      horizontalPosition: 'center',
+      verticalPosition: 'top'
     });
   }
 
   private showError(message: string): void {
     this.snackBar.open(message, 'Close', {
       duration: 5000,
-      panelClass: ['error-snackbar']
+      panelClass: ['error-snackbar'],
+      horizontalPosition: 'center',
+      verticalPosition: 'top'
     });
   }
-}
+} 

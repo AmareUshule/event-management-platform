@@ -62,35 +62,35 @@ interface EventData {
 export class DashboardComponent implements OnInit {
   // Current user
   user: AuthUser | null = null;
-  
+
   // Loading state
   isLoading = false;
-  
+
   // Current date
   currentDate = new Date();
-  
+
   // Selected tab index
   selectedTabIndex = 0;
-  
+
   // Time filters
   timeFrom = '09:00';
   timeTo = '17:00';
-  
+
   // Search term
   searchTerm: string = '';
-  
+
   // Original events data (master copy)
   private originalEvents: EventData[] = [
     {
       name: 'Nam porttitor blandit accumsan.',
-      location: 'U.S. Bank Stadium',   
-      date: new Date(),   
+      location: 'U.S. Bank Stadium',
+      date: new Date(),
       status: 'published'
     },
     {
       name: 'Curabitur lobortis id lorem id bibendum. Ut.',
       location: '1190 N 70th St, Wauwatosa',
-      date: new Date(2018, 11, 29),  
+      date: new Date(2018, 11, 29),
       status: 'published'
     },
     {
@@ -112,19 +112,19 @@ export class DashboardComponent implements OnInit {
       status: 'draft'
     }
   ];
-  
+
   // Displayed events data (filtered version)
   eventsDataSource: EventData[] = [];
-  
+
   // Table columns
   displayedColumns: string[] = ['id', 'eventName', 'location', 'date', 'actions'];
-  
+
   // Quick stats
   totalEvents = 0;
   publishedEvents = 0;
   draftEvents = 0;
   todaysEvents = 0;
-  
+
   // Department mapping
   private departmentMap: Record<number, string> = {
     1: 'Information Technology',
@@ -135,7 +135,7 @@ export class DashboardComponent implements OnInit {
     6: 'Communication',
     7: 'General Staff'
   };
-  
+
   // Inject services
   private authService = inject(AuthService);
   private router = inject(Router);
@@ -147,22 +147,22 @@ export class DashboardComponent implements OnInit {
 
   private initializeComponent(): void {
     this.isLoading = true;
-    
+
     // Check authentication
     if (!this.authService.isAuthenticated()) {
       this.router.navigate(['/login']);
       return;
     }
-    
+
     // Get current user
     this.user = this.authService.getCurrentUser();
-    
+
     // Initialize events data source
     this.eventsDataSource = [...this.originalEvents];
-    
+
     // Calculate statistics
     this.calculateStatistics();
-    
+
     this.isLoading = false;
   }
 
@@ -170,7 +170,7 @@ export class DashboardComponent implements OnInit {
     this.totalEvents = this.originalEvents.length;
     this.publishedEvents = this.originalEvents.filter(e => e.status === 'published').length;
     this.draftEvents = this.originalEvents.filter(e => e.status === 'draft').length;
-    this.todaysEvents = this.originalEvents.filter(e => 
+    this.todaysEvents = this.originalEvents.filter(e =>
       e.date.toDateString() === new Date().toDateString()
     ).length;
   }
@@ -192,7 +192,7 @@ export class DashboardComponent implements OnInit {
   private filterEvents(): void {
     // Start with all events
     let filtered = [...this.originalEvents];
-    
+
     // Apply tab filter
     switch (this.selectedTabIndex) {
       case 1: // Published
@@ -203,15 +203,15 @@ export class DashboardComponent implements OnInit {
         break;
       // case 0: ALL - no filter needed
     }
-    
+
     // Apply search filter
     if (this.searchTerm) {
-      filtered = filtered.filter(event => 
+      filtered = filtered.filter(event =>
         event.name.toLowerCase().includes(this.searchTerm) ||
         event.location.toLowerCase().includes(this.searchTerm)
       );
     }
-    
+
     // Update the data source
     this.eventsDataSource = filtered;
   }
@@ -221,11 +221,11 @@ export class DashboardComponent implements OnInit {
     switch (range) {
       case 'today':
         const today = new Date();
-        const filtered = this.originalEvents.filter(e => 
+        const filtered = this.originalEvents.filter(e =>
           e.date.toDateString() === today.toDateString()
         );
         this.eventsDataSource = filtered;
-        
+
         // Show result count
         this.snackBar.open(`Found ${filtered.length} event(s) for today`, 'Close', {
           duration: 3000,
@@ -283,7 +283,7 @@ export class DashboardComponent implements OnInit {
       this.originalEvents.splice(index, 1);
       this.filterEvents();
       this.calculateStatistics();
-      
+
       this.snackBar.open(`Deleted: ${event.name}`, 'Close', {
         duration: 3000,
         horizontalPosition: 'end',
@@ -293,15 +293,14 @@ export class DashboardComponent implements OnInit {
   }
 
   // Navigation methods
-  navigateToCreateEvent(): void {
-    // Check if user can create events
-    const canCreateEvents = true; // Replace with actual permission check
-    
+  navigateToCreateEvent(): void { 
+    const canCreateEvents = this.authService.canCreateEvents();
     if (canCreateEvents) {
       this.router.navigate(['/events/create']);
     } else {
       this.snackBar.open('You do not have permission to create events', 'Close', {
-        duration: 3000
+        duration: 3000,
+        panelClass: ['error-snackbar'] // Add error styling
       });
     }
   }
@@ -322,14 +321,14 @@ export class DashboardComponent implements OnInit {
     if (!this.user?.roles || this.user.roles.length === 0) return 'User';
     return this.user.roles[0];
   }
-  
+
   // Get status class for styling
   getStatusClass(status: string): string {
     return status === 'published' ? 'published' : 'draft';
   }
 
   // Add this method to check if user is admin
-isAdmin(): boolean {
-  return this.authService.isAdmin();
-}
+  isAdmin(): boolean {
+    return this.authService.isAdmin();
+  }
 }

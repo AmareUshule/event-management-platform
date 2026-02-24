@@ -9,10 +9,12 @@ import { roleGuard } from './core/guards/role.guard';
 export const appRoutes: Routes = [
   { path: '', component: HomeComponent },
   { path: 'login', component: LoginComponent },
+    // Events module - protected by auth
   { 
     path: 'events', 
     loadChildren: () => import('./presentation/features/events/events.routes')
-      .then(m => m.eventsRoutes)
+      .then(m => m.eventsRoutes),
+    canActivate: [authGuard],
   },
   
    // Regular user dashboard
@@ -30,7 +32,7 @@ export const appRoutes: Routes = [
     loadComponent: () => import('./presentation/features/dashboard/dashboard.component')
       .then(m => m.DashboardComponent),
     canActivate: [authGuard, roleGuard],
-    data: { roles: ['ADMIN'] }
+    data: { roles: ['Admin'] }
   },
   {
     path: 'register',

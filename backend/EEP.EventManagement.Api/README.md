@@ -40,12 +40,13 @@ This project is the backend API for the Event Management Platform.
 
 5.  **Apply Database Migrations:**
     *   Apply the migrations to create the database schema:
+            ```bash
+        dotnet ef database update --context IdentityDbContext
+        ```
         ```bash
         dotnet ef database update --context ApplicationDbContext
         ```
-        ```bash
-        dotnet ef database update --context IdentityDbContext
-        ```
+
         *Note: If you encounter permission errors during migration (e.g., "must be owner of table"), you might need to grant ownership of the tables to your database user. For example:*
         ```sql
         ALTER TABLE "Events" OWNER TO your_database_user;

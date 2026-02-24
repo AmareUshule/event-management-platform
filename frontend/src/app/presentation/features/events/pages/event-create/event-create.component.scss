@@ -15,6 +15,21 @@ $eep-light-bg: #f8f9fa;
   padding: 20px;
 }
 
+// Loading container
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  
+  p {
+    margin-top: 16px;
+    color: $eep-gray-800;
+    font-size: 16px;
+  }
+}
+
 // Wizard container
 .wizard-container {
   display: flex;
@@ -163,6 +178,21 @@ $eep-light-bg: #f8f9fa;
   text-align: center;
 }
 
+// Form content
+.form-content {
+  flex: 1;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  
+  form {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+}
+
 // Current step display
 .current-step-display {
   margin-bottom: 40px;
@@ -180,40 +210,22 @@ $eep-light-bg: #f8f9fa;
     display: inline-block;
   }
   
-  .current-step-title {
+  h3 {
     margin: 0;
     font-size: 28px;
     font-weight: 600;
     color: $eep-gray-800;
     background: linear-gradient(135deg, $eep-green-900, $eep-red-900);
+    -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
   }
 }
 
-// Form content
-.form-content {
-  flex: 1;
-  padding: 40px;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  overflow-y: auto;
-  
-  form {
-    flex: 1;
-    overflow-y: auto;
-    padding-bottom: 20px;
-  }
-}
-
-// Form grid layout - UPDATED with clean grid areas
+// Form grid
 .form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  grid-template-areas:
-    "title description"
-    "category description";
   gap: 24px;
   margin-bottom: 40px;
   
@@ -221,77 +233,74 @@ $eep-light-bg: #f8f9fa;
     grid-column: 1 / -1;
   }
   
-  // Grid area assignments
-  > mat-form-field:nth-child(1) {
-    grid-area: title;
-  }
-  
-  > mat-form-field.description {
-    grid-area: description;
-  }
-  
-  > mat-form-field.category {
-    grid-area: category;
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
   }
 }
 
-// Event type selector
+// Event type selector - FIXED
 .event-type-selector {
   margin-bottom: 30px;
-}
-
-.type-toggle-group {
-  width: 100%;
-  border-radius: 12px;
-  overflow: hidden;
-  border: 2px solid $eep-gray-200;
   
-  mat-button-toggle {
-    flex: 1;
-    padding: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    border-right: 1px solid $eep-gray-200;
+  .type-toggle-group {
+    width: 100%;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 2px solid $eep-gray-200;
     
-    &:last-child {
-      border-right: none;
-    }
-    
-    &.mat-button-toggle-checked {
-      background: linear-gradient(135deg, $eep-green-900, $eep-red-900);
-      color: white;
+    mat-button-toggle {
+      flex: 1;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      
+      .mat-icon {
+        margin-right: 4px;
+      }
+      
+      &.mat-button-toggle-checked {
+        background: linear-gradient(135deg, $eep-green-900, $eep-red-900);
+        color: white;
+        
+        .mat-icon {
+          color: white;
+        }
+      }
     }
   }
 }
 
+// Location fields
 .location-fields {
   margin-top: 24px;
 }
 
-// Form actions - FIXED navigation buttons (always visible)
+// Form actions
 .form-actions {
   display: flex;
   justify-content: space-between;
-  padding: 20px 0 0 0;
+  padding-top: 20px;
   margin-top: auto;
   border-top: 2px solid $eep-gray-200;
   background: white;
-  position: sticky;
-  bottom: 0;
-  z-index: 5;
-  padding-top: 20px;
+  
+  .left-actions, .right-actions {
+    display: flex;
+    gap: 12px;
+  }
   
   button {
-    min-width: 140px;
-    padding: 12px 24px;
+    min-width: 120px;
+    padding: 8px 20px;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
     font-weight: 500;
     border-radius: 10px;
+    transition: all 0.3s ease;
     
     &[color="primary"] {
       background: linear-gradient(135deg, $eep-green-900, $eep-red-900);
@@ -310,12 +319,22 @@ $eep-light-bg: #f8f9fa;
     }
     
     &.mat-stroked-button {
-      border-color: $eep-gray-800;
+      border: 1px solid $eep-gray-800;
       color: $eep-gray-800;
       
-      &:hover {
+      &:hover:not(:disabled) {
         background: $eep-gray-200;
       }
+      
+      &:disabled {
+        opacity: 0.5;
+        border-color: $eep-gray-200;
+        color: $eep-gray-200;
+      }
+    }
+    
+    mat-icon {
+      font-size: 18px;
     }
   }
 }
@@ -347,27 +366,6 @@ $eep-light-bg: #f8f9fa;
 
 // Angular Material overrides
 :host ::ng-deep {
-  .mat-form-field-outline {
-    border-radius: 10px;
-  }
-  
-  .mat-form-field-appearance-outline .mat-form-field-outline {
-    color: $eep-gray-200;
-  }
-  
-  .mat-form-field-appearance-outline.mat-focused .mat-form-field-outline-thick {
-    color: $eep-green-900;
-  }
-  
-  .mat-button-toggle-appearance-standard .mat-button-toggle-label-content {
-    line-height: 24px;
-  }
-  
-  .mat-datepicker-toggle button {
-    z-index: 10;
-  }
-  
-  // Input padding fixes
   .mat-mdc-form-field-flex {
     padding-left: 16px !important;
   }
@@ -380,6 +378,10 @@ $eep-light-bg: #f8f9fa;
   textarea.mat-mdc-input-element {
     padding-left: 14px !important;
     box-sizing: border-box;
+  }
+  
+  .mat-mdc-form-field-hint {
+    color: rgba($eep-gray-800, 0.6);
   }
 }
 
@@ -394,63 +396,40 @@ $eep-light-bg: #f8f9fa;
     padding: 30px 20px;
   }
   
-  .form-grid {
-    grid-template-columns: 1fr;
-    grid-template-areas:
-      "title"
-      "category"
-      "description";
-  }
-  
-  .form-actions {
-    flex-direction: column;
-    gap: 12px;
-    padding: 16px 0 0 0;
-    
-    button {
-      width: 100%;
-      margin: 0;
-    }
+  .form-content {
+    padding: 30px 20px;
   }
 }
 
 @media (max-width: 768px) {
-  .form-content {
-    padding: 20px;
+  .event-creation-wrapper {
+    padding: 0;
   }
   
   .wizard-container {
     border-radius: 0;
-    box-shadow: none;
     min-height: 100vh;
   }
   
   .form-actions {
-    position: fixed;
+    position: sticky;
     bottom: 0;
     left: 0;
     right: 0;
     padding: 16px;
     background: white;
     box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
-    border-top: 2px solid $eep-gray-200;
-    z-index: 50;
+    
+    .left-actions, .right-actions {
+      width: 100%;
+    }
     
     button {
-      width: 100%;
-      margin-bottom: 8px;
-      
-      &:last-child {
-        margin-bottom: 0;
-      }
+      flex: 1;
     }
   }
   
-  .event-creation-wrapper {
-    padding: 0;
-  }
-  
   .form-content {
-    padding-bottom: 100px; // Space for fixed buttons
+    padding-bottom: 20px;
   }
 }

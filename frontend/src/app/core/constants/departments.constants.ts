@@ -1,3 +1,5 @@
+ 
+// constants/departments.constants.ts
 export const DEPARTMENTS = {
   INFORMATION_TECHNOLOGY: 1,
   HUMAN_RESOURCES: 2,
@@ -5,5 +7,5 @@ export const DEPARTMENTS = {
   MARKETING: 4,
   OPERATIONS: 5,
   COMMUNICATION: 6,
-  GENERAL_STAFF: 7,
-};
+  GENERAL_STAFF: 7
+} as const;
