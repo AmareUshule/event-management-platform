@@ -1,10 +1,11 @@
 using EEP.EventManagement.Api.Application.Features.Events.DTOs;
 using MediatR;
-using System.Collections.Generic;
+using System;
 
 namespace EEP.EventManagement.Api.Application.Features.Events.Queries
 {
-    public class GetAllEventsQuery : IRequest<List<EventDto>>
+    public class GetEventByIdQuery : IRequest<EventDto>
     {
+        public Guid Id { get; set; }
     }
 }

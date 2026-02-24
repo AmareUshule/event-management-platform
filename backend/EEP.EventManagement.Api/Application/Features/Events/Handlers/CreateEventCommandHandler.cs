@@ -1,55 +1,58 @@
+using AutoMapper;
 using EEP.EventManagement.Api.Application.Features.Events.Commands;
 using EEP.EventManagement.Api.Application.Features.Events.DTOs;
+using EEP.EventManagement.Api.Application.Exceptions;
 using EEP.EventManagement.Api.Domain.Entities;
-using EEP.EventManagement.Api.Domain.Enums;
 using EEP.EventManagement.Api.Infrastructure.Repositories.Interfaces;
+using EEP.EventManagement.Api.Infrastructure.Security.Claims;
 using MediatR;
-using Microsoft.AspNetCore.Http;
-using System.Security.Claims;
+using Microsoft.AspNetCore.Identity; // Added for UserManager
+using EEP.EventManagement.Api.Infrastructure.Security.Identity; // Added for ApplicationUser
+using System.Linq; // Added for Any()
 
 namespace EEP.EventManagement.Api.Application.Features.Events.Handlers
 {
-    public class CreateEventCommandHandler : IRequestHandler<CreateEventCommand, EventResponseDto>
+    public class CreateEventCommandHandler : IRequestHandler<CreateEventCommand, EventDto>
     {
         private readonly IEventRepository _eventRepository;
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IMapper _mapper;
+        private readonly IUserContext _userContext;
+        private readonly UserManager<ApplicationUser> _userManager; // Injected UserManager
 
-        public CreateEventCommandHandler(IEventRepository eventRepository, IHttpContextAccessor httpContextAccessor)
+        public CreateEventCommandHandler(IEventRepository eventRepository, IMapper mapper, IUserContext userContext, UserManager<ApplicationUser> userManager)
         {
             _eventRepository = eventRepository;
-            _httpContextAccessor = httpContextAccessor;
+            _mapper = mapper;
+            _userContext = userContext;
+            _userManager = userManager; // Initialized UserManager
         }
 
-        public async Task<EventResponseDto> Handle(CreateEventCommand request, CancellationToken cancellationToken)
+        public async Task<EventDto> Handle(CreateEventCommand request, CancellationToken cancellationToken)
         {
-            var userId = _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userId = _userContext.GetUserId();
+            var user = await _userManager.FindByIdAsync(userId.ToString()); // Find the user by ID
 
-            var eventEntity = new Event
+            if (user == null || user.DepartmentId == null)
             {
-                Id = Guid.NewGuid(),
-                Title = request.Title,
-                Description = request.Description,
-                StartDate = request.StartDate,
-                EndDate = request.EndDate,
-                DepartmentId = request.DepartmentId,
-                Status = EventStatus.Draft,
-                CreatedBy = Guid.Parse(userId),
-                EventPlace = request.EventPlace
-            };
+                throw new BadRequestException("Creator's department not found. Cannot create event.");
+            }
 
-            await _eventRepository.AddAsync(eventEntity);
+            var @event = _mapper.Map<Event>(request.CreateEventDto);
+            
+            @event.CreatedAt = DateTime.UtcNow;
+            @event.CreatedBy = userId;
+            @event.DepartmentId = user.DepartmentId.Value; // Assign creator's departmentId
 
-            return new EventResponseDto
+            @event = await _eventRepository.AddAsync(@event);
+
+            // Fetch the event again to include navigation properties for the response DTO
+            var createdEventWithDetails = await _eventRepository.GetByIdAsync(@event.Id);
+            if (createdEventWithDetails == null)
             {
-                Id = eventEntity.Id,
-                Title = eventEntity.Title,
-                Description = eventEntity.Description,
-                StartDate = eventEntity.StartDate,
-                EndDate = eventEntity.EndDate,
-                DepartmentId = eventEntity.DepartmentId,
-                Status = eventEntity.Status.ToString(),
-                CreatedBy = eventEntity.CreatedBy
-            };
+                throw new NotFoundException($"Newly created event with ID {@event.Id} could not be retrieved.");
+            }
+
+            return _mapper.Map<EventDto>(createdEventWithDetails);
         }
     }
 }

@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 
 namespace EEP.EventManagement.Api.Application.Exceptions
 {

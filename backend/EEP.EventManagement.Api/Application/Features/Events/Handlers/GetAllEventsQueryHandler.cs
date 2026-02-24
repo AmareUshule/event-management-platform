@@ -1,36 +1,29 @@
+using AutoMapper;
 using EEP.EventManagement.Api.Application.Features.Events.DTOs;
 using EEP.EventManagement.Api.Application.Features.Events.Queries;
 using EEP.EventManagement.Api.Infrastructure.Repositories.Interfaces;
 using MediatR;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace EEP.EventManagement.Api.Application.Features.Events.Handlers
 {
-    public class GetAllEventsQueryHandler : IRequestHandler<GetAllEventsQuery, List<EventResponseDto>>
+    public class GetAllEventsQueryHandler : IRequestHandler<GetAllEventsQuery, List<EventDto>>
     {
         private readonly IEventRepository _eventRepository;
+        private readonly IMapper _mapper;
 
-        public GetAllEventsQueryHandler(IEventRepository eventRepository)
+        public GetAllEventsQueryHandler(IEventRepository eventRepository, IMapper mapper)
         {
             _eventRepository = eventRepository;
+            _mapper = mapper;
         }
 
-        public async Task<List<EventResponseDto>> Handle(GetAllEventsQuery request, CancellationToken cancellationToken)
+        public async Task<List<EventDto>> Handle(GetAllEventsQuery request, CancellationToken cancellationToken)
         {
             var events = await _eventRepository.GetAllAsync();
-
-            return events.Select(e => new EventResponseDto
-            {
-                Id = e.Id,
-                Title = e.Title,
-                Description = e.Description,
-                StartDate = e.StartDate,
-                EndDate = e.EndDate,
-                DepartmentId = e.DepartmentId,
-                Status = e.Status.ToString(),
-                CreatedBy = e.CreatedBy,
-                ApprovedBy = e.ApprovedBy,
-                EventPlace = e.EventPlace
-            }).ToList();
+            return _mapper.Map<List<EventDto>>(events);
         }
     }
 }
