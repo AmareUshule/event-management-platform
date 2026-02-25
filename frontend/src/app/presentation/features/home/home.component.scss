@@ -80,6 +80,14 @@ $shadow-xl: 0 20px 40px -10px rgba(0, 0, 0, 0.15);
       height: 18px;
     }
   }
+  .org-logo {
+  margin-bottom: 15px;
+}
+
+.org-logo img {
+  height: 120px;   /* adjust size */
+  width: auto;
+}
 
   .title {
     font-size: 3.5rem;

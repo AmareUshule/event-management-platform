@@ -3,6 +3,10 @@
   <!-- Hero Section -->
   <div class="hero">
     <div class="hero-content">
+      <!-- Organization Logo -->
+      <div class="org-logo">
+        <img src="assets/images/eep_logo.jpg" alt="Ethiopian Electric Power Logo">
+      </div>
       <!-- Organization Badge -->
       <div class="brand-badge">
         <mat-icon>verified</mat-icon>
@@ -17,10 +21,10 @@
 
       <!-- Subtitle -->
       <p class="subtitle">
-        Plan, coordinate, and monitor institutional events with precision, 
+        Plan, coordinate, and monitor institutional events with precision,
         efficiency, and real-time collaboration across all departments.
       </p>
-      
+
       <!-- Call to Action Buttons -->
       <div class="hero-actions">
         <a mat-flat-button routerLink="/login" class="btn btn-primary">
@@ -30,19 +34,19 @@
         <a mat-stroked-button routerLink="/events" class="btn btn-secondary">
           <mat-icon>calendar_month</mat-icon>
           Browse Events
-        </a> 
+        </a>
       </div>
     </div>
   </div>
 
 
-  
+
   <!-- Features Section -->
   <div class="features-section">
     <div class="section-header">
       <h2 class="section-title">Enterprise-Grade Features</h2>
     </div>
-    
+
     <div class="features-grid">
       <div class="feature-card" *ngFor="let feature of features" [class.feature-card-accent]="feature.isAccent">
         <div class="feature-icon">
@@ -53,7 +57,7 @@
       </div>
     </div>
   </div>
-    <!-- CTA Section -->
+  <!-- CTA Section -->
   <div class="cta-section">
     <h2 class="cta-title">Ready to Transform Your Event Management?</h2>
     <div class="cta-actions">
