@@ -14,31 +14,72 @@ export enum EventStatus {
   COMPLETED = 'Completed'
 }
 
+export interface Department {
+  id: string;
+  name: string;
+  description?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface EventCategory {
+  id: number;
+  name: string;
+  description?: string;
+}
+
+export interface User {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  role: string;
+  departmentId: string;
+  employeeId: string;
+}
+
+// This is what the backend returns
 export interface Event {
   id?: string;
   title: string;
   description: string;
-  eventCategoryId: number;
-  startDate: string; // ISO string format
-  endDate: string;   // ISO string format
-  eventType: EventType;
-  location: string;
-  departmentId: number;
-  status: EventStatus;
-  createdBy: number; // employeeId
+  startDate: string;
+  endDate: string;
+  eventPlace: string;
+  status: EventStatus | string;
   createdAt?: string;
   updatedAt?: string;
-  updatedBy?: number;
+  department: Department;
+  createdBy: User;
+  approvedBy?: User;
 }
 
-// Type guard to check if an object is a valid Event
-export function isEvent(obj: any): obj is Event {
-  return obj 
-    && typeof obj.title === 'string'
-    && typeof obj.eventCategoryId === 'number'
-    && typeof obj.startDate === 'string'
-    && typeof obj.endDate === 'string'
-    && (obj.eventType === EventType.PHYSICAL || obj.eventType === EventType.VIRTUAL)
-    && typeof obj.departmentId === 'number'
-    && typeof obj.createdBy === 'number';
+// This is what we send to the backend
+export interface CreateEventRequest {
+  title: string;
+  description: string;
+  startDate: string;
+  endDate: string;
+  eventPlace: string;
+  status: EventStatus | string;
+  department: {
+    id: string;
+  };
+  createdBy: {
+    id: string;
+    employeeId: string;
+  };
+}
+
+// This is the form data structure
+export interface EventFormData {
+  title: string;
+  description: string;
+  eventCategoryId: number;
+  startDateTime: Date | string;
+  endDateTime: Date | string;
+  eventType: EventType;
+  address: string;
+  meetingLink: string;
+  departmentId: number;
 }

@@ -1,7 +1,10 @@
-import { Component, OnInit, inject } from '@angular/core';
+// src/app/presentation/features/dashboard/dashboard.component.ts
+
+import { Component, OnInit, inject, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { Subject, takeUntil, finalize } from 'rxjs';
 
 // Material imports
 import { MatCardModule } from '@angular/material/card';
@@ -22,15 +25,30 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 
 // Services
 import { AuthService } from '../../../core/auth/auth.service';
+import { EventService } from '../events/services/event.service';
 
 // Models
+import { Event, EventFormData, EventStatus } from '../events/models/event.model';
 import { AuthUser } from '../../../core/models/auth-user.model';
 
-interface EventData {
+// Interface for table display
+export interface TableEvent {
+  id: string;
   name: string;
   location: string;
   date: Date;
-  status: 'published' | 'draft';
+  status: string;
+  departmentName: string;
+  createdByName: string;
+  raw: Event;
+}
+
+// Interface for agenda items
+export interface AgendaItem {
+  time: string;
+  title: string;
+  location: string;
+  icon?: string;
 }
 
 @Component({
@@ -59,71 +77,48 @@ interface EventData {
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']
 })
-export class DashboardComponent implements OnInit {
-  // Current user
+export class DashboardComponent implements OnInit, OnDestroy {
+  // ==================== MASTER DATA (NEVER MODIFIED) ====================
+  private masterEvents: Event[] = [];           // Raw events from API - NEVER TOUCH
+  private masterTableEvents: TableEvent[] = []; // Transformed events - NEVER MODIFY
+  
+  // ==================== FILTERED DATA (FOR DISPLAY) ====================
+  filteredEvents: TableEvent[] = [];             // What table displays - MODIFIED BY FILTERS ONLY
+
+  // ==================== UI STATE ====================
   user: AuthUser | null = null;
-
-  // Loading state
-  isLoading = false;
-
-  // Current date
+  isLoading = true;
+  isLoadingEvents = true;
   currentDate = new Date();
-
-  // Selected tab index
   selectedTabIndex = 0;
-
-  // Time filters
-  timeFrom = '09:00';
-  timeTo = '17:00';
-
-  // Search term
   searchTerm: string = '';
 
-  // Original events data (master copy)
-  private originalEvents: EventData[] = [
-    {
-      name: 'Nam porttitor blandit accumsan.',
-      location: 'U.S. Bank Stadium',
-      date: new Date(),
-      status: 'published'
-    },
-    {
-      name: 'Curabitur lobortis id lorem id bibendum. Ut.',
-      location: '1190 N 70th St, Wauwatosa',
-      date: new Date(2018, 11, 29),
-      status: 'published'
-    },
-    {
-      name: 'Lorem ipsum dolor sit.',
-      location: 'Miami Beach',
-      date: new Date(2018, 11, 20),
-      status: 'draft'
-    },
-    {
-      name: 'Vestibulum rutrum qu.',
-      location: 'Miami Beach',
-      date: new Date(2018, 11, 19),
-      status: 'published'
-    },
-    {
-      name: 'Lorem ipsum do.',
-      location: 'Los Angeles',
-      date: new Date(2019, 0, 2),
-      status: 'draft'
-    }
-  ];
-
-  // Displayed events data (filtered version)
-  eventsDataSource: EventData[] = [];
-
-  // Table columns
+  // ==================== TABLE CONFIGURATION ====================
   displayedColumns: string[] = ['id', 'eventName', 'location', 'date', 'actions'];
 
-  // Quick stats
+  // ==================== STATISTICS ====================
   totalEvents = 0;
   publishedEvents = 0;
   draftEvents = 0;
   todaysEvents = 0;
+  pendingApprovals = 0;
+
+  // ==================== INSIGHTS ====================
+  upcomingEventsCount = 0;
+  pendingApprovalsCount = 0;
+
+  // ==================== AGENDA ====================
+  agendaItems: AgendaItem[] = [];
+
+  // ==================== CLEANUP ====================
+  private destroy$ = new Subject<void>();
+
+  // ==================== DEPENDENCY INJECTION ====================
+  private authService = inject(AuthService);
+  private eventService = inject(EventService);
+  private router = inject(Router);
+  private snackBar = inject(MatSnackBar);
+  private cdr = inject(ChangeDetectorRef);
 
   // Department mapping
   private departmentMap: Record<number, string> = {
@@ -136,199 +131,398 @@ export class DashboardComponent implements OnInit {
     7: 'General Staff'
   };
 
-  // Inject services
-  private authService = inject(AuthService);
-  private router = inject(Router);
-  private snackBar = inject(MatSnackBar);
+  // ==================== LIFECYCLE HOOKS ====================
 
   ngOnInit(): void {
     this.initializeComponent();
   }
 
-  private initializeComponent(): void {
-    this.isLoading = true;
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 
-    // Check authentication
+  // ==================== INITIALIZATION ====================
+
+  private initializeComponent(): void {
+    if (!this.checkAuthentication()) return;
+    
+    this.user = this.authService.getCurrentUser();
+    this.loadEvents();
+    this.setDefaultAgenda();
+  }
+
+  private checkAuthentication(): boolean {
     if (!this.authService.isAuthenticated()) {
       this.router.navigate(['/login']);
-      return;
+      return false;
+    }
+    return true;
+  }
+
+  private setDefaultAgenda(): void {
+    this.agendaItems = [
+      {
+        time: '10:00 AM',
+        title: 'Team Meeting',
+        location: 'Conference Room A',
+        icon: 'meeting_room'
+      },
+      {
+        time: '02:00 PM',
+        title: 'Client Presentation',
+        location: 'Main Hall',
+        icon: 'present_to_all'
+      },
+      {
+        time: '04:30 PM',
+        title: 'Vendor Review',
+        location: 'Meeting Room 3',
+        icon: 'business'
+      }
+    ];
+  }
+
+  // ==================== DATA LOADING ====================
+
+  private loadEvents(): void {
+    this.isLoadingEvents = true;
+
+    const filters = this.buildFilters();
+
+    this.eventService.getAllEvents(filters)
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => {
+          this.isLoadingEvents = false;
+          this.isLoading = false;
+          this.cdr.detectChanges();
+        })
+      )
+      .subscribe({
+        next: (events) => {
+          console.log('Master events loaded:', events.length);
+          this.setMasterData(events);
+        }
+      });
+  }
+
+  /**
+   * CRITICAL: This is the ONLY place where master data is set
+   * Never modify masterEvents or masterTableEvents after this
+   */
+  private setMasterData(events: Event[]): void {
+    // Set master raw events
+    this.masterEvents = events;
+    
+    // Transform and set master table events
+    this.masterTableEvents = this.transformToTableEvents(events);
+    
+    // Calculate statistics from master data
+    this.calculateStatistics();
+    
+    // Update insights from master data
+    this.updateInsights();
+    
+    // Apply current filters to populate filteredEvents
+    this.applyFilters();
+  }
+
+  /**
+   * Pure function: transforms events to table format without side effects
+   */
+  private transformToTableEvents(events: Event[]): TableEvent[] {
+    return events.map(event => ({
+      id: event.id || '',
+      name: event.title,
+      location: event.eventPlace,
+      date: new Date(event.startDate),
+      status: event.status,
+      departmentName: event.department?.name || 'Unknown',
+      createdByName: this.getFullName(event.createdBy),
+      raw: event
+    }));
+  }
+
+  private buildFilters(): { departmentId?: string; status?: string } {
+    const filters: { departmentId?: string; status?: string } = {};
+
+    if (!this.authService.isAdmin()) {
+      const deptGuid = this.authService.getDepartmentGuid();
+      if (deptGuid) {
+        filters.departmentId = deptGuid;
+      }
     }
 
-    // Get current user
-    this.user = this.authService.getCurrentUser();
-
-    // Initialize events data source
-    this.eventsDataSource = [...this.originalEvents];
-
-    // Calculate statistics
-    this.calculateStatistics();
-
-    this.isLoading = false;
+    return filters;
   }
 
+  /**
+   * Calculate statistics from master data
+   */
   private calculateStatistics(): void {
-    this.totalEvents = this.originalEvents.length;
-    this.publishedEvents = this.originalEvents.filter(e => e.status === 'published').length;
-    this.draftEvents = this.originalEvents.filter(e => e.status === 'draft').length;
-    this.todaysEvents = this.originalEvents.filter(e =>
-      e.date.toDateString() === new Date().toDateString()
+    this.totalEvents = this.masterEvents.length;
+    this.publishedEvents = this.masterEvents.filter(e => 
+      e.status === 'Approved' || e.status === 'Completed'
     ).length;
+    this.draftEvents = this.masterEvents.filter(e => e.status === 'Draft').length;
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    this.todaysEvents = this.masterEvents.filter(e => {
+      const eventDate = new Date(e.startDate);
+      eventDate.setHours(0, 0, 0, 0);
+      return eventDate.getTime() === today.getTime();
+    }).length;
   }
 
-  // Search method
-  applySearch(event: Event): void {
-    const filterValue = (event.target as HTMLInputElement).value.toLowerCase().trim();
+  /**
+   * Update insights from master data
+   */
+  private updateInsights(): void {
+    this.pendingApprovals = this.masterEvents.filter(e => e.status === 'Pending').length;
+    
+    const now = new Date();
+    const weekFromNow = new Date();
+    weekFromNow.setDate(weekFromNow.getDate() + 7);
+    
+    this.upcomingEventsCount = this.masterEvents.filter(e => {
+      const eventDate = new Date(e.startDate);
+      return eventDate >= now && eventDate <= weekFromNow;
+    }).length;
+    
+    this.pendingApprovalsCount = this.pendingApprovals;
+    this.updateAgendaWithEvents();
+  }
+
+  private updateAgendaWithEvents(): void {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const todaysEventsList = this.masterEvents
+      .filter(e => {
+        const eventDate = new Date(e.startDate);
+        eventDate.setHours(0, 0, 0, 0);
+        return eventDate.getTime() === today.getTime();
+      })
+      .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime())
+      .slice(0, 3);
+
+    if (todaysEventsList.length > 0) {
+      this.agendaItems = todaysEventsList.map(event => ({
+        time: new Date(event.startDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        title: event.title,
+        location: event.eventPlace,
+        icon: 'event'
+      }));
+    }
+  }
+
+  // ==================== FILTERING ====================
+  // ALL filter methods MUST filter from masterTableEvents and set filteredEvents
+
+  applySearch(event: any): void {
+    const filterValue = event.target.value.toLowerCase().trim();
     this.searchTerm = filterValue;
-    this.filterEvents();
+    this.applyFilters();
   }
 
-  // Tab change handler
   onTabChange(index: number): void {
     this.selectedTabIndex = index;
-    this.filterEvents();
+    this.applyFilters();
   }
 
-  // Combined filter method for both search and tabs
-  private filterEvents(): void {
-    // Start with all events
-    let filtered = [...this.originalEvents];
+  /**
+   * CRITICAL: Always filter from masterTableEvents
+   * Never filter from filteredEvents
+   */
+  private applyFilters(): void {
+    // Start with master copy (never modified)
+    let filtered = [...this.masterTableEvents];
+
+    console.log('📊 Filtering - Tab:', this.selectedTabIndex, 'Search:', this.searchTerm);
+    console.log('📊 Master count:', this.masterTableEvents.length);
 
     // Apply tab filter
     switch (this.selectedTabIndex) {
       case 1: // Published
-        filtered = filtered.filter(e => e.status === 'published');
+        filtered = filtered.filter(e => 
+          e.status === 'Approved' || e.status === 'Completed'
+        );
         break;
       case 2: // Draft
-        filtered = filtered.filter(e => e.status === 'draft');
+        filtered = filtered.filter(e => e.status === 'Draft');
         break;
       // case 0: ALL - no filter needed
     }
 
     // Apply search filter
-    if (this.searchTerm) {
+    if (this.searchTerm && this.searchTerm.trim() !== '') {
       filtered = filtered.filter(event =>
         event.name.toLowerCase().includes(this.searchTerm) ||
-        event.location.toLowerCase().includes(this.searchTerm)
+        event.location.toLowerCase().includes(this.searchTerm) ||
+        event.departmentName.toLowerCase().includes(this.searchTerm) ||
+        event.createdByName.toLowerCase().includes(this.searchTerm)
       );
     }
 
-    // Update the data source
-    this.eventsDataSource = filtered;
+    console.log('📊 Filtered count:', filtered.length);
+
+    // Update the display data source
+    this.filteredEvents = filtered;
+    this.cdr.detectChanges();
   }
 
-  // Date filter handler
   filterByDate(range: string): void {
-    switch (range) {
-      case 'today':
-        const today = new Date();
-        const filtered = this.originalEvents.filter(e =>
-          e.date.toDateString() === today.toDateString()
-        );
-        this.eventsDataSource = filtered;
-
-        // Show result count
-        this.snackBar.open(`Found ${filtered.length} event(s) for today`, 'Close', {
-          duration: 3000,
-          horizontalPosition: 'end',
-          verticalPosition: 'top'
-        });
-        break;
-    }
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // Filter from master, never from filtered
+    const filtered = this.masterTableEvents.filter(e => {
+      const eventDate = new Date(e.date);
+      eventDate.setHours(0, 0, 0, 0);
+      return eventDate.getTime() === today.getTime();
+    });
+    
+    this.filteredEvents = filtered;
+    this.cdr.detectChanges();
+    
+    this.snackBar.open(`Found ${filtered.length} event(s) for today`, 'Close', { 
+      duration: 3000 
+    });
   }
 
-  // Clear search
   clearSearch(): void {
     this.searchTerm = '';
-    this.filterEvents();
+    this.applyFilters(); // This will reset to tab-filtered view
   }
 
-  // Action methods
-  editEvent(event: EventData): void {
-    this.snackBar.open(`Editing: ${event.name}`, 'Close', {
-      duration: 3000,
-      horizontalPosition: 'end',
-      verticalPosition: 'top'
-    });
-    // Navigate to edit page
-    // this.router.navigate(['/events/edit', event.id]);
+  resetFilters(): void {
+    this.selectedTabIndex = 0;
+    this.searchTerm = '';
+    this.filteredEvents = [...this.masterTableEvents]; // Reset to all events
+    this.cdr.detectChanges();
   }
 
-  viewEvent(event: EventData): void {
-    this.snackBar.open(`Viewing: ${event.name}`, 'Close', {
-      duration: 3000,
-      horizontalPosition: 'end',
-      verticalPosition: 'top'
-    });
-    // Navigate to view page
-    // this.router.navigate(['/events/view', event.id]);
+  // ==================== ACTIONS ====================
+  // After any action that modifies data, reload from API
+
+  viewEvent(event: TableEvent): void {
+    this.router.navigate(['/events', event.id]);
   }
 
-  publishEvent(event: EventData): void {
-    if (event.status === 'draft') {
-      event.status = 'published';
-      this.snackBar.open(`Published: ${event.name}`, 'Close', {
-        duration: 3000,
-        horizontalPosition: 'end',
-        verticalPosition: 'top'
-      });
-      this.calculateStatistics();
-      this.filterEvents();
+  editEvent(event: TableEvent): void {
+    const canEdit = this.authService.isAdmin() || 
+                    (this.authService.isManager() && 
+                     this.authService.getDepartmentGuid() === event.raw.department?.id);
+    
+    if (canEdit) {
+      this.router.navigate(['/events/edit', event.id]);
+    } else {
+      this.showError('You do not have permission to edit this event');
     }
   }
 
-  deleteEvent(event: EventData): void {
-    // In a real app, you'd show a confirmation dialog
-    const index = this.originalEvents.indexOf(event);
-    if (index > -1) {
-      this.originalEvents.splice(index, 1);
-      this.filterEvents();
-      this.calculateStatistics();
-
-      this.snackBar.open(`Deleted: ${event.name}`, 'Close', {
-        duration: 3000,
-        horizontalPosition: 'end',
-        verticalPosition: 'top'
-      });
+  publishEvent(event: TableEvent): void {
+    if (event.status === 'Draft') {
+      const formData: Partial<EventFormData> = {
+        title: event.raw.title,
+        description: event.raw.description
+      };
+      
+      this.eventService.updateEvent(event.id, formData, EventStatus.PENDING)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => {
+            this.snackBar.open(`Event submitted for approval: ${event.name}`, 'Close', {
+              duration: 3000,
+              panelClass: ['success-snackbar']
+            });
+            this.loadEvents(); // Reload to get updated data
+          },
+          error: () => this.showError('Failed to publish event')
+        });
     }
   }
 
-  // Navigation methods
-  navigateToCreateEvent(): void { 
-    const canCreateEvents = this.authService.canCreateEvents();
-    if (canCreateEvents) {
+  deleteEvent(event: TableEvent): void {
+    if (confirm(`Are you sure you want to delete "${event.name}"?`)) {
+      this.eventService.deleteEvent(event.id)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => {
+            this.snackBar.open(`Deleted: ${event.name}`, 'Close', { duration: 3000 });
+            this.loadEvents(); // Reload to refresh list
+          },
+          error: () => this.showError('Failed to delete event')
+        });
+    }
+  }
+
+  // ==================== NAVIGATION ====================
+
+  navigateToCreateEvent(): void {
+    if (this.authService.canCreateEvents()) {
       this.router.navigate(['/events/create']);
     } else {
-      this.snackBar.open('You do not have permission to create events', 'Close', {
-        duration: 3000,
-        panelClass: ['error-snackbar'] // Add error styling
-      });
+      this.showError('You do not have permission to create events');
     }
   }
 
-  // Logout method
   logout(): void {
     this.authService.logout();
     this.router.navigate(['/login']);
   }
-  // Get department name from departmentId
+
+  // ====== UTILITY METHODS ========
+
+  get roleDisplay(): string {
+    return this.user?.roles?.[0] || 'User';
+  }
+
   get departmentName(): string {
     if (!this.user?.departmentId) return 'Unknown';
     return this.departmentMap[this.user.departmentId] || 'Unknown Department';
   }
 
-  // Get role display
-  get roleDisplay(): string {
-    if (!this.user?.roles || this.user.roles.length === 0) return 'User';
-    return this.user.roles[0];
+  getFullName(user: { firstName: string; lastName: string }): string {
+    return `${user.firstName} ${user.lastName}`;
   }
 
-  // Get status class for styling
   getStatusClass(status: string): string {
-    return status === 'published' ? 'published' : 'draft';
+    switch (status) {
+      case 'Approved':
+      case 'Completed':
+        return 'published';
+      case 'Draft':
+        return 'draft';
+      case 'Pending':
+        return 'pending';
+      case 'Rejected':
+        return 'rejected';
+      default:
+        return status.toLowerCase();
+    }
   }
 
-  // Add this method to check if user is admin
   isAdmin(): boolean {
     return this.authService.isAdmin();
+  }
+
+  isManager(): boolean {
+    return this.authService.isManager();
+  }
+
+  canApproveEvents(): boolean {
+    return this.authService.canApproveEvents();
+  }
+  // ===== ERROR HANDLING ====
+
+  private showError(message: string): void {
+    this.snackBar.open(message, 'Close', {
+      duration: 5000,
+      panelClass: ['error-snackbar']
+    });
   }
 }

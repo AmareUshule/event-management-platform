@@ -13,9 +13,10 @@
     <nav class="top-nav">
       <div class="nav-content">
         <div class="nav-left">
+
           <div class="brand-logo">
             <div class="logo-icon">
-              <mat-icon>calendar_today</mat-icon>
+              <img src="assets/images/eep_logo.jpg" alt="EEP Logo" class="eep-logo">
             </div>
             <h1 class="brand-name">EventPortal</h1>
           </div>
@@ -218,16 +219,17 @@
             </div>
 
             <!-- Search Results Info (below the header) -->
+
             <div class="search-info" *ngIf="searchTerm">
               <span class="search-term">Search results for: "{{ searchTerm }}"</span>
-              <span class="result-count">{{ eventsDataSource.length }} event(s) found</span>
+              <span class="result-count">{{ filteredEvents.length }} event(s) found</span>
             </div>
+
           </div>
 
           <!-- Events Table -->
           <div class="events-table-wrapper">
-            <table mat-table [dataSource]="eventsDataSource" class="modern-table">
-
+            <table mat-table [dataSource]="filteredEvents" class="modern-table">
               <!-- # Column -->
               <ng-container matColumnDef="id">
                 <th mat-header-cell *matHeaderCellDef>#</th>

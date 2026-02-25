@@ -2,11 +2,12 @@
 
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
-import { Observable, throwError, of } from 'rxjs';
-import { catchError, retry, timeout } from 'rxjs/operators';
-import { Event } from '../models/event.model';
+import { Observable, throwError } from 'rxjs';
+import { catchError, retry, timeout, map } from 'rxjs/operators';
+import { Event, CreateEventRequest, EventFormData, EventStatus, EventType } from '../models/event.model';
 import { environment } from '../../../../../environments/environment';
 import { AuthService } from '../../../../core/auth/auth.service';
+import { AuthUser } from '../../../../core/models/auth-user.model';
 
 export interface ApiResponse<T> {
   success: boolean;
@@ -34,6 +35,7 @@ export class EventService {
     const token = this.authService.getToken();
     return new HttpHeaders({
       'Content-Type': 'application/json',
+      'Accept': 'text/plain', // backend expects text/plain
       'Authorization': `Bearer ${token}`
     });
   }
@@ -86,13 +88,74 @@ export class EventService {
   }
 
   /**
+   * Transform form data to API request format
+   */
+  private transformToApiRequest(formData: EventFormData, status: EventStatus, user: AuthUser): CreateEventRequest {
+    // Determine the event place based on event type
+    const eventPlace = formData.eventType === EventType.PHYSICAL 
+      ? formData.address 
+      : formData.meetingLink;
+
+    return {
+      title: formData.title.trim(),
+      description: formData.description?.trim() || '',
+      startDate: this.formatDateToISO(formData.startDateTime),
+      endDate: this.formatDateToISO(formData.endDateTime),
+      eventPlace: eventPlace?.trim() || '',
+      status: status,
+      department: {
+        id: formData.departmentId.toString() // Convert number to string  API expects string
+      },
+      createdBy: {
+        id: user.adObjectId,        // This is the GUID/string ID from backend
+        employeeId: user.employeeId.toString() // Convert number to string  API expects string
+      }
+    };
+  }
+
+  /**
+   * Format date to ISO string
+   */
+  private formatDateToISO(date: Date | string): string {
+    if (!date) return '';
+    
+    try {
+      const dateObj = date instanceof Date ? date : new Date(date);
+      if (isNaN(dateObj.getTime())) {
+        throw new Error('Invalid date');
+      }
+      return dateObj.toISOString();
+    } catch (error) {
+      console.error('Date formatting error:', error);
+      return '';
+    }
+  }
+
+  /**
    * Create a new event
    */
-  createEvent(eventData: Event): Observable<ApiResponse<Event>> {
-    return this.http.post<ApiResponse<Event>>(
+  createEvent(formData: EventFormData, status: EventStatus): Observable<Event> {
+    const currentUser = this.authService.getCurrentUser();
+    
+    if (!currentUser) {
+      return throwError(() => new Error('User not authenticated'));
+    }
+
+    const requestData = this.transformToApiRequest(
+      formData, 
+      status, 
+      currentUser  // Pass the entire user object
+    );
+
+    console.log('📦 Sending to API:', JSON.stringify(requestData, null, 2));
+
+    return this.http.post<Event>(
       this.API_URL, 
-      eventData, 
-      { headers: this.getHeaders() }
+      requestData, 
+      { 
+        headers: this.getHeaders(),
+        responseType: 'json'
+      }
     ).pipe(
       timeout(this.REQUEST_TIMEOUT),
       retry(1),
@@ -103,44 +166,73 @@ export class EventService {
   /**
    * Get all events with optional filters
    */
-  getAllEvents(filters?: { departmentId?: number; status?: string }): Observable<ApiResponse<Event[]>> {
+  getAllEvents(filters?: { departmentId?: string; status?: string }): Observable<Event[]> {
     let url = this.API_URL;
     
     if (filters) {
       const params = new URLSearchParams();
-      if (filters.departmentId) params.set('departmentId', filters.departmentId.toString());
+      if (filters.departmentId) params.set('departmentId', filters.departmentId);
       if (filters.status) params.set('status', filters.status);
       url += `?${params.toString()}`;
     }
     
-    return this.http.get<ApiResponse<Event[]>>(url, { headers: this.getHeaders() })
-      .pipe(
-        timeout(this.REQUEST_TIMEOUT),
-        retry(1),
-        catchError(this.handleError.bind(this))
-      );
+    return this.http.get<Event[]>(url, { 
+      headers: this.getHeaders(),
+      responseType: 'json'
+    }).pipe(
+      timeout(this.REQUEST_TIMEOUT),
+      retry(1),
+      catchError(this.handleError.bind(this))
+    );
   }
 
   /**
    * Get event by ID
    */
-  getEventById(eventId: string): Observable<ApiResponse<Event>> {
-    return this.http.get<ApiResponse<Event>>(`${this.API_URL}/${eventId}`, { headers: this.getHeaders() })
-      .pipe(
-        timeout(this.REQUEST_TIMEOUT),
-        retry(1),
-        catchError(this.handleError.bind(this))
-      );
+  getEventById(eventId: string): Observable<Event> {
+    return this.http.get<Event>(`${this.API_URL}/${eventId}`, { 
+      headers: this.getHeaders(),
+      responseType: 'json'
+    }).pipe(
+      timeout(this.REQUEST_TIMEOUT),
+      retry(1),
+      catchError(this.handleError.bind(this))
+    );
   }
 
   /**
    * Update event
    */
-  updateEvent(eventId: string, eventData: Partial<Event>): Observable<ApiResponse<Event>> {
-    return this.http.put<ApiResponse<Event>>(
+  updateEvent(eventId: string, formData: Partial<EventFormData>, status: EventStatus): Observable<Event> {
+    const currentUser = this.authService.getCurrentUser();
+    
+    if (!currentUser) {
+      return throwError(() => new Error('User not authenticated'));
+    }
+
+    const requestData: any = {};
+    
+    if (formData.title) requestData.title = formData.title.trim();
+    if (formData.description !== undefined) requestData.description = formData.description?.trim() || '';
+    if (formData.startDateTime) requestData.startDate = this.formatDateToISO(formData.startDateTime);
+    if (formData.endDateTime) requestData.endDate = this.formatDateToISO(formData.endDateTime);
+    if (formData.eventType && (formData.address || formData.meetingLink)) {
+      requestData.eventPlace = formData.eventType === EventType.PHYSICAL 
+        ? formData.address 
+        : formData.meetingLink;
+    }
+    if (formData.departmentId) {
+      requestData.department = { id: formData.departmentId.toString() };
+    }
+    requestData.status = status;
+
+    return this.http.put<Event>(
       `${this.API_URL}/${eventId}`, 
-      eventData, 
-      { headers: this.getHeaders() }
+      requestData, 
+      { 
+        headers: this.getHeaders(),
+        responseType: 'json'
+      }
     ).pipe(
       timeout(this.REQUEST_TIMEOUT),
       retry(1),
@@ -151,23 +243,27 @@ export class EventService {
   /**
    * Delete event
    */
-  deleteEvent(eventId: string): Observable<ApiResponse<void>> {
-    return this.http.delete<ApiResponse<void>>(`${this.API_URL}/${eventId}`, { headers: this.getHeaders() })
-      .pipe(
-        timeout(this.REQUEST_TIMEOUT),
-        retry(1),
-        catchError(this.handleError.bind(this))
-      );
+  deleteEvent(eventId: string): Observable<void> {
+    return this.http.delete<void>(`${this.API_URL}/${eventId}`, { 
+      headers: this.getHeaders() 
+    }).pipe(
+      timeout(this.REQUEST_TIMEOUT),
+      retry(1),
+      catchError(this.handleError.bind(this))
+    );
   }
 
   /**
    * Approve event
    */
-  approveEvent(eventId: string): Observable<ApiResponse<Event>> {
-    return this.http.patch<ApiResponse<Event>>(
+  approveEvent(eventId: string): Observable<Event> {
+    return this.http.patch<Event>(
       `${this.API_URL}/${eventId}/approve`, 
       {}, 
-      { headers: this.getHeaders() }
+      { 
+        headers: this.getHeaders(),
+        responseType: 'json'
+      }
     ).pipe(
       timeout(this.REQUEST_TIMEOUT),
       retry(1),
@@ -178,11 +274,14 @@ export class EventService {
   /**
    * Reject event
    */
-  rejectEvent(eventId: string, reason: string): Observable<ApiResponse<Event>> {
-    return this.http.patch<ApiResponse<Event>>(
+  rejectEvent(eventId: string, reason: string): Observable<Event> {
+    return this.http.patch<Event>(
       `${this.API_URL}/${eventId}/reject`, 
       { reason }, 
-      { headers: this.getHeaders() }
+      { 
+        headers: this.getHeaders(),
+        responseType: 'json'
+      }
     ).pipe(
       timeout(this.REQUEST_TIMEOUT),
       retry(1),

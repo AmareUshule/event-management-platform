@@ -169,6 +169,21 @@ export class AuthService {
     return this.hasRole(ROLES.Employee);
   }
 
+  getDashboardRoute(): string {
+  if (this.isAdmin()) {
+    return '/admin/dashboard';
+  }
+
+  if (this.isManager()) {
+    return '/manager/dashboard';
+  }
+
+  if (this.isEmployee()) {
+    return '/employee/dashboard';
+  }
+
+  return '/';
+}
   // Get department GUID from current user (if needed for API calls)
   getDepartmentGuid(): string | null {
     const user = this.getCurrentUser();
