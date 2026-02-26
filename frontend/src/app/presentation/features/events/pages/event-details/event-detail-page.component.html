@@ -1,0 +1,137 @@
+<!-- event-detail-page.component.html -->
+<div class="event-detail-container">
+    <!-- Header with back button and actions -->
+    <div class="detail-header">
+        <div class="header-left">
+            <button mat-icon-button (click)="goBack()" matTooltip="Go back">
+                <mat-icon>arrow_back</mat-icon>
+            </button>
+            <h1>Event Details</h1>
+        </div>
+
+        <div class="header-actions" *ngIf="event">
+            <!-- Publish button - only show when status is Draft -->
+            <button class="action-btn" 
+                    *ngIf="event.status === 'Draft'"
+                    (click)="editEvent()" 
+                    matTooltip="Publish event">
+                <mat-icon>publish</mat-icon>
+                <span>Publish</span>
+            </button>
+            
+            <!-- Edit button - show for all statuses except maybe completed? -->
+            <button class="action-btn" 
+                    (click)="editEvent()" 
+                    matTooltip="Edit event">
+                <mat-icon>edit</mat-icon>
+                <span>Edit</span>
+            </button>
+            
+            <button class="action-btn" 
+                    (click)="downloadICS()" 
+                    matTooltip="Add to calendar">
+                <mat-icon>calendar_month</mat-icon>
+                <span>Add to Calendar</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Update the loading state condition -->
+    <div class="loading-state" *ngIf="loading && !event">
+        <mat-spinner diameter="40"></mat-spinner>
+        <p>Loading event details...</p>
+    </div>
+
+    <!-- Event details content -->
+    <div class="detail-content" *ngIf="!loading && event">
+        <!-- Main event info card -->
+        <div class="event-info-card">
+            <div class="event-title-section">
+                <h2>{{ event.title }}</h2>
+                <!-- Status banner moved inside the card after title -->
+                <div class="status-banner" [class]="event.status.toLowerCase()">
+                    <mat-icon>
+                        {{ event.status === 'Approved' ? 'check_circle' :
+                        event.status === 'Draft' ? 'drafts' :
+                        event.status === 'Completed' ? 'task_alt' : 'pending' }}
+                    </mat-icon>
+                    <span>{{ event.status }}</span>
+                </div>
+            </div>
+
+            <div class="info-grid">
+                <!-- Date & Time -->
+                <div class="info-item">
+                    <div class="info-icon">
+                        <mat-icon>event</mat-icon>
+                    </div>
+                    <div class="info-content">
+                        <span class="info-label">Date</span>
+                        <span class="info-value">{{ event.startDate | date:'fullDate' }}</span>
+                        <span class="info-subvalue">
+                            {{ event.startDate | date:'shortTime' }} - {{ event.endDate | date:'shortTime' }}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Location -->
+                <div class="info-item">
+                    <div class="info-icon">
+                        <mat-icon>location_on</mat-icon>
+                    </div>
+                    <div class="info-content">
+                        <span class="info-label">Location</span>
+                        <span class="info-value">{{ event.eventPlace }}</span>
+                        <button class="map-link" (click)="openInMaps()">
+                            View on map
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Organizer -->
+                <div class="info-item" *ngIf="event.createdBy">
+                    <div class="info-icon">
+                        <mat-icon>person</mat-icon>
+                    </div>
+                    <div class="info-content">
+                        <span class="info-label">Organizer</span>
+                        <span class="info-value">{{ event.createdBy.firstName }} {{ event.createdBy.lastName }}</span>
+                    </div>
+                </div>
+
+                <!-- Department -->
+                <div class="info-item" *ngIf="event.department">
+                    <div class="info-icon">
+                        <mat-icon>business</mat-icon>
+                    </div>
+                    <div class="info-content">
+                        <span class="info-label">Department</span>
+                        <span class="info-value">{{ event.department.name }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Description -->
+            <div class="description-section" *ngIf="event.description">
+                <h3>About this event</h3>
+                <p>{{ event.description }}</p>
+            </div>
+        </div>
+
+        <!-- Quick actions -->
+        <div class="quick-actions">
+            <button class="quick-action-btn" (click)="shareEvent()">
+                <mat-icon>share</mat-icon>
+                <span>Share</span>
+            </button>
+            <button class="quick-action-btn" (click)="downloadICS()">
+                <mat-icon>download</mat-icon>
+                <span>Save to calendar</span>
+            </button>
+            <button class="quick-action-btn" (click)="getDirections()">
+                <mat-icon>directions</mat-icon>
+                <span>Directions</span>
+            </button>
+        </div>
+    </div>
+</div>

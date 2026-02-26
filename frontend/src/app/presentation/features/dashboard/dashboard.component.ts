@@ -81,7 +81,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   // ==================== MASTER DATA (NEVER MODIFIED) ====================
   private masterEvents: Event[] = [];           // Raw events from API - NEVER TOUCH
   private masterTableEvents: TableEvent[] = []; // Transformed events - NEVER MODIFY
-  
+
   // ==================== FILTERED DATA (FOR DISPLAY) ====================
   filteredEvents: TableEvent[] = [];             // What table displays - MODIFIED BY FILTERS ONLY
 
@@ -146,7 +146,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   private initializeComponent(): void {
     if (!this.checkAuthentication()) return;
-    
+
     this.user = this.authService.getCurrentUser();
     this.loadEvents();
     this.setDefaultAgenda();
@@ -214,16 +214,16 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private setMasterData(events: Event[]): void {
     // Set master raw events
     this.masterEvents = events;
-    
+
     // Transform and set master table events
     this.masterTableEvents = this.transformToTableEvents(events);
-    
+
     // Calculate statistics from master data
     this.calculateStatistics();
-    
+
     // Update insights from master data
     this.updateInsights();
-    
+
     // Apply current filters to populate filteredEvents
     this.applyFilters();
   }
@@ -262,14 +262,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
    */
   private calculateStatistics(): void {
     this.totalEvents = this.masterEvents.length;
-    this.publishedEvents = this.masterEvents.filter(e => 
+    this.publishedEvents = this.masterEvents.filter(e =>
       e.status === 'Approved' || e.status === 'Completed'
     ).length;
     this.draftEvents = this.masterEvents.filter(e => e.status === 'Draft').length;
-    
+
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
+
     this.todaysEvents = this.masterEvents.filter(e => {
       const eventDate = new Date(e.startDate);
       eventDate.setHours(0, 0, 0, 0);
@@ -282,16 +282,16 @@ export class DashboardComponent implements OnInit, OnDestroy {
    */
   private updateInsights(): void {
     this.pendingApprovals = this.masterEvents.filter(e => e.status === 'Pending').length;
-    
+
     const now = new Date();
     const weekFromNow = new Date();
     weekFromNow.setDate(weekFromNow.getDate() + 7);
-    
+
     this.upcomingEventsCount = this.masterEvents.filter(e => {
       const eventDate = new Date(e.startDate);
       return eventDate >= now && eventDate <= weekFromNow;
     }).length;
-    
+
     this.pendingApprovalsCount = this.pendingApprovals;
     this.updateAgendaWithEvents();
   }
@@ -299,7 +299,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private updateAgendaWithEvents(): void {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
+
     const todaysEventsList = this.masterEvents
       .filter(e => {
         const eventDate = new Date(e.startDate);
@@ -333,6 +333,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.applyFilters();
   }
 
+  // ==================== ACTIONS ====================
+// After any action that modifies data, reload from API
+// dashboard.component.ts
+onRowClick(event: TableEvent): void {
+  // Make sure we're passing the complete event object
+  console.log('Navigating to event:', event.id, event);
+  this.router.navigate(['/events', event.id], { 
+    state: { event: event.raw || event } // Pass the raw event data if available
+  });
+}
+
   /**
    * CRITICAL: Always filter from masterTableEvents
    * Never filter from filteredEvents
@@ -347,7 +358,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     // Apply tab filter
     switch (this.selectedTabIndex) {
       case 1: // Published
-        filtered = filtered.filter(e => 
+        filtered = filtered.filter(e =>
           e.status === 'Approved' || e.status === 'Completed'
         );
         break;
@@ -377,19 +388,19 @@ export class DashboardComponent implements OnInit, OnDestroy {
   filterByDate(range: string): void {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
+
     // Filter from master, never from filtered
     const filtered = this.masterTableEvents.filter(e => {
       const eventDate = new Date(e.date);
       eventDate.setHours(0, 0, 0, 0);
       return eventDate.getTime() === today.getTime();
     });
-    
+
     this.filteredEvents = filtered;
     this.cdr.detectChanges();
-    
-    this.snackBar.open(`Found ${filtered.length} event(s) for today`, 'Close', { 
-      duration: 3000 
+
+    this.snackBar.open(`Found ${filtered.length} event(s) for today`, 'Close', {
+      duration: 3000
     });
   }
 
@@ -413,10 +424,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   editEvent(event: TableEvent): void {
-    const canEdit = this.authService.isAdmin() || 
-                    (this.authService.isManager() && 
-                     this.authService.getDepartmentGuid() === event.raw.department?.id);
-    
+    const canEdit = this.authService.isAdmin() ||
+      (this.authService.isManager() &&
+        this.authService.getDepartmentGuid() === event.raw.department?.id);
+
     if (canEdit) {
       this.router.navigate(['/events/edit', event.id]);
     } else {
@@ -430,7 +441,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         title: event.raw.title,
         description: event.raw.description
       };
-      
+
       this.eventService.updateEvent(event.id, formData, EventStatus.PENDING)
         .pipe(takeUntil(this.destroy$))
         .subscribe({

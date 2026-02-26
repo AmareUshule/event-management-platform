@@ -1471,3 +1471,86 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
     margin-top: 8px !important;
   }
 }
+
+// Add to your existing styles
+.table-row {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.04) !important;
+    
+    td:first-child {
+      position: relative;
+      
+      &::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 100%;
+        width: 3px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      }
+    }
+  }
+  
+  // Optional: Add a subtle box shadow on hover for depth
+  transition: all 0.2s ease;
+  
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+}
+
+// Ensure action buttons don't trigger row click
+.action-menu-btn {
+  position: relative;
+  z-index: 2;
+  cursor: pointer;
+  
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+  }
+}
+
+// Optional: Add visual feedback for clickable rows
+.clickable-row {
+  position: relative;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='9 18 15 12 9 6'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+  
+  &:hover::after {
+    opacity: 0.5;
+  }
+}
+
+// Make the entire row have a pointer cursor
+.mat-row {
+  cursor: pointer;
+  
+  // Except for cells containing action buttons
+  .mat-column-actions {
+    cursor: default;
+  }
+}
+
+// Add a pressed state for click feedback
+.clickable-row:active {
+  background-color: rgba(0, 0, 0, 0.08) !important;
+  transform: scale(0.99);
+}

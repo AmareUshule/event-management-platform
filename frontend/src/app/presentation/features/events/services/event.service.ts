@@ -3,7 +3,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
-import { catchError, retry, timeout, map } from 'rxjs/operators';
+import { catchError, retry, timeout, map, tap } from 'rxjs/operators';
 import { Event, CreateEventRequest, EventFormData, EventStatus, EventType } from '../models/event.model';
 import { environment } from '../../../../../environments/environment';
 import { AuthService } from '../../../../core/auth/auth.service';
@@ -189,16 +189,18 @@ export class EventService {
   /**
    * Get event by ID
    */
-  getEventById(eventId: string): Observable<Event> {
-    return this.http.get<Event>(`${this.API_URL}/${eventId}`, { 
-      headers: this.getHeaders(),
-      responseType: 'json'
-    }).pipe(
-      timeout(this.REQUEST_TIMEOUT),
-      retry(1),
-      catchError(this.handleError.bind(this))
+
+getEventById(id: string): Observable<Event> {
+    // Fix: Don't add extra 'events' - just use the ID
+    const url = `${this.API_URL}/${id}`;
+    console.log('Fetching event from:', url); // Should be: http://10.27.52.39:5230/api/events/019c9481-f1c5-7097-b781-9b79c1a34740
+    
+    return this.http.get<Event>(url).pipe(
+      tap(event => console.log('Event fetched successfully:', event)),
+      catchError(this.handleError)
     );
   }
+
 
   /**
    * Update event

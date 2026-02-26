@@ -175,161 +175,162 @@
       <!-- Dashboard Content -->
       <div class="dashboard-content">
         <!-- Events Table Section -->
-        <div class="table-section">
-          <div class="section-header">
-            <div class="section-title">
-              <mat-icon>table_chart</mat-icon>
-              <h3>Event Management</h3>
-            </div>
+        <!-- Events Table Section -->
+<div class="table-section">
+  <div class="section-header">
+    <div class="section-title">
+      <mat-icon>table_chart</mat-icon>
+      <h3>Event Management</h3>
+    </div>
 
-            <div class="table-controls">
-              <!-- Left side: Event Tabs -->
-              <div class="event-tabs">
-                <button class="event-tab" [class.active]="selectedTabIndex === 0" (click)="onTabChange(0)">
-                  ALL <span class="tab-count">{{ totalEvents }}</span>
-                </button>
-                <button class="event-tab" [class.active]="selectedTabIndex === 1" (click)="onTabChange(1)">
-                  Published <span class="tab-count">{{ publishedEvents }}</span>
-                </button>
-                <button class="event-tab" [class.active]="selectedTabIndex === 2" (click)="onTabChange(2)">
-                  Draft <span class="tab-count">{{ draftEvents }}</span>
-                </button>
-              </div>
+    <div class="table-controls">
+      <!-- Left side: Event Tabs -->
+      <div class="event-tabs">
+        <button class="event-tab" [class.active]="selectedTabIndex === 0" (click)="onTabChange(0)">
+          ALL <span class="tab-count">{{ totalEvents }}</span>
+        </button>
+        <button class="event-tab" [class.active]="selectedTabIndex === 1" (click)="onTabChange(1)">
+          Published <span class="tab-count">{{ publishedEvents }}</span>
+        </button>
+        <button class="event-tab" [class.active]="selectedTabIndex === 2" (click)="onTabChange(2)">
+          Draft <span class="tab-count">{{ draftEvents }}</span>
+        </button>
+      </div>
 
-              <!-- Right side: Search and Filter Section -->
-              <div class="search-filter-section">
-                <!-- Date Filter -->
-                <div class="date-filter">
-                  <button class="today-btn" (click)="filterByDate('today')" matTooltip="Show today's events">
-                    <mat-icon>today</mat-icon>
-                    Today
-                  </button>
-                </div>
-
-                <!-- Search Input with Clear Button -->
-                <div class="search-box">
-                  <mat-icon class="search-icon">search</mat-icon>
-                  <input type="text" placeholder="Search events by name or location..." (keyup)="applySearch($event)"
-                    [(ngModel)]="searchTerm" class="search-input" />
-                  <button *ngIf="searchTerm" class="clear-search-btn" (click)="clearSearch()" matTooltip="Clear search">
-                    <mat-icon>close</mat-icon>
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <!-- Search Results Info (below the header) -->
-
-            <div class="search-info" *ngIf="searchTerm">
-              <span class="search-term">Search results for: "{{ searchTerm }}"</span>
-              <span class="result-count">{{ filteredEvents.length }} event(s) found</span>
-            </div>
-
-          </div>
-
-          <!-- Events Table -->
-          <div class="events-table-wrapper">
-            <table mat-table [dataSource]="filteredEvents" class="modern-table">
-              <!-- # Column -->
-              <ng-container matColumnDef="id">
-                <th mat-header-cell *matHeaderCellDef>#</th>
-                <td mat-cell *matCellDef="let element; let i = index">
-                  <div class="index-badge">{{ i + 1 }}</div>
-                </td>
-              </ng-container>
-
-              <!-- Event Name Column -->
-              <ng-container matColumnDef="eventName">
-                <th mat-header-cell *matHeaderCellDef>Event Name</th>
-                <td mat-cell *matCellDef="let element">
-                  <div class="event-name-cell">
-                    <div class="event-icon">
-                      <mat-icon>event</mat-icon>
-                    </div>
-                    <div class="event-info">
-                      <span class="event-title">{{ element.name }}</span>
-                      <div class="event-status-badge" [class.published]="element.status === 'published'"
-                        [class.draft]="element.status === 'draft'">
-                        {{ element.status | titlecase }}
-                      </div>
-                    </div>
-                  </div>
-                </td>
-              </ng-container>
-
-              <!-- Location Column -->
-              <ng-container matColumnDef="location">
-                <th mat-header-cell *matHeaderCellDef>Location</th>
-                <td mat-cell *matCellDef="let element">
-                  <div class="location-cell">
-                    <mat-icon class="location-icon">location_on</mat-icon>
-                    <span>{{ element.location }}</span>
-                  </div>
-                </td>
-              </ng-container>
-
-              <!-- Date Column -->
-              <ng-container matColumnDef="date">
-                <th mat-header-cell *matHeaderCellDef>Date</th>
-                <td mat-cell *matCellDef="let element">
-                  <div class="date-cell">
-                    <mat-icon class="date-icon">calendar_today</mat-icon>
-                    <span>{{ element.date | date:'dd.MM.yyyy' }}</span>
-                  </div>
-                </td>
-              </ng-container>
-
-              <!-- Actions Column - Only Three Dot Menu -->
-              <ng-container matColumnDef="actions">
-                <th mat-header-cell *matHeaderCellDef>Actions</th>
-                <td mat-cell *matCellDef="let element">
-                  <button class="action-menu-btn" [matMenuTriggerFor]="actionsMenu" matTooltip="Actions">
-                    <mat-icon>more_vert</mat-icon>
-                  </button>
-
-                  <mat-menu #actionsMenu="matMenu" class="action-menu">
-                    <button mat-menu-item (click)="viewEvent(element)">
-                      <mat-icon>visibility</mat-icon>
-                      <span>View Details</span>
-                    </button>
-                    <button mat-menu-item (click)="editEvent(element)">
-                      <mat-icon>edit</mat-icon>
-                      <span>Edit Event</span>
-                    </button>
-                    <button mat-menu-item *ngIf="element.status === 'draft'" (click)="publishEvent(element)">
-                      <mat-icon>publish</mat-icon>
-                      <span>Publish Event</span>
-                    </button>
-                    <mat-divider></mat-divider>
-                    <button mat-menu-item (click)="deleteEvent(element)" class="delete-menu-item">
-                      <mat-icon color="warn">delete</mat-icon>
-                      <span>Delete Event</span>
-                    </button>
-                  </mat-menu>
-                </td>
-              </ng-container>
-
-              <tr mat-header-row *matHeaderRowDef="displayedColumns" class="table-header"></tr>
-              <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="table-row"></tr>
-
-              <!-- No Data Row -->
-              <tr class="mat-row" *matNoDataRow>
-                <td class="mat-cell no-data-cell" [attr.colspan]="displayedColumns.length">
-                  <div class="no-data-content">
-                    <mat-icon>event_busy</mat-icon>
-                    <h4>No events found</h4>
-                    <p *ngIf="searchTerm">No events match your search "{{ searchTerm }}"</p>
-                    <p *ngIf="!searchTerm">No events available in this category</p>
-                    <button class="clear-filter-btn" *ngIf="searchTerm" (click)="clearSearch()">
-                      <mat-icon>clear</mat-icon>
-                      Clear Search
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            </table>
-          </div>
+      <!-- Right side: Search and Filter Section -->
+      <div class="search-filter-section">
+        <!-- Date Filter -->
+        <div class="date-filter">
+          <button class="today-btn" (click)="filterByDate('today')" matTooltip="Show today's events">
+            <mat-icon>today</mat-icon>
+            Today
+          </button>
         </div>
+
+        <!-- Search Input with Clear Button -->
+        <div class="search-box">
+          <mat-icon class="search-icon">search</mat-icon>
+          <input type="text" placeholder="Search events by name or location..." (keyup)="applySearch($event)"
+            [(ngModel)]="searchTerm" class="search-input" />
+          <button *ngIf="searchTerm" class="clear-search-btn" (click)="clearSearch()" matTooltip="Clear search">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Search Results Info (below the header) -->
+    <div class="search-info" *ngIf="searchTerm">
+      <span class="search-term">Search results for: "{{ searchTerm }}"</span>
+      <span class="result-count">{{ filteredEvents.length }} event(s) found</span>
+    </div>
+  </div>
+
+  <!-- Events Table -->
+  <div class="events-table-wrapper">
+    <table mat-table [dataSource]="filteredEvents" class="modern-table">
+      <!-- # Column -->
+      <ng-container matColumnDef="id">
+        <th mat-header-cell *matHeaderCellDef>#</th>
+        <td mat-cell *matCellDef="let element; let i = index">
+          <div class="index-badge">{{ i + 1 }}</div>
+        </td>
+      </ng-container>
+
+      <!-- Event Name Column -->
+      <ng-container matColumnDef="eventName">
+        <th mat-header-cell *matHeaderCellDef>Event Name</th>
+        <td mat-cell *matCellDef="let element">
+          <div class="event-name-cell">
+            <div class="event-icon">
+              <mat-icon>event</mat-icon>
+            </div>
+            <div class="event-info">
+              <span class="event-title">{{ element.name }}</span>
+              <div class="event-status-badge" [class.published]="element.status === 'Approved' || element.status === 'Completed'"
+                [class.draft]="element.status === 'Draft'" [class.pending]="element.status === 'Pending'">
+                {{ element.status | titlecase }}
+              </div>
+            </div>
+          </div>
+        </td>
+      </ng-container>
+
+      <!-- Location Column -->
+      <ng-container matColumnDef="location">
+        <th mat-header-cell *matHeaderCellDef>Location</th>
+        <td mat-cell *matCellDef="let element">
+          <div class="location-cell">
+            <mat-icon class="location-icon">location_on</mat-icon>
+            <span>{{ element.location }}</span>
+          </div>
+        </td>
+      </ng-container>
+
+      <!-- Date Column -->
+      <ng-container matColumnDef="date">
+        <th mat-header-cell *matHeaderCellDef>Date</th>
+        <td mat-cell *matCellDef="let element">
+          <div class="date-cell">
+            <mat-icon class="date-icon">calendar_today</mat-icon>
+            <span>{{ element.date | date:'dd.MM.yyyy' }}</span>
+          </div>
+        </td>
+      </ng-container>
+
+      <!-- Actions Column - Only Three Dot Menu -->
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef>Actions</th>
+        <td mat-cell *matCellDef="let element" (click)="$event.stopPropagation()">
+          <button class="action-menu-btn" [matMenuTriggerFor]="actionsMenu" matTooltip="Actions">
+            <mat-icon>more_vert</mat-icon>
+          </button>
+
+          <mat-menu #actionsMenu="matMenu" class="action-menu">
+            <button mat-menu-item (click)="viewEvent(element)">
+              <mat-icon>visibility</mat-icon>
+              <span>View Details</span>
+            </button>
+            <button mat-menu-item (click)="editEvent(element)">
+              <mat-icon>edit</mat-icon>
+              <span>Edit Event</span>
+            </button>
+            <button mat-menu-item *ngIf="element.status === 'Draft'" (click)="publishEvent(element)">
+              <mat-icon>publish</mat-icon>
+              <span>Publish Event</span>
+            </button>
+            <mat-divider></mat-divider>
+            <button mat-menu-item (click)="deleteEvent(element)" class="delete-menu-item">
+              <mat-icon color="warn">delete</mat-icon>
+              <span>Delete Event</span>
+            </button>
+          </mat-menu>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns" class="table-header"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;" 
+          class="table-row clickable-row" 
+          (click)="onRowClick(row)"></tr>
+
+      <!-- No Data Row -->
+      <tr class="mat-row" *matNoDataRow>
+        <td class="mat-cell no-data-cell" [attr.colspan]="displayedColumns.length">
+          <div class="no-data-content">
+            <mat-icon>event_busy</mat-icon>
+            <h4>No events found</h4>
+            <p *ngIf="searchTerm">No events match your search "{{ searchTerm }}"</p>
+            <p *ngIf="!searchTerm">No events available in this category</p>
+            <button class="clear-filter-btn" *ngIf="searchTerm" (click)="clearSearch()">
+              <mat-icon>clear</mat-icon>
+              Clear Search
+            </button>
+          </div>
+        </td>
+      </tr>
+    </table>
+  </div>
+</div>
 
         <!-- Quick Stats & Actions Sidebar -->
         <div class="sidebar">
