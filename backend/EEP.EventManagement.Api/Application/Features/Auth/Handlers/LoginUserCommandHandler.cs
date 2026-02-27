@@ -43,6 +43,8 @@ namespace EEP.EventManagement.Api.Application.Features.Auth.Handlers
             return new LoginResponseDto
             {
                 Token = token,
+                LastName = user.LastName,
+                FirstName = user.FirstName,
                 UserId = user.Id.ToString(),
                 Email = user.Email!,
                 Role = roles.FirstOrDefault() ?? string.Empty,

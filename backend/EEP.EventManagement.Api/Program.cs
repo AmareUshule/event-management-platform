@@ -14,6 +14,7 @@ using System.Reflection;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using EEP.EventManagement.Api.Infrastructure.Security.Claims;
 using EEP.EventManagement.Api.Infrastructure.Security.JWT;
 using EEP.EventManagement.Api.Middlewares;
 using Microsoft.AspNetCore.Authorization;
@@ -27,6 +28,25 @@ var jwtSettings = new JwtSettings();
 builder.Configuration.Bind(nameof(JwtSettings), jwtSettings);
 builder.Services.AddSingleton(jwtSettings);
 builder.Services.AddScoped<JwtTokenGenerator>();
+
+// ----------------------
+// Add cors
+// ---------------------
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAngularApp", policy =>
+    {
+        policy.WithOrigins(
+                "http://localhost:4200",
+                "http://10.27.52.167:4200"
+            )
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
+    });
+});
+
 
 // -----------------------------
 // Register contrllers
@@ -43,6 +63,8 @@ builder.Services.AddDbContext<IdentityDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Application services
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IUserContext, EEP.EventManagement.Api.Infrastructure.Security.UserContext>();
 builder.Services.AddScoped<IEventRepository, EventRepository>();
 builder.Services.AddScoped<IDepartmentRepository, DepartmentRepository>();
 builder.Services.AddScoped<IAssignmentRepository, AssignmentRepository>();
@@ -51,6 +73,9 @@ builder.Services.AddScoped<IAssignmentRepository, AssignmentRepository>();
 builder.Services.AddScoped<IAuthorizationHandler, EEP.EventManagement.Api.Infrastructure.Security.Authorization.Handlers.IsCommunicationManagerHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, EEP.EventManagement.Api.Infrastructure.Security.Authorization.Handlers.IsAssignedToEventHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, EEP.EventManagement.Api.Infrastructure.Security.Authorization.Handlers.IsDepartmentManagerOfResourceHandler>();
+
+// AutoMapper
+builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
 
 // MediatR
 builder.Services.AddMediatR(cfg =>
@@ -109,7 +134,7 @@ var app = builder.Build();
 // -----------------------------
 // Custom Exception Handling Middleware
 // -----------------------------
-app.UseMiddleware<ExceptionHandlingMiddleware>();
+app.UseMiddleware<ExceptionHandlingMiddleware>(app.Environment);
 
 // -----------------------------
 // SEED ROLES
@@ -130,6 +155,8 @@ using (var scope = app.Services.CreateScope())
 }
 
 
+
+
 // -----------------------------
 // MIDDLEWARE
 // -----------------------------
@@ -141,6 +168,12 @@ if (app.Environment.IsDevelopment())
 
 // Enable HTTPS redirection
 app.UseHttpsRedirection();
+
+// -----------------------------
+// ENABLE CORS
+// -----------------------------
+app.UseCors("AllowAngularApp");
+
 
 // -----------------------------
 // ENABLE AUTHENTICATION AND AUTHORIZATION

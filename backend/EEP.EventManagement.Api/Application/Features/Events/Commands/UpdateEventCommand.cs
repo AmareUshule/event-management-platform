@@ -3,8 +3,8 @@ using MediatR;
 
 namespace EEP.EventManagement.Api.Application.Features.Events.Commands
 {
-    public class CreateEventCommand : IRequest<EventDto>
+    public class UpdateEventCommand : IRequest<EventDto>
     {
-        public CreateEventDto CreateEventDto { get; set; }
+        public UpdateEventDto UpdateEventDto { get; set; }
     }
 }

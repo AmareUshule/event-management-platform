@@ -11,7 +11,7 @@ namespace EEP.EventManagement.Api.Infrastructure.Persistence.Configurations
             builder.ToTable("Events");
 
             builder.HasKey(e => e.Id);
-            builder.Property(e => e.Id).HasColumnName("event_id");
+            builder.Property(e => e.Id).HasColumnName("Id");
 
             builder.Property(e => e.Title)
                 .HasMaxLength(150)
@@ -37,8 +37,16 @@ namespace EEP.EventManagement.Api.Infrastructure.Persistence.Configurations
             builder.Property(e => e.CreatedBy)
                 .IsRequired();
 
+            builder.Property(e => e.ApprovedBy);
+
             builder.Property(e => e.EventPlace)
                 .HasMaxLength(255);
+
+            builder.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("now()");
+
+            builder.Property(e => e.UpdatedAt)
+                .HasDefaultValueSql("now()");
 
             builder.HasOne(e => e.Department)
                 .WithMany()
