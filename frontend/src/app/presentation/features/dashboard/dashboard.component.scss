@@ -183,6 +183,12 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
             position: relative;
             z-index: 1;
           }
+          
+          .eep-logo {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+          }
         }
         
         .brand-name {
@@ -196,11 +202,6 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
           letter-spacing: -0.5px;
         }
       }
-      .eep-logo {
-  width: 40px;
-  height: 40px;
-  object-fit: contain;
-}
       
       .nav-tabs {
         display: flex;
@@ -537,10 +538,6 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
     border-top-color: $dark-200;
   }
 }
-
-// Rest of the styles remain the same...
-// [Continue with all the styles from .dashboard-main, .dashboard-header, .dashboard-content, 
-//  .table-section, .sidebar, animations, and responsive design as they were in your original file]
 
 // Modern Dashboard Main
 .dashboard-main {
@@ -972,7 +969,9 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   
   .events-table-wrapper {
     overflow-x: auto;
-    padding: 0 24px 24px;
+    padding: 0 24px 16px;
+    display: flex;
+    flex-direction: column;
     
     .modern-table {
       width: 100%;
@@ -996,11 +995,40 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
         background: $white;
         border-radius: 12px;
         transition: all 0.3s ease;
-        cursor: pointer;
+        position: relative;
         
         &:hover {
           transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba($primary-color, 0.1);
+          box-shadow: 0 4px 12px rgba($primary-color, 0.15);
+          background: $white;
+          
+          &::after {
+            opacity: 0.5;
+          }
+        }
+        
+        &:active {
+          transform: scale(0.99);
+          background-color: rgba($primary-color, 0.02) !important;
+        }
+        
+        &.clickable-row {
+          cursor: pointer;
+          
+          &::after {
+            content: '';
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='9 18 15 12 9 6'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: center;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+          }
         }
         
         .mat-cell {
@@ -1069,6 +1097,11 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
                   background: rgba($warning-color, 0.1);
                   color: $warning-dark;
                 }
+                
+                &.pending {
+                  background: rgba($warning-color, 0.1);
+                  color: $warning-dark;
+                }
               }
             }
           }
@@ -1098,6 +1131,8 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
             justify-content: center;
             cursor: pointer;
             transition: all 0.3s ease;
+            position: relative;
+            z-index: 10;
             
             &:hover {
               background: $primary-color;
@@ -1111,6 +1146,11 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
               height: 18px;
             }
           }
+        }
+        
+        // Ensure actions column doesn't trigger row click
+        .mat-column-actions {
+          cursor: default;
         }
       }
       
@@ -1349,6 +1389,96 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   }
 }
 
+// Paginator Styles
+::ng-deep .mat-mdc-paginator {
+  background: transparent !important;
+  margin-top: 16px;
+  border-top: 1px solid $dark-200;
+  padding: 8px 0;
+  
+  .mat-mdc-paginator-container {
+    min-height: 56px;
+    padding: 0 16px;
+  }
+  
+  .mat-mdc-paginator-range-label {
+    color: $dark-600;
+    font-size: 14px;
+    font-weight: 500;
+    margin: 0 24px;
+  }
+  
+  .mat-mdc-paginator-navigation-button {
+    background: $white !important;
+    border: 1px solid $dark-200 !important;
+    border-radius: 8px !important;
+    width: 40px !important;
+    height: 40px !important;
+    transition: all 0.3s ease;
+    
+    &:hover {
+      background: $primary-bg !important;
+      border-color: $primary-color !important;
+      transform: translateY(-2px);
+      
+      .mat-mdc-paginator-icon {
+        fill: $primary-color !important;
+      }
+    }
+    
+    &:disabled {
+      opacity: 0.5;
+      pointer-events: none;
+    }
+  }
+  
+  .mat-mdc-paginator-page-size {
+    .mat-mdc-paginator-page-size-label {
+      color: $dark-600;
+      font-size: 14px;
+      font-weight: 500;
+      margin-right: 8px;
+    }
+    
+    .mat-mdc-select {
+      background: $white !important;
+      border: 1px solid $dark-200 !important;
+      border-radius: 8px !important;
+      padding: 8px 24px 8px 12px !important;
+      font-size: 14px !important;
+      color: $dark-700 !important;
+      transition: all 0.3s ease;
+      
+      &:hover {
+        border-color: $primary-color !important;
+      }
+      
+      .mat-mdc-select-value {
+        color: $dark-700;
+      }
+      
+      .mat-mdc-select-arrow {
+        color: $dark-500;
+      }
+    }
+  }
+}
+
+// Menu Backdrop Overlay
+::ng-deep .cdk-overlay-container {
+  .cdk-overlay-backdrop {
+    &.cdk-overlay-transparent-backdrop {
+      background: rgba(0, 0, 0, 0.2);
+      backdrop-filter: blur(2px);
+      transition: all 0.3s ease;
+    }
+  }
+  
+  .cdk-overlay-pane {
+    margin-top: 8px !important;
+  }
+}
+
 // Animations
 @keyframes spin {
   0% { transform: rotate(0deg); }
@@ -1456,101 +1586,111 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
     padding: 16px;
   }
 }
-
-// Menu Backdrop Overlay
-::ng-deep .cdk-overlay-container {
-  .cdk-overlay-backdrop {
-    &.cdk-overlay-transparent-backdrop {
-      background: rgba(0, 0, 0, 0.2);
-      backdrop-filter: blur(2px);
-      transition: all 0.3s ease;
-    }
-  }
+.table-container {
+  padding: 0 24px 24px;
   
-  .cdk-overlay-pane {
-    margin-top: 8px !important;
+  .page-indicator {
+    margin-top: 16px;
+    padding: 8px 16px;
+    background: $primary-bg;
+    border-radius: 30px;
+    color: $primary-color;
+    font-size: 13px;
+    font-weight: 500;
+    text-align: center;
   }
 }
 
-// Add to your existing styles
-.table-row {
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-
-  &:hover {
-    background-color: rgba(0, 0, 0, 0.04) !important;
+// Custom Paginator Styles
+.custom-paginator {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  border-top: 1px solid $dark-200;
+  margin-top: 16px;
+  
+  .paginator-info {
+    color: $dark-600;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  
+  .paginator-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     
-    td:first-child {
-      position: relative;
+    .paginator-btn {
+      width: 36px;
+      height: 36px;
+      border: 1px solid $dark-200;
+      background: $white;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      color: $dark-600;
       
-      &::before {
-        content: '';
-        position: absolute;
-        left: 0;
-        top: 0;
-        height: 100%;
-        width: 3px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      &:hover:not(:disabled) {
+        background: $primary-bg;
+        border-color: $primary-color;
+        color: $primary-color;
+      }
+      
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      
+      mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+      }
+    }
+    
+    .page-numbers {
+      margin: 0 12px;
+      
+      .current-page-display {
+        font-size: 14px;
+        font-weight: 500;
+        color: $dark-700;
       }
     }
   }
   
-  // Optional: Add a subtle box shadow on hover for depth
-  transition: all 0.2s ease;
-  
-  &:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  .page-size-selector {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    
+    span {
+      color: $dark-600;
+      font-size: 14px;
+    }
+    
+    select {
+      padding: 8px 12px;
+      border: 1px solid $dark-200;
+      border-radius: 8px;
+      font-size: 14px;
+      color: $dark-700;
+      background: $white;
+      cursor: pointer;
+      
+      &:hover {
+        border-color: $primary-color;
+      }
+      
+      &:focus {
+        outline: none;
+        border-color: $primary-color;
+        box-shadow: 0 0 0 2px rgba($primary-color, 0.1);
+      }
+    }
   }
-}
-
-// Ensure action buttons don't trigger row click
-.action-menu-btn {
-  position: relative;
-  z-index: 2;
-  cursor: pointer;
-  
-  &:hover {
-    background-color: rgba(0, 0, 0, 0.04);
-  }
-}
-
-// Optional: Add visual feedback for clickable rows
-.clickable-row {
-  position: relative;
-  
-  &::after {
-    content: '';
-    position: absolute;
-    right: 16px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 20px;
-    height: 20px;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='9 18 15 12 9 6'%3E%3C/polyline%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: center;
-    opacity: 0;
-    transition: opacity 0.2s ease;
-  }
-  
-  &:hover::after {
-    opacity: 0.5;
-  }
-}
-
-// Make the entire row have a pointer cursor
-.mat-row {
-  cursor: pointer;
-  
-  // Except for cells containing action buttons
-  .mat-column-actions {
-    cursor: default;
-  }
-}
-
-// Add a pressed state for click feedback
-.clickable-row:active {
-  background-color: rgba(0, 0, 0, 0.08) !important;
-  transform: scale(0.99);
 }

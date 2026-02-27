@@ -78,12 +78,19 @@ export interface AgendaItem {
   styleUrls: ['./dashboard.component.scss']
 })
 export class DashboardComponent implements OnInit, OnDestroy {
-  // ==================== MASTER DATA (NEVER MODIFIED) ====================
-  private masterEvents: Event[] = [];           // Raw events from API - NEVER TOUCH
-  private masterTableEvents: TableEvent[] = []; // Transformed events - NEVER MODIFY
+  // ==================== MASTER DATA (SOURCE OF TRUTH - NEVER MODIFIED) ====================
+  private masterEvents: Event[] = [];           // Raw events from API - NEVER TOUCH AFTER SET
+  private masterTableEvents: TableEvent[] = []; // Transformed events - NEVER MODIFY AFTER SET
 
-  // ==================== FILTERED DATA (FOR DISPLAY) ====================
-  filteredEvents: TableEvent[] = [];             // What table displays - MODIFIED BY FILTERS ONLY
+  // ==================== FILTERED DATA (FOR DISPLAY - MODIFIED BY FILTERS ONLY) ====================
+  filteredEvents: TableEvent[] = [];             // All filtered events - UPDATED ONLY VIA applyFilters()
+  paginatedEvents: TableEvent[] = [];            // Current page of events for display
+
+  // ==================== PAGINATION STATE ====================
+  currentPage = 0;
+  pageSize = 5;
+  totalPages = 0;
+  pageSizeOptions: number[] = [5, 10, 25, 50];
 
   // ==================== UI STATE ====================
   user: AuthUser | null = null;
@@ -96,18 +103,18 @@ export class DashboardComponent implements OnInit, OnDestroy {
   // ==================== TABLE CONFIGURATION ====================
   displayedColumns: string[] = ['id', 'eventName', 'location', 'date', 'actions'];
 
-  // ==================== STATISTICS ====================
+  // ==================== STATISTICS (DERIVED FROM MASTER DATA) ====================
   totalEvents = 0;
   publishedEvents = 0;
   draftEvents = 0;
   todaysEvents = 0;
   pendingApprovals = 0;
 
-  // ==================== INSIGHTS ====================
+  // ==================== INSIGHTS (DERIVED FROM MASTER DATA) ====================
   upcomingEventsCount = 0;
   pendingApprovalsCount = 0;
 
-  // ==================== AGENDA ====================
+  // ==================== AGENDA (DERIVED FROM MASTER DATA) ====================
   agendaItems: AgendaItem[] = [];
 
   // ==================== CLEANUP ====================
@@ -184,6 +191,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   // ==================== DATA LOADING ====================
+  // LOADING: Only updates master data, never filtered data directly
 
   private loadEvents(): void {
     this.isLoadingEvents = true;
@@ -201,35 +209,47 @@ export class DashboardComponent implements OnInit, OnDestroy {
       )
       .subscribe({
         next: (events) => {
-          console.log('Master events loaded:', events.length);
+          console.log('📥 Master events loaded:', events.length);
           this.setMasterData(events);
+        },
+        error: (error) => {
+          console.error('Failed to load events:', error);
+          this.showError('Failed to load events');
         }
       });
   }
 
   /**
-   * CRITICAL: This is the ONLY place where master data is set
-   * Never modify masterEvents or masterTableEvents after this
+   * CRITICAL: This is the SINGLE SOURCE OF TRUTH for master data
+   * This is the ONLY place where masterEvents and masterTableEvents are set
+   * All derived data (statistics, insights, agenda) is calculated here
+   * Finally, filters are applied to populate filteredEvents and paginatedEvents
    */
   private setMasterData(events: Event[]): void {
-    // Set master raw events
+    // 1. Set master raw events (never modify after this)
     this.masterEvents = events;
 
-    // Transform and set master table events
+    // 2. Transform and set master table events (never modify after this)
     this.masterTableEvents = this.transformToTableEvents(events);
 
-    // Calculate statistics from master data
+    // 3. Calculate all derived data from master
     this.calculateStatistics();
-
-    // Update insights from master data
     this.updateInsights();
+    this.updateAgendaFromMaster();
 
-    // Apply current filters to populate filteredEvents
+    // 4. Apply current filters to populate filteredEvents and paginatedEvents for display
     this.applyFilters();
+
+    console.log('📊 Master data updated:', {
+      total: this.masterEvents.length,
+      filtered: this.filteredEvents.length,
+      paginated: this.paginatedEvents.length,
+      stats: { total: this.totalEvents, published: this.publishedEvents, draft: this.draftEvents }
+    });
   }
 
   /**
-   * Pure function: transforms events to table format without side effects
+   * PURE FUNCTION: Transforms events to table format without side effects
    */
   private transformToTableEvents(events: Event[]): TableEvent[] {
     return events.map(event => ({
@@ -256,6 +276,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     return filters;
   }
+
+  // ==================== DERIVED DATA CALCULATIONS ====================
+  // All methods here read from master data and update display properties
 
   /**
    * Calculate statistics from master data
@@ -293,10 +316,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }).length;
 
     this.pendingApprovalsCount = this.pendingApprovals;
-    this.updateAgendaWithEvents();
   }
 
-  private updateAgendaWithEvents(): void {
+  /**
+   * Update agenda from master data
+   */
+  private updateAgendaFromMaster(): void {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -320,39 +345,38 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   // ==================== FILTERING ====================
-  // ALL filter methods MUST filter from masterTableEvents and set filteredEvents
+  // CRITICAL: All filter methods MUST:
+  // 1. Start from masterTableEvents (never from filteredEvents)
+  // 2. Apply all active filters
+  // 3. Update filteredEvents
+  // 4. Reset pagination and update paginatedEvents
 
+  /**
+   * Apply search filter - triggered from input
+   */
   applySearch(event: any): void {
     const filterValue = event.target.value.toLowerCase().trim();
     this.searchTerm = filterValue;
     this.applyFilters();
   }
 
+  /**
+   * Handle tab change - updates tab filter
+   */
   onTabChange(index: number): void {
     this.selectedTabIndex = index;
     this.applyFilters();
   }
 
-  // ==================== ACTIONS ====================
-// After any action that modifies data, reload from API
-// dashboard.component.ts
-onRowClick(event: TableEvent): void {
-  // Make sure we're passing the complete event object
-  console.log('Navigating to event:', event.id, event);
-  this.router.navigate(['/events', event.id], { 
-    state: { event: event.raw || event } // Pass the raw event data if available
-  });
-}
-
   /**
-   * CRITICAL: Always filter from masterTableEvents
-   * Never filter from filteredEvents
+   * CORE FILTERING METHOD: Applies all active filters to master data
+   * This is the ONLY place that should update filteredEvents
    */
   private applyFilters(): void {
-    // Start with master copy (never modified)
+    // CRITICAL: Always start with a fresh copy of master data
     let filtered = [...this.masterTableEvents];
 
-    console.log('📊 Filtering - Tab:', this.selectedTabIndex, 'Search:', this.searchTerm);
+    console.log('🔍 Applying filters - Tab:', this.selectedTabIndex, 'Search:', this.searchTerm);
     console.log('📊 Master count:', this.masterTableEvents.length);
 
     // Apply tab filter
@@ -365,31 +389,131 @@ onRowClick(event: TableEvent): void {
       case 2: // Draft
         filtered = filtered.filter(e => e.status === 'Draft');
         break;
+      case 3: // Pending
+        filtered = filtered.filter(e => e.status === 'Pending');
+        break;
       // case 0: ALL - no filter needed
     }
 
     // Apply search filter
     if (this.searchTerm && this.searchTerm.trim() !== '') {
+      const searchLower = this.searchTerm.toLowerCase();
       filtered = filtered.filter(event =>
-        event.name.toLowerCase().includes(this.searchTerm) ||
-        event.location.toLowerCase().includes(this.searchTerm) ||
-        event.departmentName.toLowerCase().includes(this.searchTerm) ||
-        event.createdByName.toLowerCase().includes(this.searchTerm)
+        event.name.toLowerCase().includes(searchLower) ||
+        event.location.toLowerCase().includes(searchLower) ||
+        event.departmentName.toLowerCase().includes(searchLower) ||
+        event.createdByName.toLowerCase().includes(searchLower)
       );
     }
 
     console.log('📊 Filtered count:', filtered.length);
 
-    // Update the display data source
+    // Update filtered data
     this.filteredEvents = filtered;
+    
+    // Reset to first page and update paginated events
+    this.currentPage = 0;
+    this.updatePaginatedEvents();
+    
     this.cdr.detectChanges();
   }
 
+  // ==================== PAGINATION METHODS ====================
+
+  /**
+   * Update paginated events based on current page and page size
+   */
+  private updatePaginatedEvents(): void {
+    // Calculate total pages
+    this.totalPages = Math.ceil(this.filteredEvents.length / this.pageSize);
+    
+    // Ensure current page is valid
+    if (this.currentPage >= this.totalPages) {
+      this.currentPage = Math.max(0, this.totalPages - 1);
+    }
+    
+    // Calculate slice indices
+    const startIndex = this.currentPage * this.pageSize;
+    const endIndex = Math.min(startIndex + this.pageSize, this.filteredEvents.length);
+    
+    // Get current page events
+    this.paginatedEvents = this.filteredEvents.slice(startIndex, endIndex);
+    
+    console.log(`📄 Page ${this.currentPage + 1} of ${this.totalPages}:`, {
+      total: this.filteredEvents.length,
+      startIndex,
+      endIndex,
+      events: this.paginatedEvents.map(e => e.name)
+    });
+    
+    this.cdr.detectChanges();
+  }
+
+  /**
+   * Go to next page
+   */
+  nextPage(): void {
+    if (this.currentPage < this.totalPages - 1) {
+      this.currentPage++;
+      this.updatePaginatedEvents();
+    }
+  }
+
+  /**
+   * Go to previous page
+   */
+  previousPage(): void {
+    if (this.currentPage > 0) {
+      this.currentPage--;
+      this.updatePaginatedEvents();
+    }
+  }
+
+  /**
+   * Go to first page
+   */
+  goToFirstPage(): void {
+    this.currentPage = 0;
+    this.updatePaginatedEvents();
+  }
+
+  /**
+   * Go to last page
+   */
+  goToLastPage(): void {
+    this.currentPage = this.totalPages - 1;
+    this.updatePaginatedEvents();
+  }
+
+  /**
+   * Handle page size change
+   */
+  onPageSizeChange(event: any): void {
+    const newSize = parseInt(event.target.value, 10);
+    if (this.pageSize !== newSize) {
+      this.pageSize = newSize;
+      this.currentPage = 0; // Reset to first page when page size changes
+      this.updatePaginatedEvents();
+      
+      console.log(`📏 Page size changed to: ${newSize}`);
+    }
+  }
+
+  /**
+   * Get the end index of current page (for display)
+   */
+  getCurrentPageEndIndex(): number {
+    return Math.min((this.currentPage + 1) * this.pageSize, this.filteredEvents.length);
+  }
+
+  /**
+   * Special filter by date range - can be called from UI
+   */
   filterByDate(range: string): void {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    // Filter from master, never from filtered
+    // CRITICAL: Filter from master, never from filtered
     const filtered = this.masterTableEvents.filter(e => {
       const eventDate = new Date(e.date);
       eventDate.setHours(0, 0, 0, 0);
@@ -397,6 +521,9 @@ onRowClick(event: TableEvent): void {
     });
 
     this.filteredEvents = filtered;
+    this.currentPage = 0;
+    this.updatePaginatedEvents();
+    
     this.cdr.detectChanges();
 
     this.snackBar.open(`Found ${filtered.length} event(s) for today`, 'Close', {
@@ -404,20 +531,38 @@ onRowClick(event: TableEvent): void {
     });
   }
 
+  /**
+   * Clear search and reset to tab-filtered view
+   */
   clearSearch(): void {
     this.searchTerm = '';
     this.applyFilters(); // This will reset to tab-filtered view
   }
 
+  /**
+   * Reset all filters to show all events
+   */
   resetFilters(): void {
     this.selectedTabIndex = 0;
     this.searchTerm = '';
-    this.filteredEvents = [...this.masterTableEvents]; // Reset to all events
+    this.filteredEvents = [...this.masterTableEvents];
+    this.currentPage = 0;
+    this.updatePaginatedEvents();
+    
     this.cdr.detectChanges();
+    
+    console.log('🔄 Filters reset, showing all events:', this.masterTableEvents.length);
   }
 
   // ==================== ACTIONS ====================
-  // After any action that modifies data, reload from API
+  // All actions that modify data MUST reload from API to refresh master data
+
+  onRowClick(event: TableEvent): void {
+    console.log('Navigating to event:', event.id, event);
+    this.router.navigate(['/events', event.id], {
+      state: { event: event.raw || event }
+    });
+  }
 
   viewEvent(event: TableEvent): void {
     this.router.navigate(['/events', event.id]);
@@ -435,6 +580,9 @@ onRowClick(event: TableEvent): void {
     }
   }
 
+  /**
+   * Publish event - after success, reload data to refresh master
+   */
   publishEvent(event: TableEvent): void {
     if (event.status === 'Draft') {
       const formData: Partial<EventFormData> = {
@@ -446,25 +594,30 @@ onRowClick(event: TableEvent): void {
         .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: () => {
-            this.snackBar.open(`Event submitted for approval: ${event.name}`, 'Close', {
+            this.snackBar.open(`✅ Event submitted for approval: ${event.name}`, 'Close', {
               duration: 3000,
               panelClass: ['success-snackbar']
             });
-            this.loadEvents(); // Reload to get updated data
+            // CRITICAL: Reload to refresh master data
+            this.loadEvents();
           },
           error: () => this.showError('Failed to publish event')
         });
     }
   }
 
+  /**
+   * Delete event - after success, reload data to refresh master
+   */
   deleteEvent(event: TableEvent): void {
     if (confirm(`Are you sure you want to delete "${event.name}"?`)) {
       this.eventService.deleteEvent(event.id)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: () => {
-            this.snackBar.open(`Deleted: ${event.name}`, 'Close', { duration: 3000 });
-            this.loadEvents(); // Reload to refresh list
+            this.snackBar.open(`🗑️ Deleted: ${event.name}`, 'Close', { duration: 3000 });
+            // CRITICAL: Reload to refresh master data
+            this.loadEvents();
           },
           error: () => this.showError('Failed to delete event')
         });
@@ -486,7 +639,7 @@ onRowClick(event: TableEvent): void {
     this.router.navigate(['/login']);
   }
 
-  // ====== UTILITY METHODS ========
+  // ==================== UTILITY METHODS ====================
 
   get roleDisplay(): string {
     return this.user?.roles?.[0] || 'User';
@@ -528,7 +681,8 @@ onRowClick(event: TableEvent): void {
   canApproveEvents(): boolean {
     return this.authService.canApproveEvents();
   }
-  // ===== ERROR HANDLING ====
+
+  // ==================== ERROR HANDLING ====================
 
   private showError(message: string): void {
     this.snackBar.open(message, 'Close', {
