@@ -3,6 +3,7 @@ using System;
 using EEP.EventManagement.Api.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EEP.EventManagement.Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260304114444_AddAssignmentsNavigationToEvent")]
+    partial class AddAssignmentsNavigationToEvent
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -46,6 +49,9 @@ namespace EEP.EventManagement.Api.Migrations
                     b.Property<Guid>("EventId")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("EventId1")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Role")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -68,6 +74,8 @@ namespace EEP.EventManagement.Api.Migrations
                     b.HasIndex("EmployeeId");
 
                     b.HasIndex("EventId");
+
+                    b.HasIndex("EventId1");
 
                     b.ToTable("Assignments", (string)null);
                 });
@@ -447,10 +455,14 @@ namespace EEP.EventManagement.Api.Migrations
                         .IsRequired();
 
                     b.HasOne("EEP.EventManagement.Api.Domain.Entities.Event", "Event")
-                        .WithMany("Assignments")
+                        .WithMany()
                         .HasForeignKey("EventId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("EEP.EventManagement.Api.Domain.Entities.Event", null)
+                        .WithMany("Assignments")
+                        .HasForeignKey("EventId1");
 
                     b.Navigation("AssignedByUser");
 

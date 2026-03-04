@@ -7,12 +7,17 @@ namespace EEP.EventManagement.Api.Domain.Entities
 {
     public class Assignment : BaseEntity
     {
-        public string? Title { get; set; }
-        public string? Description { get; set; }
-        public AssignmentStatus Status { get; set; }
         public Guid EventId { get; set; }
         public Event? Event { get; set; }
-        public Guid UserId { get; set; }
-        public ApplicationUser? User { get; set; }
+        
+        public Guid EmployeeId { get; set; }
+        public ApplicationUser? Employee { get; set; }
+        
+        public Guid AssignedBy { get; set; }
+        public ApplicationUser? AssignedByUser { get; set; }
+        
+        public AssignmentStatus Status { get; set; } = AssignmentStatus.Assigned;
+        public AssignmentRole Role { get; set; }
+        public string? DeclineReason { get; set; }
     }
 }

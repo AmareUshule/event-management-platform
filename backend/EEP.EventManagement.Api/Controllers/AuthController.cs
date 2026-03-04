@@ -78,11 +78,11 @@ namespace EEP.EventManagement.Api.Controllers
             return Ok(response);
         }
 
-        [HttpGet]
+        [HttpGet("users")]
         [Authorize(Roles = "Admin,Manager")]
-        public async Task<ActionResult<List<UserResponseDto>>> GetAllUsers()
+        public async Task<ActionResult<List<UserResponseDto>>> GetAllUsers([FromQuery] string? role)
         {
-            var query = new GetAllUsersQuery();
+            var query = new GetAllUsersQuery(role);
             var response = await _mediator.Send(query);
             return Ok(response);
         }

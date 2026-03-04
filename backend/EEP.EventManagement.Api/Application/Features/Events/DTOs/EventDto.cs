@@ -1,7 +1,9 @@
 using EEP.EventManagement.Api.Domain.Enums;
 using System;
+using System.Collections.Generic;
 using EEP.EventManagement.Api.Application.Features.Auth.DTOs; // For UserResponseDto
 using EEP.EventManagement.Api.Application.Features.Departments.DTOs; // For DepartmentResponseDto
+using EEP.EventManagement.Api.Application.Features.Assignments.DTOs; // For AssignmentDto
 
 namespace EEP.EventManagement.Api.Application.Features.Events.DTOs
 {
@@ -22,5 +24,6 @@ namespace EEP.EventManagement.Api.Application.Features.Events.DTOs
         public DepartmentResponseDto? Department { get; set; }
         public UserResponseDto? CreatedBy { get; set; } // Renamed and changed type
         public UserResponseDto? ApprovedBy { get; set; } // Renamed and changed type
+        public List<AssignmentDto>? Assignments { get; set; } // List of assignments for this event
     }
 }

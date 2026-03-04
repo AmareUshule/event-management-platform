@@ -43,7 +43,7 @@ namespace EEP.EventManagement.Api.Infrastructure.Security.Authorization.Handlers
             }
 
             // Check if the user is assigned to the event
-            var assignments = await _assignmentRepository.GetAssignmentsByUserIdAndEventIdAsync(user.Id, requirement.EventId);
+            var assignments = await _assignmentRepository.GetAssignmentsByEmployeeIdAndEventIdAsync(user.Id, requirement.EventId);
             if (assignments.Any())
             {
                 context.Succeed(requirement);
