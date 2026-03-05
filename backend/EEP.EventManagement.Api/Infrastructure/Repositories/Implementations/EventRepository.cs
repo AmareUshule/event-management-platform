@@ -23,6 +23,10 @@ namespace EEP.EventManagement.Api.Infrastructure.Repositories.Implementations
                 .Include(e => e.Department)
                 .Include(e => e.CreatedByUser)
                 .Include(e => e.ApprovedByUser)
+                .Include(e => e.Assignments)
+                    .ThenInclude(a => a.Employee)
+                .Include(e => e.Assignments)
+                    .ThenInclude(a => a.AssignedByUser)
                 .FirstOrDefaultAsync(e => e.Id == id);
         }
 
@@ -32,6 +36,10 @@ namespace EEP.EventManagement.Api.Infrastructure.Repositories.Implementations
                 .Include(e => e.Department)
                 .Include(e => e.CreatedByUser)
                 .Include(e => e.ApprovedByUser)
+                .Include(e => e.Assignments)
+                    .ThenInclude(a => a.Employee)
+                .Include(e => e.Assignments)
+                    .ThenInclude(a => a.AssignedByUser)
                 .ToListAsync();
         }
 

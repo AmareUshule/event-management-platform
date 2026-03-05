@@ -4,5 +4,5 @@ using System.Collections.Generic;
 
 namespace EEP.EventManagement.Api.Application.Features.Auth.Queries
 {
-    public record GetAllUsersQuery() : IRequest<List<UserResponseDto>>;
+    public record GetAllUsersQuery(string? Role = null) : IRequest<List<UserResponseDto>>;
 }

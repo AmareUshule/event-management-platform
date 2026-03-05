@@ -21,5 +21,6 @@ namespace EEP.EventManagement.Api.Domain.Entities
         public Department Department { get; set; } = null!;
         public EEP.EventManagement.Api.Infrastructure.Security.Identity.ApplicationUser CreatedByUser { get; set; } = null!;
         public EEP.EventManagement.Api.Infrastructure.Security.Identity.ApplicationUser? ApprovedByUser { get; set; }
+        public ICollection<Assignment> Assignments { get; set; } = new List<Assignment>();
     }
 }

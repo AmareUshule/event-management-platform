@@ -1,4 +1,5 @@
 using EEP.EventManagement.Api.Domain.Entities;
+using EEP.EventManagement.Api.Domain.Enums;
 using EEP.EventManagement.Api.Infrastructure.Persistence;
 using EEP.EventManagement.Api.Infrastructure.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -26,12 +27,20 @@ public class AssignmentRepository : IAssignmentRepository
 
     public async Task<Assignment?> GetByIdAsync(Guid id)
     {
-        return await _context.Assignments.FindAsync(id);
+        return await _context.Assignments
+            .Include(a => a.Event)
+            .Include(a => a.Employee)
+            .Include(a => a.AssignedByUser)
+            .FirstOrDefaultAsync(a => a.Id == id);
     }
 
     public async Task<List<Assignment>> GetAllAsync()
     {
-        return await _context.Assignments.ToListAsync();
+        return await _context.Assignments
+            .Include(a => a.Event)
+            .Include(a => a.Employee)
+            .Include(a => a.AssignedByUser)
+            .ToListAsync();
     }
 
     public async Task UpdateAsync(Assignment assignment)
@@ -46,10 +55,37 @@ public class AssignmentRepository : IAssignmentRepository
         await _context.SaveChangesAsync();
     }
 
-    public async Task<List<Assignment>> GetAssignmentsByUserIdAndEventIdAsync(Guid userId, Guid eventId)
+    public async Task<List<Assignment>> GetAssignmentsByEmployeeIdAndEventIdAsync(Guid employeeId, Guid eventId)
     {
         return await _context.Assignments
-            .Where(a => a.UserId == userId && a.EventId == eventId)
+            .Include(a => a.Event)
+            .Include(a => a.Employee)
+            .Include(a => a.AssignedByUser)
+            .Where(a => a.EmployeeId == employeeId && a.EventId == eventId)
+            .ToListAsync();
+    }
+
+    public async Task<List<Assignment>> GetAssignmentsByEmployeeIdAsync(Guid employeeId)
+    {
+        return await _context.Assignments
+            .Include(a => a.Event)
+            .Include(a => a.Employee)
+            .Include(a => a.AssignedByUser)
+            .Where(a => a.EmployeeId == employeeId)
+            .ToListAsync();
+    }
+
+    public async Task<bool> IsEmployeeAssignedWithRoleAsync(Guid employeeId, Guid eventId, AssignmentRole role)
+    {
+        return await _context.Assignments.AnyAsync(a => a.EmployeeId == employeeId && a.EventId == eventId && a.Role == role);
+    }
+
+    public async Task<List<Assignment>> GetAssignmentsByEventIdAsync(Guid eventId)
+    {
+        return await _context.Assignments
+            .Include(a => a.Employee)
+            .Include(a => a.AssignedByUser)
+            .Where(a => a.EventId == eventId)
             .ToListAsync();
     }
 }
