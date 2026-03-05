@@ -86,13 +86,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
   filteredEvents: TableEvent[] = [];             // All filtered events - UPDATED ONLY VIA applyFilters()
   paginatedEvents: TableEvent[] = [];            // Current page of events for display
 
-  // ==================== PAGINATION STATE ====================
+  // ====== PAGINATION STATE =========
   currentPage = 0;
   pageSize = 5;
   totalPages = 0;
   pageSizeOptions: number[] = [5, 10, 25, 50];
 
-  // ==================== UI STATE ====================
+  // ===== UI STATE =======
   user: AuthUser | null = null;
   isLoading = true;
   isLoadingEvents = true;
@@ -100,27 +100,27 @@ export class DashboardComponent implements OnInit, OnDestroy {
   selectedTabIndex = 0;
   searchTerm: string = '';
 
-  // ==================== TABLE CONFIGURATION ====================
+  // ======== TABLE CONFIGURATION ============
   displayedColumns: string[] = ['id', 'eventName', 'location', 'date', 'actions'];
 
-  // ==================== STATISTICS (DERIVED FROM MASTER DATA) ====================
+  // =========== STATISTICS (DERIVED FROM MASTER DATA) =============
   totalEvents = 0;
   publishedEvents = 0;
   draftEvents = 0;
   todaysEvents = 0;
   pendingApprovals = 0;
 
-  // ==================== INSIGHTS (DERIVED FROM MASTER DATA) ====================
+  // ============ INSIGHTS (DERIVED FROM MASTER DATA) ============
   upcomingEventsCount = 0;
   pendingApprovalsCount = 0;
 
-  // ==================== AGENDA (DERIVED FROM MASTER DATA) ====================
+  // ============ AGENDA (DERIVED FROM MASTER DATA) ============
   agendaItems: AgendaItem[] = [];
 
-  // ==================== CLEANUP ====================
+  // =========== CLEANUP =============
   private destroy$ = new Subject<void>();
 
-  // ==================== DEPENDENCY INJECTION ====================
+  // ========== DEPENDENCY INJECTION ==========
   private authService = inject(AuthService);
   private eventService = inject(EventService);
   private router = inject(Router);
@@ -219,12 +219,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
       });
   }
 
-  /**
-   * CRITICAL: This is the SINGLE SOURCE OF TRUTH for master data
-   * This is the ONLY place where masterEvents and masterTableEvents are set
-   * All derived data (statistics, insights, agenda) is calculated here
-   * Finally, filters are applied to populate filteredEvents and paginatedEvents
-   */
   private setMasterData(events: Event[]): void {
     // 1. Set master raw events (never modify after this)
     this.masterEvents = events;
@@ -633,7 +627,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.showError('You do not have permission to create events');
     }
   }
-
+   navigateToUploadVacancy(): void {
+    if (this.authService.canUploadVacancy()) {
+      this.router.navigate(['upload-vacancy']);
+    } else {
+      this.showError('You do not have permission to upload vacancy');
+    }
+  }
   logout(): void {
     this.authService.logout();
     this.router.navigate(['/login']);

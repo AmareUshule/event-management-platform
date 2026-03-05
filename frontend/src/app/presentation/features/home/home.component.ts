@@ -26,9 +26,9 @@ export class HomeComponent {
       isAccent: false
     },
     {
-      icon: 'campaign',
-      title: 'Internal Announcements',
-      description: 'Centralized platform for publishing official notices to employees.',
+      icon: 'work',
+      title: 'Internal Vacancy Portal',
+      description: 'Upload and publish internal vacancy announcements for employees across the organization.',
       isAccent: false
     },
     {

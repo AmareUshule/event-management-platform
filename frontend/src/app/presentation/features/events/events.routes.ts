@@ -7,6 +7,4 @@ export const eventsRoutes: Routes = [
     loadComponent: () => import('./pages/event-create/event-create.component')
       .then(m => m.EventCreateComponent)
   },
-
-  // REMOVED any catch-all or empty path routes that might conflict
 ];

@@ -1,8 +1,9 @@
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, PLATFORM_ID } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { BehaviorSubject, Observable, throwError } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
+import { isPlatformBrowser } from '@angular/common';
 
 import { AuthUser, LoginCredentials } from '../models/auth-user.model';
 import { StorageService } from '../services/storage.service';
@@ -19,7 +20,7 @@ export interface BackendAuthResponse {
   firstName: string;
   lastName: string;
   email: string;
-  role: string; // This comes as "Admin" from backend
+  role: string;
   employeeId: string;
   departmentId: string;
 }
@@ -29,15 +30,16 @@ export class AuthService {
   private http = inject(HttpClient);
   private router = inject(Router);
   private storage = inject(StorageService);
-  
+  private platformId = inject(PLATFORM_ID);
+
   private readonly API_URL = `${environment.apiUrl}/api/Auth`;
   private readonly TOKEN_KEY = 'eep_auth_token';
   private readonly USER_KEY = 'eep_auth_user';
   private readonly TOKEN_EXPIRY_KEY = 'eep_token_expiry';
-  
+
   private currentUserSubject = new BehaviorSubject<AuthUser | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
-  
+
   private isLoadingSubject = new BehaviorSubject<boolean>(false);
   public isLoading$ = this.isLoadingSubject.asObservable();
 
@@ -66,7 +68,7 @@ export class AuthService {
 
   login(credentials: LoginCredentials): Observable<AuthUser> {
     this.setLoading(true);
-    
+
     return this.http.post<BackendAuthResponse>(`${this.API_URL}/login`, {
       employeeId: credentials.employeeId,
       password: credentials.password
@@ -86,15 +88,15 @@ export class AuthService {
 
   logout(): void {
     const token = this.getToken();
-    
-    if (token) {
+
+    if (token && this.isBrowser()) {
       this.http.post(`${this.API_URL}/logout`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       }).subscribe({
-        error: () => {} // Silent fail for logout
+        error: () => { } // Silent fail for logout
       });
     }
-    
+
     this.clearAuthData();
     this.router.navigate(['/login'], {
       queryParams: { loggedOut: true }
@@ -102,18 +104,23 @@ export class AuthService {
   }
 
   isAuthenticated(): boolean {
+    // If not in browser, return false
+    if (!this.isBrowser()) {
+      return false;
+    }
+
     const user = this.currentUserSubject.value;
     const token = this.getToken();
-    
+
     if (!user || !token) {
       return false;
     }
-    
+
     if (this.isTokenExpired()) {
-      this.logout();
+      this.clearAuthData();
       return false;
     }
-    
+
     return true;
   }
 
@@ -128,6 +135,9 @@ export class AuthService {
   }
 
   getToken(): string | null {
+    if (!this.isBrowser()) {
+      return null;
+    }
     return this.storage.getItem(this.TOKEN_KEY);
   }
 
@@ -170,38 +180,44 @@ export class AuthService {
   }
 
   getDashboardRoute(): string {
-  if (this.isAdmin()) {
-    return '/admin/dashboard';
+    if (this.isAdmin()) {
+      return '/admin/dashboard';
+    }
+
+    if (this.isManager()) {
+      return '/manager/dashboard';
+    }
+
+    if (this.isEmployee()) {
+      return '/employee/dashboard';
+    }
+
+    return '/';
   }
 
-  if (this.isManager()) {
-    return '/manager/dashboard';
-  }
-
-  if (this.isEmployee()) {
-    return '/employee/dashboard';
-  }
-
-  return '/';
-}
-  // Get department GUID from current user (if needed for API calls)
   getDepartmentGuid(): string | null {
     const user = this.getCurrentUser();
     if (!user) return null;
-    
-    // You'll need to store this mapping or get it from the backend
-    // This is a reverse lookup from department ID to GUID
+
     const reverseMap: Record<number, string> = {
       [DEPARTMENTS.INFORMATION_TECHNOLOGY]: '4cfbbaf2-e974-46de-b5bd-1187669f1204',
       // Add other mappings
     };
-    
+
     return reverseMap[user.departmentId] || null;
   }
 
   // =============== PERMISSION METHODS ===============
 
   canCreateEvents(): boolean {
+    if (this.isAdmin()) return true;
+    if (this.isCommunicationManager()) return true;
+    if (this.isDepartmentManager()) return true;
+    if (this.isStaff() && this.isInCommunicationDepartment()) return true;
+    return false;
+  }
+
+  canUploadVacancy(): boolean {
     if (this.isAdmin()) return true;
     if (this.isCommunicationManager()) return true;
     if (this.isDepartmentManager()) return true;
@@ -271,7 +287,7 @@ export class AuthService {
         PERMISSIONS.ASSIGN_CAMERA_MAN
       );
     }
-    
+
     if (this.isDepartmentManager()) {
       permissions.push(
         PERMISSIONS.CREATE_DEPARTMENT_EVENT,
@@ -300,83 +316,50 @@ export class AuthService {
 
   // =============== PRIVATE METHODS ===============
 
-  /**
-   * Maps the backend response to your AuthUser model
-   */
   private mapBackendResponseToAuthUser(response: BackendAuthResponse): AuthUser {
-  // Extract numeric employeeId from string (e.g., "ep710327" -> 710327)
-  const employeeId = this.extractNumericEmployeeId(response.employeeId);
-  
-  // Map department GUID to internal department ID
-  const departmentId = this.mapDepartmentGuidToId(response.departmentId);
-  
-  // Create full name from firstName and lastName
-  const fullName = `${response.firstName} ${response.lastName}`.trim();
-  
-  // Create username from employeeId or email
-  const username = response.employeeId || response.email.split('@')[0];
-  
-  // IMPORTANT: Direct mapping - backend sends "Admin", your ROLES.Admin is "Admin"
-  // Make sure no transformation is happening
-  const role = response.role; // This should be "Admin"
-   
-  
-  return {
-    employeeId: employeeId,
-    adObjectId: response.userId,
-    username: username,
-    fullName: fullName,
-    email: response.email,
-    departmentId: departmentId,
-    departmentName: this.getDepartmentName(departmentId),
-    roles: [role] // Directly use the role from backend
-  };
-}
+    const employeeId = this.extractNumericEmployeeId(response.employeeId);
+    const departmentId = this.mapDepartmentGuidToId(response.departmentId);
+    const fullName = `${response.firstName} ${response.lastName}`.trim();
+    const username = response.employeeId || response.email.split('@')[0];
 
-   
+    return {
+      employeeId: employeeId,
+      adObjectId: response.userId,
+      username: username,
+      fullName: fullName,
+      email: response.email,
+      departmentId: departmentId,
+      departmentName: this.getDepartmentName(departmentId),
+      roles: [response.role]
+    };
+  }
 
-  /**
-   * Extracts numeric part from employeeId string
-   * Example: "ep710327" -> 710327
-   */
   private extractNumericEmployeeId(employeeId: string): number {
-    // Remove all non-numeric characters and parse
     const numericPart = employeeId.replace(/\D/g, '');
     return numericPart ? parseInt(numericPart, 10) : 0;
   }
 
-  /**
-   * Maps department GUID to internal department ID
-   */
   private mapDepartmentGuidToId(departmentGuid: string): number {
-    // Try to find the department ID from the mapping
     const departmentId = this.departmentGuidToIdMap[departmentGuid];
-    
+
     if (departmentId) {
       return departmentId;
     }
-    
-    // If not found, log warning and return default
+
     console.warn(`Unknown department GUID: ${departmentGuid}. Using GENERAL_STAFF as default.`);
     return DEPARTMENTS.GENERAL_STAFF;
   }
 
-  /**
-   * Gets department name from department ID
-   */
   private getDepartmentName(departmentId: number): string {
     return this.departmentIdToNameMap[departmentId] || 'Unknown Department';
   }
 
-  /**
-   * Handles HTTP errors
-   */
   private handleError(error: HttpErrorResponse | any): any {
     console.error('Auth Service Error:', error);
-    
+
     let errorMessage = 'Login failed. Please try again.';
     const status = error.status || 0;
-    
+
     if (status === 0) {
       errorMessage = 'Unable to connect to authentication server. Please check:\n• Server is running\n• Network connection\n• CORS configuration';
     } else if (status === 401) {
@@ -390,7 +373,7 @@ export class AuthService {
     } else if (status === 500) {
       errorMessage = 'Server error. Please try again later.';
     }
-    
+
     return {
       status: status,
       message: errorMessage,
@@ -398,50 +381,50 @@ export class AuthService {
     };
   }
 
-  /**
-   * Handles successful authentication
-   */
   private handleAuthSuccess(response: BackendAuthResponse): void {
-    // Store token
+    if (!this.isBrowser()) return;
+
     this.storage.setItem(this.TOKEN_KEY, response.token);
-    
-    // Transform and store user data
+
     const user = this.mapBackendResponseToAuthUser(response);
     this.storage.setItem(this.USER_KEY, JSON.stringify(user));
-    
-    // Set token expiry from JWT if possible
+
     try {
       const tokenPayload = JSON.parse(atob(response.token.split('.')[1]));
       if (tokenPayload.exp) {
-        const expiryTime = tokenPayload.exp * 1000; // Convert to milliseconds
+        const expiryTime = tokenPayload.exp * 1000;
         this.storage.setItem(this.TOKEN_EXPIRY_KEY, expiryTime.toString());
       } else {
-        // If no exp in token, set default (24 hours)
         const expiryTime = Date.now() + (24 * 60 * 60 * 1000);
         this.storage.setItem(this.TOKEN_EXPIRY_KEY, expiryTime.toString());
       }
     } catch (e) {
-      // If can't decode token, set default expiry (24 hours)
       const expiryTime = Date.now() + (24 * 60 * 60 * 1000);
       this.storage.setItem(this.TOKEN_EXPIRY_KEY, expiryTime.toString());
     }
-    
+
     this.currentUserSubject.next(user);
   }
 
-  /**
-   * Loads user from storage on app initialization
-   */
   private loadUserFromStorage(): void {
+    if (!this.isBrowser()) return;
+
     try {
       const storedUser = this.storage.getItem(this.USER_KEY);
       const token = this.storage.getItem(this.TOKEN_KEY);
-      
-      if (storedUser && token && !this.isTokenExpired()) {
-        const user: AuthUser = JSON.parse(storedUser);
-        this.currentUserSubject.next(user);
-      } else if (this.isTokenExpired()) {
-        this.clearAuthData();
+
+      if (storedUser && token) {
+        // Check token expiration
+        const isExpired = this.isTokenExpired();
+        
+        if (!isExpired) {
+          const user: AuthUser = JSON.parse(storedUser);
+          this.currentUserSubject.next(user);
+          console.log('User loaded from storage:', user);
+        } else {
+          console.log('Token expired, clearing auth data');
+          this.clearAuthData();
+        }
       }
     } catch (error) {
       console.error('Error loading user from storage:', error);
@@ -449,20 +432,43 @@ export class AuthService {
     }
   }
 
-  /**
-   * Checks if token has expired
-   */
   private isTokenExpired(): boolean {
-    const expiry = this.storage.getItem(this.TOKEN_EXPIRY_KEY);
-    if (!expiry) return true;
-    
-    return Date.now() > parseInt(expiry, 10);
+    if (!this.isBrowser()) return true;
+
+    const token = this.getToken();
+    if (!token) return true;
+
+    try {
+      // Check if token has the correct format
+      const parts = token.split('.');
+      if (parts.length !== 3) {
+        console.warn('Token does not have valid JWT format');
+        return false; // Don't treat as expired if format is invalid
+      }
+
+      const payload = JSON.parse(atob(parts[1]));
+
+      if (!payload.exp) {
+        console.warn('Token has no exp field');
+        // Check stored expiry as fallback
+        const storedExpiry = this.storage.getItem(this.TOKEN_EXPIRY_KEY);
+        if (storedExpiry) {
+          return Date.now() >= parseInt(storedExpiry, 10);
+        }
+        return false; // treat as valid if no expiry info
+      }
+
+      return Date.now() >= payload.exp * 1000;
+    } catch (error) {
+      console.error('Error checking token expiration:', error);
+      // Don't treat as expired on parse error
+      return false;
+    }
   }
 
-  /**
-   * Clears all authentication data
-   */
-  private clearAuthData(): void {
+  public clearAuthData(): void {
+    if (!this.isBrowser()) return;
+    
     this.storage.removeItem(this.TOKEN_KEY);
     this.storage.removeItem(this.USER_KEY);
     this.storage.removeItem(this.TOKEN_EXPIRY_KEY);
@@ -470,10 +476,11 @@ export class AuthService {
     this.currentUserSubject.next(null);
   }
 
-  /**
-   * Sets loading state
-   */
   private setLoading(isLoading: boolean): void {
     this.isLoadingSubject.next(isLoading);
+  }
+
+  private isBrowser(): boolean {
+    return isPlatformBrowser(this.platformId);
   }
 }

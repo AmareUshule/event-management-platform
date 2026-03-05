@@ -116,7 +116,7 @@ export class EventCreateComponent implements OnInit, OnDestroy {
   private authService = inject(AuthService);
   private snackBar = inject(MatSnackBar);
 
-  // ================= LIFECYCLE =================
+  // ==== LIFECYCLE ====
 
   ngOnInit(): void {
     this.initializeComponent();
@@ -388,7 +388,7 @@ export class EventCreateComponent implements OnInit, OnDestroy {
       this.eventForm.patchValue({ departmentId: userDeptId });
     }
   }
-
+  
   private markFormGroupTouched(formGroup: FormGroup): void {
     Object.values(formGroup.controls).forEach(control => {
       control.markAsTouched();
