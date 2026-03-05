@@ -22,7 +22,7 @@ namespace EEP.EventManagement.Api.Application.Features.Auth.Handlers
         public async Task<List<UserResponseDto>> Handle(GetAllUsersQuery request, CancellationToken cancellationToken)
         {
             List<ApplicationUser> users;
-            if (!string.IsNullOrEmpty(request.Role))
+            if (!string.IsNullOrEmpty(request.Role) && !request.Role.Equals("All", System.StringComparison.OrdinalIgnoreCase))
             {
                 var usersInRole = await _userManager.GetUsersInRoleAsync(request.Role);
                 users = usersInRole.ToList();

@@ -7,6 +7,7 @@ using EEP.EventManagement.Api.Domain.Enums;
 using EEP.EventManagement.Api.Infrastructure.Repositories.Interfaces;
 using EEP.EventManagement.Api.Infrastructure.Security.Claims;
 using EEP.EventManagement.Api.Infrastructure.Security.Identity;
+using Microsoft.EntityFrameworkCore;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 
@@ -42,7 +43,18 @@ namespace EEP.EventManagement.Api.Application.Features.Assignments.Handlers
                 throw new NotFoundException(nameof(Event), request.CreateAssignmentDto.EventId);
             }
 
-            var employee = await _userManager.FindByIdAsync(request.CreateAssignmentDto.EmployeeId.ToString());
+            // Find employee by Guid or custom EmployeeId string
+            ApplicationUser? employee = null;
+            if (Guid.TryParse(request.CreateAssignmentDto.EmployeeId, out var employeeGuid))
+            {
+                employee = await _userManager.FindByIdAsync(employeeGuid.ToString());
+            }
+
+            if (employee == null)
+            {
+                employee = await _userManager.Users.FirstOrDefaultAsync(u => u.EmployeeId == request.CreateAssignmentDto.EmployeeId, cancellationToken);
+            }
+
             if (employee == null)
             {
                 throw new NotFoundException(nameof(ApplicationUser), request.CreateAssignmentDto.EmployeeId);
@@ -57,19 +69,24 @@ namespace EEP.EventManagement.Api.Application.Features.Assignments.Handlers
 
             // Check if already assigned with this role
             if (await _assignmentRepository.IsEmployeeAssignedWithRoleAsync(
-                request.CreateAssignmentDto.EmployeeId, 
+                employee.Id, 
                 request.CreateAssignmentDto.EventId, 
                 request.CreateAssignmentDto.Role))
             {
                 throw new BadRequestException($"Employee is already assigned to this event as a {request.CreateAssignmentDto.Role}.");
             }
 
-            var assignment = _mapper.Map<Assignment>(request.CreateAssignmentDto);
-            assignment.Id = Guid.NewGuid();
-            assignment.AssignedBy = _userContext.GetUserId();
-            assignment.Status = AssignmentStatus.Assigned;
-            assignment.CreatedAt = DateTime.UtcNow;
-            assignment.UpdatedAt = DateTime.UtcNow;
+            var assignment = new Assignment
+            {
+                Id = Guid.NewGuid(),
+                EventId = request.CreateAssignmentDto.EventId,
+                EmployeeId = employee.Id,
+                Role = request.CreateAssignmentDto.Role,
+                AssignedBy = _userContext.GetUserId(),
+                Status = AssignmentStatus.Assigned,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
 
             await _assignmentRepository.AddAsync(assignment);
 

@@ -29,10 +29,7 @@ namespace EEP.EventManagement.Api.Controllers
         [HttpPost("bulk")]
         public async Task<ActionResult<List<AssignmentDto>>> BulkAssignStaff(Guid eventId, [FromBody] BulkAssignStaffDto bulkAssignStaffDto)
         {
-            if (eventId != bulkAssignStaffDto.EventId)
-            {
-                return BadRequest("Event ID mismatch.");
-            }
+            bulkAssignStaffDto.EventId = eventId;
 
             var isAdmin = User.IsInRole("Admin");
             var isCommunicationManagerAuth = await _authorizationService.AuthorizeAsync(User, null, AuthorizationPolicies.IsCommunicationManager);
@@ -50,10 +47,7 @@ namespace EEP.EventManagement.Api.Controllers
         [HttpPost]
         public async Task<ActionResult<AssignmentDto>> AssignStaff(Guid eventId, [FromBody] CreateAssignmentDto createAssignmentDto)
         {
-            if (eventId != createAssignmentDto.EventId)
-            {
-                return BadRequest("Event ID mismatch.");
-            }
+            createAssignmentDto.EventId = eventId;
 
             // Use imperative authorization to check for Admin OR Communication Manager
             var isAdmin = User.IsInRole("Admin");

@@ -61,12 +61,28 @@ namespace EEP.EventManagement.Api.Controllers
         [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> UpdateEvent([FromBody] UpdateEventDto updateEventDto)
         {
-            var eventDto = await _mediator.Send(new GetEventByIdQuery { Id = updateEventDto.Id });
+            var eventEntity = await _mediator.Send(new GetEventByIdQuery { Id = updateEventDto.Id });
 
-            if (!User.IsInRole("Admin"))
+            if (eventEntity == null)
+            {
+                return NotFound();
+            }
+
+            // Check if status is changing to Scheduled (Approval)
+            if (eventEntity.Status != EEP.EventManagement.Api.Domain.Enums.EventStatus.Scheduled.ToString() && updateEventDto.Status == EEP.EventManagement.Api.Domain.Enums.EventStatus.Scheduled)
+            {
+                var isAdmin = User.IsInRole("Admin");
+                var isCommManagerAuth = await _authorizationService.AuthorizeAsync(User, null, EEP.EventManagement.Api.Infrastructure.Security.Authorization.AuthorizationPolicies.IsCommunicationManager);
+                
+                if (!isAdmin && !isCommManagerAuth.Succeeded)
+                {
+                    return Forbid();
+                }
+            }
+            else if (!User.IsInRole("Admin")) // Regular update: check if they are the department manager
             {
                 var authResult = await _authorizationService.AuthorizeAsync(User, null,
-                    new IsDepartmentManagerOfResourceRequirement(eventDto.Department!.Id));
+                    new IsDepartmentManagerOfResourceRequirement(eventEntity.Department!.Id));
 
                 if (!authResult.Succeeded)
                 {

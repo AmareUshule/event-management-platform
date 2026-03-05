@@ -7,6 +7,7 @@ using EEP.EventManagement.Api.Domain.Enums;
 using EEP.EventManagement.Api.Infrastructure.Repositories.Interfaces;
 using EEP.EventManagement.Api.Infrastructure.Security.Claims;
 using EEP.EventManagement.Api.Infrastructure.Security.Identity;
+using Microsoft.EntityFrameworkCore;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 
@@ -47,15 +48,15 @@ namespace EEP.EventManagement.Api.Application.Features.Assignments.Handlers
             var assignments = new List<Assignment>();
 
             // Process Cameraman assignment
-            if (request.BulkAssignStaffDto.CameramanId.HasValue)
+            if (!string.IsNullOrEmpty(request.BulkAssignStaffDto.CameramanId))
             {
-                await ProcessAssignment(eventId, request.BulkAssignStaffDto.CameramanId.Value, AssignmentRole.Cameraman, "Cameraman", assignments, currentUserId);
+                await ProcessAssignment(eventId, request.BulkAssignStaffDto.CameramanId, AssignmentRole.Cameraman, "Cameraman", assignments, currentUserId, cancellationToken);
             }
 
             // Process Expert assignment
-            if (request.BulkAssignStaffDto.ExpertId.HasValue)
+            if (!string.IsNullOrEmpty(request.BulkAssignStaffDto.ExpertId))
             {
-                await ProcessAssignment(eventId, request.BulkAssignStaffDto.ExpertId.Value, AssignmentRole.Expert, "Expert", assignments, currentUserId);
+                await ProcessAssignment(eventId, request.BulkAssignStaffDto.ExpertId, AssignmentRole.Expert, "Expert", assignments, currentUserId, cancellationToken);
             }
 
             if (!assignments.Any())
@@ -78,12 +79,22 @@ namespace EEP.EventManagement.Api.Application.Features.Assignments.Handlers
             return results;
         }
 
-        private async Task ProcessAssignment(Guid eventId, Guid employeeId, AssignmentRole role, string roleName, List<Assignment> assignments, Guid assignedBy)
+        private async Task ProcessAssignment(Guid eventId, string employeeIdStr, AssignmentRole role, string roleName, List<Assignment> assignments, Guid assignedBy, CancellationToken cancellationToken)
         {
-            var employee = await _userManager.FindByIdAsync(employeeId.ToString());
+            ApplicationUser? employee = null;
+            if (Guid.TryParse(employeeIdStr, out var employeeGuid))
+            {
+                employee = await _userManager.FindByIdAsync(employeeGuid.ToString());
+            }
+
             if (employee == null)
             {
-                throw new NotFoundException(nameof(ApplicationUser), employeeId);
+                employee = await _userManager.Users.FirstOrDefaultAsync(u => u.EmployeeId == employeeIdStr, cancellationToken);
+            }
+
+            if (employee == null)
+            {
+                throw new NotFoundException(nameof(ApplicationUser), employeeIdStr);
             }
 
             var roles = await _userManager.GetRolesAsync(employee);
@@ -93,7 +104,7 @@ namespace EEP.EventManagement.Api.Application.Features.Assignments.Handlers
             }
 
             // Check if already assigned with this role
-            if (await _assignmentRepository.IsEmployeeAssignedWithRoleAsync(employeeId, eventId, role))
+            if (await _assignmentRepository.IsEmployeeAssignedWithRoleAsync(employee.Id, eventId, role))
             {
                 return; // Silently skip if already assigned
             }
@@ -102,7 +113,7 @@ namespace EEP.EventManagement.Api.Application.Features.Assignments.Handlers
             {
                 Id = Guid.NewGuid(),
                 EventId = eventId,
-                EmployeeId = employeeId,
+                EmployeeId = employee.Id,
                 AssignedBy = assignedBy,
                 Role = role,
                 Status = AssignmentStatus.Assigned,

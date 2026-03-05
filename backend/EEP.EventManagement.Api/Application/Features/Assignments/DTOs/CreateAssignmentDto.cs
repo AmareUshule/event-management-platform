@@ -5,11 +5,10 @@ namespace EEP.EventManagement.Api.Application.Features.Assignments.DTOs
 {
     public class CreateAssignmentDto
     {
-        [Required]
         public Guid EventId { get; set; }
 
         [Required]
-        public Guid EmployeeId { get; set; }
+        public string EmployeeId { get; set; } = string.Empty;
 
         [Required]
         public AssignmentRole Role { get; set; }

@@ -44,6 +44,8 @@ namespace EEP.EventManagement.Api.Application.Features.Auth.Handlers
             return new UserResponseDto
             {
                 Id = user.Id.ToString(),
+                FirstName = user.FirstName,
+                LastName = user.LastName,
                 Email = user.Email ?? string.Empty,
                 Role = dto.Role,
                 DepartmentId = user.DepartmentId,

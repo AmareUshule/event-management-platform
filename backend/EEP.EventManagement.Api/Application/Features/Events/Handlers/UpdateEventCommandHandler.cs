@@ -3,6 +3,7 @@ using EEP.EventManagement.Api.Application.Features.Events.Commands;
 using EEP.EventManagement.Api.Application.Features.Events.DTOs;
 using EEP.EventManagement.Api.Application.Exceptions;
 using EEP.EventManagement.Api.Domain.Entities;
+using EEP.EventManagement.Api.Domain.Enums;
 using EEP.EventManagement.Api.Infrastructure.Repositories.Interfaces;
 using EEP.EventManagement.Api.Infrastructure.Security.Claims;
 using MediatR;
@@ -33,6 +34,12 @@ namespace EEP.EventManagement.Api.Application.Features.Events.Handlers
             {
                 throw new NotFoundException(nameof(Event), request.UpdateEventDto.Id);
             }
+
+            // Check if status is changing to Scheduled (Approval)
+            if (eventToUpdate.Status != EventStatus.Scheduled && request.UpdateEventDto.Status == EventStatus.Scheduled)
+            {
+                eventToUpdate.ApprovedBy = _userContext.GetUserId();
+            }
             
             _mapper.Map(request.UpdateEventDto, eventToUpdate);
             
@@ -40,7 +47,10 @@ namespace EEP.EventManagement.Api.Application.Features.Events.Handlers
 
             await _eventRepository.UpdateAsync(eventToUpdate);
 
-            return _mapper.Map<EventDto>(eventToUpdate);
+            // Re-fetch to include navigation properties (like ApprovedByUser)
+            var updatedEvent = await _eventRepository.GetByIdAsync(eventToUpdate.Id);
+
+            return _mapper.Map<EventDto>(updatedEvent);
         }
     }
 }

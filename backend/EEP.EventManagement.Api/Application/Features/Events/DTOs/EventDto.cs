@@ -1,9 +1,5 @@
-using EEP.EventManagement.Api.Domain.Enums;
 using System;
 using System.Collections.Generic;
-using EEP.EventManagement.Api.Application.Features.Auth.DTOs; // For UserResponseDto
-using EEP.EventManagement.Api.Application.Features.Departments.DTOs; // For DepartmentResponseDto
-using EEP.EventManagement.Api.Application.Features.Assignments.DTOs; // For AssignmentDto
 
 namespace EEP.EventManagement.Api.Application.Features.Events.DTOs
 {
@@ -15,15 +11,14 @@ namespace EEP.EventManagement.Api.Application.Features.Events.DTOs
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public string? EventPlace { get; set; }
-        public string Status { get; set; } = string.Empty; // Directly human-readable string
-
+        public string Status { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
+        public string TimeStatus { get; set; } = string.Empty;
 
-        // Related data
-        public DepartmentResponseDto? Department { get; set; }
-        public UserResponseDto? CreatedBy { get; set; } // Renamed and changed type
-        public UserResponseDto? ApprovedBy { get; set; } // Renamed and changed type
-        public List<AssignmentDto>? Assignments { get; set; } // List of assignments for this event
+        public SimplifiedDepartmentDto? Department { get; set; }
+        public SimplifiedUserDto? CreatedBy { get; set; }
+        public SimplifiedUserDto? ApprovedBy { get; set; }
+        public GroupedAssignmentsDto? Assignments { get; set; }
     }
 }
