@@ -99,6 +99,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   currentDate = new Date();
   selectedTabIndex = 0;
   searchTerm: string = '';
+  isMobileMenuOpen = false;
 
   // ======== TABLE CONFIGURATION ============
   displayedColumns: string[] = ['id', 'eventName', 'location', 'date', 'actions'];
@@ -634,6 +635,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.showError('You do not have permission to upload vacancy');
     }
   }
+
+  toggleMobileMenu(): void {
+    this.isMobileMenuOpen = !this.isMobileMenuOpen;
+  }
+
   logout(): void {
     this.authService.logout();
     this.router.navigate(['/login']);

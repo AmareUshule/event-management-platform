@@ -1,5 +1,6 @@
-import { inject } from '@angular/core';
+import { inject, PLATFORM_ID } from '@angular/core';
 import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
+import { isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 import { catchError, throwError } from 'rxjs';
 import { AuthService } from '../auth/auth.service';
@@ -7,6 +8,8 @@ import { AuthService } from '../auth/auth.service';
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
   const router = inject(Router);
+  const platformId = inject(PLATFORM_ID);
+  const isBrowser = isPlatformBrowser(platformId);
   
   // Skip authentication for these endpoints
   const excludedUrls = [
@@ -37,18 +40,17 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   return next(authReq).pipe(
     catchError((error: HttpErrorResponse) => {
 
-if (error.status === 401) {
-  authService.clearAuthData(); // just clear
-  router.navigate(['/login'], {
-    queryParams: { 
-      sessionExpired: true,
-      returnUrl: router.url 
-    }
-  });
-}
+      if (isBrowser && error.status === 401) {
+        authService.clearAuthData(); // just clear
+        router.navigate(['/login'], {
+          queryParams: { 
+            sessionExpired: true,
+            returnUrl: router.url 
+          }
+        });
+      }
 
-      
-      if (error.status === 403) {
+      if (isBrowser && error.status === 403) {
         // Forbidden - insufficient permissions
         router.navigate(['/unauthorized']);
       }

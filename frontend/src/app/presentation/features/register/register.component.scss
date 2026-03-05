@@ -1335,6 +1335,10 @@ $font-mono: 'SF Mono', 'Fira Code', monospace;
     .typewriter-text {
       font-size: 32px !important;
     }
+
+    .brand-description, .brand-features, .social-proof, .testimonial-banner {
+      display: none !important;
+    }
   }
 
   .form-side {

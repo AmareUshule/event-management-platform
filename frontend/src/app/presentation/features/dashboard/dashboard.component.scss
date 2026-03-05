@@ -146,7 +146,16 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
     .nav-left {
       display: flex;
       align-items: center;
-      gap: 40px;
+      gap: 20px;
+
+      .mobile-menu-btn {
+        display: none;
+        color: $dark-600;
+
+        @media (max-width: 992px) {
+          display: block;
+        }
+      }
       
       .brand-logo {
         display: flex;
@@ -200,6 +209,10 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
           background-clip: text;
           margin: 0;
           letter-spacing: -0.5px;
+
+          @media (max-width: 480px) {
+            display: none;
+          }
         }
       }
       
@@ -210,6 +223,10 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
         padding: 4px;
         border-radius: 12px;
         border: 1px solid $dark-200;
+
+        @media (max-width: 992px) {
+          display: none;
+        }
         
         .nav-tab {
           display: flex;
@@ -375,6 +392,10 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
           display: flex;
           flex-direction: column;
           align-items: flex-start;
+
+          @media (max-width: 600px) {
+            display: none;
+          }
           
           .user-name {
             font-size: 14px;
@@ -536,6 +557,119 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   .mat-divider {
     margin: 8px 0;
     border-top-color: $dark-200;
+  }
+}
+
+// Mobile Menu Overlay
+.mobile-menu-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba($dark-900, 0.4);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+
+  &.open {
+    opacity: 1;
+    visibility: visible;
+
+    .mobile-menu-content {
+      transform: translateX(0);
+    }
+  }
+
+  .mobile-menu-content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 280px;
+    background: $white;
+    box-shadow: 20px 0 40px rgba(0, 0, 0, 0.1);
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+
+    .mobile-menu-header {
+      padding: 20px;
+      border-bottom: 1px solid $dark-200;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      .brand-logo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+
+        .logo-icon {
+          width: 32px;
+          height: 32px;
+          
+          .eep-logo {
+            width: 32px;
+            height: 32px;
+            object-fit: contain;
+          }
+        }
+
+        .brand-name {
+          font-size: 18px;
+          font-weight: 700;
+          background: linear-gradient(135deg, $primary-color 0%, $accent-color 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+          margin: 0;
+        }
+      }
+    }
+
+    .mobile-nav-items {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+
+      .mobile-nav-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        background: transparent;
+        border: none;
+        border-radius: 10px;
+        color: $dark-600;
+        font-weight: 500;
+        font-size: 15px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-align: left;
+
+        &:hover {
+          background: $dark-50;
+          color: $primary-color;
+        }
+
+        &.active {
+          background: $primary-bg;
+          color: $primary-color;
+
+          mat-icon {
+            color: $primary-color;
+          }
+        }
+
+        mat-icon {
+          font-size: 20px;
+          width: 20px;
+          height: 20px;
+        }
+      }
+    }
   }
 }
 
@@ -988,6 +1122,18 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
           padding: 12px 16px;
           border-bottom: 1px solid $dark-200;
           background: transparent;
+
+          &.mat-column-id {
+            @media (max-width: 640px) {
+              display: none;
+            }
+          }
+
+          &.mat-column-location, &.mat-column-date {
+            @media (max-width: 480px) {
+              display: none;
+            }
+          }
         }
       }
       
@@ -1036,6 +1182,12 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
           font-size: 14px;
           color: $dark-700;
           border-bottom: none;
+
+          &.mat-column-id {
+            @media (max-width: 640px) {
+              display: none;
+            }
+          }
           
           .index-badge {
             width: 24px;
@@ -1609,6 +1761,14 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   padding: 16px 24px;
   border-top: 1px solid $dark-200;
   margin-top: 16px;
+  flex-wrap: wrap;
+  gap: 16px;
+
+  @media (max-width: 640px) {
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+  }
   
   .paginator-info {
     color: $dark-600;
@@ -1620,6 +1780,10 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
     display: flex;
     align-items: center;
     gap: 8px;
+    
+    @media (max-width: 480px) {
+      gap: 4px;
+    }
     
     .paginator-btn {
       width: 36px;
@@ -1659,6 +1823,7 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
         font-size: 14px;
         font-weight: 500;
         color: $dark-700;
+        white-space: nowrap;
       }
     }
   }

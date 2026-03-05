@@ -13,6 +13,9 @@
     <nav class="top-nav">
       <div class="nav-content">
         <div class="nav-left">
+          <button mat-icon-button class="mobile-menu-btn" (click)="toggleMobileMenu()" aria-label="Toggle menu">
+            <mat-icon>menu</mat-icon>
+          </button>
 
           <div class="brand-logo">
             <div class="logo-icon">
@@ -116,6 +119,42 @@
         </div>
       </div>
     </nav>
+
+    <!-- Mobile Menu Overlay -->
+    <div class="mobile-menu-overlay" [class.open]="isMobileMenuOpen" (click)="toggleMobileMenu()">
+      <div class="mobile-menu-content" (click)="$event.stopPropagation()">
+        <div class="mobile-menu-header">
+          <div class="brand-logo">
+            <div class="logo-icon">
+              <img src="assets/images/eep_logo.jpg" alt="EEP Logo" class="eep-logo">
+            </div>
+            <h1 class="brand-name">EventPortal</h1>
+          </div>
+          <button mat-icon-button (click)="toggleMobileMenu()">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+        
+        <div class="mobile-nav-items">
+          <button class="mobile-nav-item active">
+            <mat-icon>dashboard</mat-icon>
+            <span>Dashboard</span>
+          </button>
+          <button class="mobile-nav-item">
+            <mat-icon>calendar_month</mat-icon>
+            <span>Calendar</span>
+          </button>
+          <button class="mobile-nav-item">
+            <mat-icon>analytics</mat-icon>
+            <span>Analytics</span>
+          </button>
+          <button class="mobile-nav-item">
+            <mat-icon>people</mat-icon>
+            <span>Attendees</span>
+          </button>
+        </div>
+      </div>
+    </div>
 
     <!-- Main Dashboard Content -->
     <main class="dashboard-main">

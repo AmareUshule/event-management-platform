@@ -104,9 +104,10 @@ export class AuthService {
   }
 
   isAuthenticated(): boolean {
-    // If not in browser, return false
+    // If not in browser, return true to avoid server-side redirect to login.
+    // The client will perform the real check after hydration.
     if (!this.isBrowser()) {
-      return false;
+      return true;
     }
 
     const user = this.currentUserSubject.value;
@@ -144,11 +145,17 @@ export class AuthService {
   // =============== ROLE METHODS ===============
 
   hasRole(role: string): boolean {
+    if (!this.isBrowser()) {
+      return true;
+    }
     const user = this.getCurrentUser();
     return user?.roles.includes(role) ?? false;
   }
 
   hasAnyRole(roles: string[]): boolean {
+    if (!this.isBrowser()) {
+      return true;
+    }
     const user = this.getCurrentUser();
     return user ? roles.some(role => user.roles.includes(role)) : false;
   }
@@ -433,7 +440,7 @@ export class AuthService {
   }
 
   private isTokenExpired(): boolean {
-    if (!this.isBrowser()) return true;
+    if (!this.isBrowser()) return false;
 
     const token = this.getToken();
     if (!token) return true;
