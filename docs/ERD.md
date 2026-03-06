@@ -18,7 +18,7 @@
 
 | Field         | Data Type    | Constraints                                          |
 | ------------- | ------------ | ---------------------------------------------------- |
-| employee_id   | SERIAL       | PK                                                   |
+| id            | SERIAL       | PK                                                   |
 | first_name    | VARCHAR(50)  | NOT NULL                                             |
 | last_name     | VARCHAR(50)  | NOT NULL                                             |
 | email         | VARCHAR(100) | NOT NULL, UNIQUE                                     |
@@ -34,13 +34,14 @@
 
 | Field         | Data Type    | Constraints                                                                                  |
 | ------------- | ------------ | -------------------------------------------------------------------------------------------- |
-| event_id      | SERIAL       | PK                                                                                           |
+| id      | SERIAL       | PK                                                                                           |
 | title         | VARCHAR(150) | NOT NULL                                                                                     |
 | description   | TEXT         | NULL                                                                                         |
 | department_id | INT          | FK → Departments(department_id), NOT NULL                                                    |
+| event_place    | varchar    | NULL                                                                                |
 | start_date    | TIMESTAMP    | NOT NULL                                                                                     |
 | end_date      | TIMESTAMP    | NOT NULL                                                                                     |
-| status        | VARCHAR(20)  | NOT NULL (`Draft`, `Submitted`, `Approved`, `Scheduled`, `Ongoing`, `Completed`, `Archived`) |
+| status        | VARCHAR(20)  | NOT NULL (`Draft`, `Scheduled`, `Ongoing`, `Completed`, `Archived`, `Cancelled`) |
 | created_by    | INT          | FK → Users(user_id), NOT NULL                                                                |
 | approved_by   | INT          | FK → Users(user_id), NULL                                                                    |
 | created_at    | TIMESTAMP    | DEFAULT now()                                                                                |
@@ -52,9 +53,10 @@
 
 | Field          | Data Type   | Constraints                                   |
 | -------------- | ----------- | --------------------------------------------- |
-| assignment_id  | SERIAL      | PK                                            |
+| id             | SERIAL      | PK                                            |
 | event_id       | INT         | FK → Events(event_id), NOT NULL               |
 | employee_id    | INT         | FK → Users(user_id), NOT NULL                 |
+| assigned_by    | INT         | FK → Users(user_id), NOT NULL                 |
 | status         | VARCHAR(20) | NOT NULL (`Assigned`, `Accepted`, `Declined`) |
 | decline_reason | TEXT        | NULL                                          |
 | assigned_at    | TIMESTAMP   | DEFAULT now()                                 |
