@@ -1,0 +1,51 @@
+<app-header></app-header>
+
+<div class="announcement-detail-container">
+  <div *ngIf="isLoading" class="loader">
+    <mat-spinner diameter="40"></mat-spinner>
+    <p>Loading announcement...</p>
+  </div>
+
+  <div *ngIf="!isLoading && !announcement" class="error-state">
+    <mat-icon>error_outline</mat-icon>
+    <p>Announcement not found.</p>
+    <button mat-button color="primary" routerLink="/internal-announcements">GO BACK</button>
+  </div>
+
+  <div *ngIf="!isLoading && announcement" class="detail-content">
+    <div class="detail-header">
+      <button mat-icon-button (click)="goBack()"><mat-icon>arrow_back</mat-icon></button>
+      <div class="header-info">
+        <h1>{{ announcement.title }}</h1>
+        <div class="meta">
+          <span class="author">
+            <mat-icon>person</mat-icon>
+            {{ announcement.createdBy?.name }}
+          </span>
+          <span class="date">
+            <mat-icon>calendar_today</mat-icon>
+            {{ announcement.createdAt | date:'MMMM d, y' }}
+          </span>
+          <span class="status" *ngIf="announcement.status === 'Draft'">DRAFT</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-body">
+      <div class="image-gallery" *ngIf="announcement.images && announcement.images.length > 0">
+        <div class="main-image">
+          <img [src]="announcement.images[0].imageUrl" alt="Announcement main image">
+        </div>
+        <div class="thumbnail-grid" *ngIf="announcement.images.length > 1">
+          <div *ngFor="let img of announcement.images.slice(1)" class="thumbnail">
+            <img [src]="img.imageUrl" alt="Announcement thumbnail">
+          </div>
+        </div>
+      </div>
+
+      <div class="content-text">
+        <p>{{ announcement.content }}</p>
+      </div>
+    </div>
+  </div>
+</div>

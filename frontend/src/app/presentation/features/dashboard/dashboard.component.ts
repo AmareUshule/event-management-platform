@@ -23,6 +23,9 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
+// Layouts
+import { HeaderComponent } from '../../layouts/header/header.component';
+
 // Services
 import { AuthService } from '../../../core/auth/auth.service';
 import { EventService } from '../events/services/event.service';
@@ -72,7 +75,8 @@ export interface AgendaItem {
     MatNativeDateModule,
     MatSnackBarModule,
     MatChipsModule,
-    MatTooltipModule
+    MatTooltipModule,
+    HeaderComponent
   ],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']

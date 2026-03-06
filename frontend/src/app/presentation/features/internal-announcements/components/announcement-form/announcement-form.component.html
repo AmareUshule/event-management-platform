@@ -1,0 +1,50 @@
+<form [formGroup]="form" (ngSubmit)="onSubmit()" class="announcement-form">
+  <mat-progress-bar *ngIf="isLoading" mode="indeterminate"></mat-progress-bar>
+  
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Title</mat-label>
+    <input matInput formControlName="title" placeholder="Enter announcement title">
+    <mat-error *ngIf="form.get('title')?.hasError('required')">Title is required</mat-error>
+    <mat-error *ngIf="form.get('title')?.hasError('maxlength')">Title cannot exceed 200 characters</mat-error>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Content</mat-label>
+    <textarea matInput formControlName="content" rows="10" placeholder="Write announcement content here..."></textarea>
+    <mat-error *ngIf="form.get('content')?.hasError('required')">Content is required</mat-error>
+  </mat-form-field>
+
+  <div class="image-upload-section">
+    <h3>Announcement Cover Image</h3>
+    <div class="upload-controls">
+      <input type="file" #fileInput (change)="onImageSelected($event)" accept="image/*" style="display: none">
+      <button mat-stroked-button type="button" (click)="fileInput.click()">
+        <mat-icon>image</mat-icon>
+        {{ selectedImage ? 'CHANGE IMAGE' : 'CHOOSE IMAGE' }}
+      </button>
+      <span class="file-name" *ngIf="selectedImage">{{ selectedImage.name }}</span>
+    </div>
+    
+    <div class="image-preview-container" *ngIf="imagePreview">
+      <img [src]="imagePreview" alt="Preview">
+      <button mat-icon-button class="remove-btn" (click)="selectedImage = null; imagePreview = null">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <div class="image-section" *ngIf="announcement">
+    <h3>Images</h3>
+    <app-announcement-image-upload 
+      [announcementId]="announcement.id" 
+      [existingImages]="announcement.images">
+    </app-announcement-image-upload>
+  </div>
+
+  <div class="form-actions">
+    <button mat-stroked-button type="button" (click)="onCancel()" [disabled]="isLoading">CANCEL</button>
+    <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid || isLoading">
+      {{ announcement ? 'UPDATE' : 'SAVE DRAFT' }}
+    </button>
+  </div>
+</form>

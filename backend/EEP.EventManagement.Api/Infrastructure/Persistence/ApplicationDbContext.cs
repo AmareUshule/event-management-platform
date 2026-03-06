@@ -17,6 +17,8 @@ namespace EEP.EventManagement.Api.Infrastructure.Persistence
         public DbSet<AuditLog> AuditLogs { get; set; }
         public DbSet<MediaFile> MediaFiles { get; set; }
         public DbSet<Department> Departments { get; set; }
+        public DbSet<Announcement> Announcements { get; set; }
+        public DbSet<AnnouncementImage> AnnouncementImages { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

@@ -1,0 +1,141 @@
+<nav class="top-nav">
+  <div class="nav-content">
+    <div class="nav-left">
+      <button mat-icon-button class="mobile-menu-btn" (click)="toggleMobileMenu()" aria-label="Toggle menu">
+        <mat-icon>menu</mat-icon>
+      </button>
+
+      <div class="brand-logo" routerLink="/dashboard">
+        <div class="logo-icon">
+          <img src="assets/images/eep_logo.jpg" alt="EEP Logo" class="eep-logo">
+        </div>
+        <h1 class="brand-name">EventPortal</h1>
+      </div>
+
+      <div class="nav-tabs">
+        <button class="nav-tab" routerLink="/dashboard" [routerLinkActive]="['active']" [routerLinkActiveOptions]="{exact: true}">
+          <mat-icon>dashboard</mat-icon>
+          <span>Dashboard</span>
+        </button>
+        <button class="nav-tab">
+          <mat-icon>calendar_month</mat-icon>
+          <span>Calendar</span>
+        </button>
+        <button class="nav-tab">
+          <mat-icon>analytics</mat-icon>
+          <span>Analytics</span>
+        </button>
+        <button class="nav-tab">
+          <mat-icon>people</mat-icon>
+          <span>Attendance</span>
+        </button>
+        <button class="nav-tab" routerLink="/internal-announcements" [routerLinkActive]="['active']">
+          <mat-icon>announcement</mat-icon>
+          <span>Internal Announcements</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="nav-right">
+      <div class="notification-wrapper">
+        <button mat-icon-button class="nav-icon-btn" matTooltip="Notifications">
+          <mat-icon>notifications</mat-icon>
+          <div class="notification-badge"></div>
+        </button>
+      </div>
+
+      <!-- User Profile Menu -->
+      <div class="user-profile" [matMenuTriggerFor]="userMenu">
+        <div class="user-avatar">
+          <mat-icon>person</mat-icon>
+        </div>
+        <div class="user-info">
+          <span class="user-name">{{ user?.fullName }}</span>
+          <span class="user-role">{{ roleDisplay }}</span>
+        </div>
+        <mat-icon class="dropdown-icon">arrow_drop_down</mat-icon>
+      </div>
+
+      <!-- Enhanced User Menu -->
+      <mat-menu #userMenu="matMenu" class="enhanced-user-menu" xPosition="before" yPosition="below">
+        <!-- User Header -->
+        <div class="menu-user-header">
+          <div class="menu-user-avatar">
+            {{ user?.fullName?.charAt(0) || 'U' }}
+          </div>
+          <div class="menu-user-info">
+            <div class="menu-user-name">{{ user?.fullName }}</div>
+            <div class="menu-user-email">{{ user?.email || 'user@eep.com' }}</div>
+            <div class="menu-user-role-badge">{{ roleDisplay }}</div>
+          </div>
+        </div>
+
+        <mat-divider></mat-divider>
+
+        <!-- Menu Items -->
+        <button mat-menu-item>
+          <mat-icon>person</mat-icon>
+          <span>My Profile</span>
+        </button>
+
+        <button mat-menu-item>
+          <mat-icon>settings</mat-icon>
+          <span>Settings</span>
+        </button>
+
+        <button mat-menu-item [routerLink]="['/register']" *ngIf="isAdmin()">
+          <mat-icon>person_add</mat-icon>
+          <span>Create New Account</span>
+        </button>
+
+        <mat-divider></mat-divider>
+
+        <!-- Logout -->
+        <button mat-menu-item (click)="logout()" class="logout-menu-item">
+          <mat-icon color="warn">exit_to_app</mat-icon>
+          <span>Logout</span>
+        </button>
+      </mat-menu>
+    </div>
+  </div>
+</nav>
+
+<!-- Mobile Menu Overlay -->
+<div class="mobile-menu-overlay" [class.open]="isMobileMenuOpen" (click)="toggleMobileMenu()">
+  <div class="mobile-menu-content" (click)="$event.stopPropagation()">
+    <div class="mobile-menu-header">
+      <div class="brand-logo">
+        <div class="logo-icon">
+          <img src="assets/images/eep_logo.jpg" alt="EEP Logo" class="eep-logo">
+        </div>
+        <h1 class="brand-name">EventPortal</h1>
+      </div>
+      <button mat-icon-button (click)="toggleMobileMenu()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+    
+    <div class="mobile-nav-items">
+      <button class="mobile-nav-item" routerLink="/dashboard" [routerLinkActive]="['active']" [routerLinkActiveOptions]="{exact: true}" (click)="toggleMobileMenu()">
+        <mat-icon>dashboard</mat-icon>
+        <span>Dashboard</span>
+      </button>
+      <button class="mobile-nav-item" (click)="toggleMobileMenu()">
+        <mat-icon>calendar_month</mat-icon>
+        <span>Calendar</span>
+      </button>
+      <button class="mobile-nav-item" (click)="toggleMobileMenu()">
+        <mat-icon>analytics</mat-icon>
+        <span>Analytics</span>
+      </button>
+      <button class="mobile-nav-item" (click)="toggleMobileMenu()">
+        <mat-icon>people</mat-icon>
+        <span>Attendance</span>
+      </button>
+      <button class="mobile-nav-item" routerLink="/internal-announcements" [routerLinkActive]="['active']" (click)="toggleMobileMenu()">
+        <mat-icon>announcement</mat-icon>
+        <span>Internal Announcements</span>
+      </button>
+    </div>
+  </div>
+</div>

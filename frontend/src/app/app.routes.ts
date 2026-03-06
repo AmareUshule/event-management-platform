@@ -16,6 +16,14 @@ export const appRoutes: Routes = [
       .then(m => m.eventsRoutes),
     canActivate: [authGuard],
   },
+  
+  // Internal Announcements module
+  { 
+    path: 'internal-announcements', 
+    loadChildren: () => import('./presentation/features/internal-announcements/internal-announcements.routes')
+      .then(m => m.announcementsRoutes),
+    canActivate: [authGuard],
+  },
    // Specific event detail route - using lazy loading for the standalone component
   { 
     path: 'events/:id', 

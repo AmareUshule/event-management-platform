@@ -26,23 +26,19 @@ namespace EEP.EventManagement.Api.Infrastructure.Security.Authorization
             options.AddPolicy(CanCreateEvent, policy =>
                 policy.RequireRole("Admin", "Manager")); // Both Admin and any Manager can create events
 
-            // For policies with OR logic involving custom requirements, we will handle them imperatively in controllers
-            // or define separate policies and combine them using [Authorize(Policy = "Policy1,Policy2")]
+            // These policies now use the requirements which have been updated to allow Admins as well.
+            // By using only the requirement, we achieve "Admin OR (Manager AND Dept=Communication)" logic.
             options.AddPolicy(CanApproveAndAssign, policy =>
-                policy.RequireRole("Admin")
-                      .AddRequirements(new IsCommunicationManagerRequirement())); // This is AND logic, will be handled imperatively
+                policy.AddRequirements(new IsCommunicationManagerRequirement()));
 
             options.AddPolicy(CanAssignStaff, policy =>
-                policy.RequireRole("Admin")
-                      .AddRequirements(new IsCommunicationManagerRequirement())); // This is AND logic, will be handled imperatively
+                policy.AddRequirements(new IsCommunicationManagerRequirement()));
 
             options.AddPolicy(CanUploadMedia, policy =>
-                policy.RequireRole("Admin", "Expert", "Cameraman") // Admin, Expert, Cameraman can upload media
-                      .AddRequirements(new IsCommunicationManagerRequirement())); // This is AND logic, will be handled imperatively
+                policy.RequireRole("Admin", "Expert", "Cameraman")); 
 
             options.AddPolicy(CanViewDashboards, policy =>
-                policy.RequireRole("Admin", "Manager") // Admin and any Manager can view dashboards
-                      .AddRequirements(new IsCommunicationManagerRequirement())); // This is AND logic, will be handled imperatively
+                policy.RequireRole("Admin", "Manager"));
         }
     }
 }

@@ -1,0 +1,124 @@
+<div class="dashboard-container">
+  <!-- Loading Overlay -->
+  <div *ngIf="isLoading" class="loading-overlay">
+    <div class="loading-content">
+      <div class="loader-spinner"></div>
+      <p class="loading-text">Loading Announcements...</p>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div *ngIf="!isLoading" class="main-content">
+    <app-header></app-header>
+
+    <main class="dashboard-main">
+      <div class="announcements-container">
+        <div class="page-header">
+          <div class="header-left">
+            <div class="section-title">
+              <mat-icon>announcement</mat-icon>
+              <h3>Internal Announcements</h3>
+            </div>
+          </div>
+          <div class="header-right">
+            <div class="action-buttons">
+              <button class="create-announcement-btn" (click)="openCreateForm()" *ngIf="canCreate && !showForm">
+                <mat-icon>add</mat-icon>
+                CREATE ANNOUNCEMENT
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-overlay" *ngIf="showForm">
+          <div class="form-container shadow-2xl">
+            <div class="form-header">
+              <h2>{{ selectedAnnouncement ? 'Edit Announcement' : 'Create Announcement' }}</h2>
+              <button mat-icon-button (click)="closeForm()"><mat-icon>close</mat-icon></button>
+            </div>
+            <div class="p-6">
+              <app-announcement-form 
+                [announcement]="selectedAnnouncement" 
+                [isLoading]="isSaving"
+                (submitForm)="onFormSubmit($event)" 
+                (cancel)="closeForm()">
+              </app-announcement-form>
+            </div>
+          </div>
+        </div>
+
+        <div class="announcements-content" *ngIf="!showForm">
+          <mat-tab-group animationDuration="0ms" class="modern-tabs">
+            <mat-tab label="Published">
+              <ng-template mat-tab-label>
+                <div class="tab-label-content">
+                  <mat-icon>check_circle</mat-icon>
+                  <span>Published</span>
+                  <span class="count-badge" *ngIf="publishedAnnouncements.length > 0">{{ publishedAnnouncements.length }}</span>
+                </div>
+              </ng-template>
+              <div class="tab-content">
+                <div *ngIf="isLoading" class="loader">
+                  <mat-spinner diameter="40"></mat-spinner>
+                </div>
+                
+                <div *ngIf="!isLoading && publishedAnnouncements.length === 0" class="empty-state">
+                  <div class="empty-icon-wrapper">
+                    <mat-icon>announcement</mat-icon>
+                  </div>
+                  <p>No published announcements yet.</p>
+                </div>
+
+                <div class="announcements-grid" *ngIf="!isLoading && publishedAnnouncements.length > 0">
+                  <app-announcement-card 
+                    *ngFor="let announcement of publishedAnnouncements" 
+                    [announcement]="announcement"
+                    [canManage]="canManageAnnouncement(announcement)"
+                    (edit)="onEdit($event)"
+                    (delete)="onDelete($event)"
+                    (publish)="onPublish($event)">
+                  </app-announcement-card>
+                </div>
+              </div>
+            </mat-tab>
+
+            <mat-tab label="Draft" *ngIf="canSeeDrafts">
+              <ng-template mat-tab-label>
+                <div class="tab-label-content">
+                  <mat-icon>edit_note</mat-icon>
+                  <span>Drafts</span>
+                  <span class="count-badge draft" *ngIf="draftAnnouncements.length > 0">{{ draftAnnouncements.length }}</span>
+                </div>
+              </ng-template>
+              <div class="tab-content">
+                <div *ngIf="isLoading" class="loader">
+                  <mat-spinner diameter="40"></mat-spinner>
+                </div>
+
+                <div *ngIf="!isLoading && draftAnnouncements.length === 0" class="empty-state">
+                  <div class="empty-icon-wrapper">
+                    <mat-icon>edit_note</mat-icon>
+                  </div>
+                  <p>No draft announcements yet.</p>
+                </div>
+
+                <div class="announcements-grid" *ngIf="!isLoading && draftAnnouncements.length > 0">
+                  <app-announcement-card 
+                    *ngFor="let announcement of draftAnnouncements" 
+                    [announcement]="announcement"
+                    [isDraft]="true"
+                    [canManage]="canManageAnnouncement(announcement)"
+                    [canPublish]="canPublish"
+                    (edit)="onEdit($event)"
+                    (delete)="onDelete($event)"
+                    (publish)="onPublish($event)">
+                  </app-announcement-card>
+                </div>
+              </div>
+            </mat-tab>
+          </mat-tab-group>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
