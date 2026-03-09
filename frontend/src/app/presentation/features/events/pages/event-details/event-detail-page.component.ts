@@ -28,6 +28,7 @@ import {
 
 import { EventService } from '../../services/event.service';
 import { AssignmentDialogComponent } from './assignment-dialog.component';
+import { ConfirmationDialogComponent, ConfirmationDialogData } from '../../../confirmation-dialog.component';
 
 
 @Component({
@@ -133,31 +134,47 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
     this.location.back();
   }
 
-   
 
   // Add this method to your EventDetailPageComponent class
 
   approveEvent(): void {
-    if (!this.event?.id) return;
+  if (!this.event?.id) return;
 
-    if (!confirm('Are you sure you want to approve this event?')) return;
+  const dialogData: ConfirmationDialogData = {
+    title: 'Approve Event',
+    message: `Are you sure you want to approve "${this.event.title}"?`,
+    confirmText: 'Approve',
+    cancelText: 'Cancel',
+    icon: 'check_circle',
+    color: 'primary'
+  };
 
-    this.isLoading = true;
+  const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+    width: '400px',
+    disableClose: true,
+    data: dialogData
+  });
 
-    this.eventService.approveEvent(this.event.id).subscribe({
-      next: (updatedEvent) => {
-        this.isLoading = false;
-        this.event = updatedEvent;
-        this.showSuccess('Event approved successfully!');
-        this.cdr.detectChanges();
-      },
-      error: (error) => {
-        this.isLoading = false;
-        console.error('Error approving event:', error);
-        this.showError(error.message || 'Failed to approve event');
-      }
-    });
-  }
+  dialogRef.afterClosed().subscribe(result => {
+    if (result) {
+      this.isLoading = true;
+      this.eventService.approveEvent(this.event!.id).subscribe({
+        next: (updatedEvent) => {
+          this.isLoading = false;
+          this.event = updatedEvent;
+          this.showSuccess('Event approved successfully!');
+          this.cdr.detectChanges();
+        },
+        error: (error) => {
+          this.isLoading = false;
+          this.showError(error.message || 'Failed to approve event');
+        }
+      });
+    }
+  });
+}
+
+  
 
 
 

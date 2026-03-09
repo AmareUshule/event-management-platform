@@ -33,6 +33,7 @@ export class EventService {
   private authService = inject(AuthService);
   
   private readonly API_URL = `${environment.apiUrl}/api/events`;
+
   private readonly REQUEST_TIMEOUT = 30000; // 30 seconds
 
   constructor() { }
@@ -275,7 +276,7 @@ export class EventService {
    * Approve event
    */
   approveEvent(eventId: string): Observable<Event> {
-    return this.http.patch<Event>(
+    return this.http.post<Event>(
       `${this.API_URL}/${eventId}/approve`, 
       {}, 
       { 
@@ -313,8 +314,6 @@ export class EventService {
    * API expects a single assignment object, not an array
    */
    
-
-
 assignEmployeeToEvent(eventId: string, assignment: AssignmentPayload): Observable<Event> {
   console.log('📦 Sending single assignment:', { eventId, ...assignment });
   

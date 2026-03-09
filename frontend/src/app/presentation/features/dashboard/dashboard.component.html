@@ -20,10 +20,6 @@
             <mat-icon>add</mat-icon>
             CREATE EVENT
           </button>
-          <button class="create-event-btn" (click)="navigateToUploadVacancy()">
-            <mat-icon>upload</mat-icon>
-            UPLOAD INTERNAL VACANCY
-          </button>
         </div>
 
         <!-- Stats Cards -->
@@ -43,8 +39,8 @@
               <mat-icon>check_circle</mat-icon>
             </div>
             <div class="stat-details">
-              <h3 class="stat-value">{{ publishedEvents }}</h3>
-              <p class="stat-label">Published</p>
+              <h3 class="stat-value">{{ scheduledEvents }}</h3>
+              <p class="stat-label">Scheduled</p>
             </div>
           </div>
 
@@ -87,7 +83,7 @@
                   ALL <span class="tab-count">{{ totalEvents }}</span>
                 </button>
                 <button class="event-tab" [class.active]="selectedTabIndex === 1" (click)="onTabChange(1)">
-                  Published <span class="tab-count">{{ publishedEvents }}</span>
+                  Scheduled <span class="tab-count">{{ scheduledEvents }}</span>
                 </button>
                 <button class="event-tab" [class.active]="selectedTabIndex === 2" (click)="onTabChange(2)">
                   Draft <span class="tab-count">{{ draftEvents }}</span>
