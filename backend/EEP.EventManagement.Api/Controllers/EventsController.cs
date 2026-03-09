@@ -1,6 +1,7 @@
 using EEP.EventManagement.Api.Application.Features.Events.Commands;
 using EEP.EventManagement.Api.Application.Features.Events.Queries;
 using EEP.EventManagement.Api.Application.Features.Events.DTOs;
+using EEP.EventManagement.Api.Application.Features.Approval.Commands;
 using EEP.EventManagement.Api.Infrastructure.Security.Authorization.Requirements;
 using Microsoft.AspNetCore.Authorization;
 using MediatR;
@@ -68,18 +69,7 @@ namespace EEP.EventManagement.Api.Controllers
                 return NotFound();
             }
 
-            // Check if status is changing to Scheduled (Approval)
-            if (eventEntity.Status != EEP.EventManagement.Api.Domain.Enums.EventStatus.Scheduled.ToString() && updateEventDto.Status == EEP.EventManagement.Api.Domain.Enums.EventStatus.Scheduled)
-            {
-                var isAdmin = User.IsInRole("Admin");
-                var isCommManagerAuth = await _authorizationService.AuthorizeAsync(User, null, EEP.EventManagement.Api.Infrastructure.Security.Authorization.AuthorizationPolicies.IsCommunicationManager);
-                
-                if (!isAdmin && !isCommManagerAuth.Succeeded)
-                {
-                    return Forbid();
-                }
-            }
-            else if (!User.IsInRole("Admin")) // Regular update: check if they are the department manager
+            if (!User.IsInRole("Admin")) // Regular update: check if they are the department manager
             {
                 var authResult = await _authorizationService.AuthorizeAsync(User, null,
                     new IsDepartmentManagerOfResourceRequirement(eventEntity.Department!.Id));
@@ -115,6 +105,15 @@ namespace EEP.EventManagement.Api.Controllers
             var command = new DeleteEventCommand { Id = id };
             await _mediator.Send(command);
             return NoContent();
+        }
+
+        [HttpPost("{id}/approve")]
+        [Authorize(Policy = EEP.EventManagement.Api.Infrastructure.Security.Authorization.AuthorizationPolicies.CanApproveAndAssign)]
+        public async Task<ActionResult<EventDto>> ApproveEvent(Guid id)
+        {
+            var command = new ApproveEventCommand { EventId = id };
+            var result = await _mediator.Send(command);
+            return Ok(result);
         }
     }
 }
