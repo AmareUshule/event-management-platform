@@ -16,13 +16,13 @@ import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatExpansionModule } from '@angular/material/expansion';
 
-import { 
-  Event, 
-  EventStatus, 
-  Assignment, 
-  EventAssignments, 
+import {
+  Event,
+  EventStatus,
+  Assignment,
+  EventAssignments,
   AssignmentPayload,
-  ASSIGNMENT_ROLES, 
+  ASSIGNMENT_ROLES,
   AssignmentUser
 } from '../../models/event.model';
 
@@ -63,18 +63,18 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
   loading = true;
   isLoading = false; // Add this for assignment loading state
   private isSubscribed = true;
-  
+
   // Available roles for assignment - using the exported roles
   availableRoles: string[] = [
-    ASSIGNMENT_ROLES.CAMERAMAN, 
+    ASSIGNMENT_ROLES.CAMERAMAN,
     ASSIGNMENT_ROLES.EXPERT,
   ];
-  
+
   // Reference to EventStatus enum for template
   EventStatus = EventStatus;
   ASSIGNMENT_ROLES = ASSIGNMENT_ROLES; // Make available in template
 
-  constructor() {}
+  constructor() { }
 
   ngOnInit(): void {
     this.loadEventData();
@@ -133,33 +133,33 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
     this.location.back();
   }
 
-  editEvent(): void {
+   
+
+  // Add this method to your EventDetailPageComponent class
+
+  approveEvent(): void {
     if (!this.event?.id) return;
-    
-    if (this.event.status === EventStatus.DRAFT) {
-      this.publishEvent();
-    } else {
-      this.router.navigate(['/events/edit', this.event.id]);
-    }
+
+    if (!confirm('Are you sure you want to approve this event?')) return;
+
+    this.isLoading = true;
+
+    this.eventService.approveEvent(this.event.id).subscribe({
+      next: (updatedEvent) => {
+        this.isLoading = false;
+        this.event = updatedEvent;
+        this.showSuccess('Event approved successfully!');
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        this.isLoading = false;
+        console.error('Error approving event:', error);
+        this.showError(error.message || 'Failed to approve event');
+      }
+    });
   }
 
-  private publishEvent(): void {
-    if (!this.event?.id) return;
-    
-    // TODO: Implement publish logic
-    // this.eventService.publishEvent(this.event.id).subscribe({
-    //   next: () => {
-    //     this.showSuccess('Event published successfully!');
-    //     this.refreshEventData();
-    //   },
-    //   error: (error) => {
-    //     console.error('Error publishing event:', error);
-    //     this.showError('Failed to publish event');
-    //   }
-    // });
-    
-    this.showSuccess('Event published successfully!');
-  }
+
 
   private refreshEventData(): void {
     if (this.event?.id) {
@@ -174,7 +174,7 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
 
   private generateICS(): void {
     const event = this.event!;
-    
+
     try {
       const startDate = new Date(event.startDate);
       const endDate = new Date(event.endDate);
@@ -244,7 +244,7 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
 
   openInMaps(): void {
     if (!this.event?.eventPlace) return;
-    
+
     const query = encodeURIComponent(this.event.eventPlace);
     window.open(`https://maps.google.com/?q=${query}`, '_blank');
   }
@@ -265,14 +265,14 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
 
   getActiveRoles(): string[] {
     if (!this.event?.assignments) return [];
-    return Object.keys(this.event.assignments).filter(role => 
+    return Object.keys(this.event.assignments).filter(role =>
       this.event!.assignments![role as keyof EventAssignments]?.length > 0
     );
   }
 
   getTotalAssignments(): number {
     if (!this.event?.assignments) return 0;
-    return Object.values(this.event.assignments).reduce((total, assignments) => 
+    return Object.values(this.event.assignments).reduce((total, assignments) =>
       total + (assignments?.length || 0), 0
     );
   }
@@ -288,7 +288,7 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
       width: '600px',
       maxWidth: '90vw',
       disableClose: false,
-      data: { 
+      data: {
         eventId: this.event.id,
         eventTitle: this.event.title,
         existingAssignments: this.event.assignments || {},
@@ -306,9 +306,9 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
   // FIXED: saveAssignments method - uses the correct service method
   saveAssignments(assignments: AssignmentPayload[]): void {
     if (!assignments || assignments.length === 0) return;
-    
+
     this.isLoading = true;
-    
+
     // Use the new method that handles multiple assignments by sending them one by one
     this.eventService.assignMultipleEmployees(this.event!.id, assignments).subscribe({
       next: (results) => {
@@ -319,7 +319,7 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
       error: (error) => {
         this.isLoading = false;
         console.error('Assignment error:', error);
-        
+
         // Show detailed error message
         let errorMsg = 'Failed to assign personnel';
         if (error.message) {
@@ -327,7 +327,7 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
         } else if (error.errors) {
           errorMsg = Object.values(error.errors).join(', ');
         }
-        
+
         this.showError(errorMsg);
       }
     });
@@ -338,7 +338,7 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
 
     // Map display role to backend role format
     const backendRole = role.toLowerCase();
-    
+
     this.eventService.removeAssignment(this.event.id, backendRole, assignmentId).subscribe({
       next: (updatedEvent: Event) => {
         this.showSuccess('Assignment removed successfully');
@@ -365,35 +365,35 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
   }
 
   getAssigneeName(role: string, assignmentId: string): string {
-  const backendRole = role.toLowerCase();
-  const assignments = this.getAssignmentsByRole(backendRole);
-  const assignment = assignments.find(a => a.id === assignmentId);
-  
-  if (!assignment) return 'Unknown';
-  
-  // Backend sends name directly at root level
-  if (assignment.name) {
-    return assignment.name;
-  }
-  
-  // Fallback to employee object if it exists
-  return this.getAssignmentUserDisplayName(assignment.employee) || 'Unknown';
-}
+    const backendRole = role.toLowerCase();
+    const assignments = this.getAssignmentsByRole(backendRole);
+    const assignment = assignments.find(a => a.id === assignmentId);
 
-getAssignedByName(role: string, assignmentId: string): string {
-  const backendRole = role.toLowerCase();
-  const assignments = this.getAssignmentsByRole(backendRole);
-  const assignment = assignments.find(a => a.id === assignmentId);
-  
-  if (!assignment?.assignedBy) return 'Unknown';
-  
-  // Backend sends name directly in assignedBy
-  if (assignment.assignedBy.name) {
-    return assignment.assignedBy.name;
+    if (!assignment) return 'Unknown';
+
+    // Backend sends name directly at root level
+    if (assignment.name) {
+      return assignment.name;
+    }
+
+    // Fallback to employee object if it exists
+    return this.getAssignmentUserDisplayName(assignment.employee) || 'Unknown';
   }
-  
-  return this.getAssignmentUserDisplayName(assignment.assignedBy) || 'Unknown';
-}
+
+  getAssignedByName(role: string, assignmentId: string): string {
+    const backendRole = role.toLowerCase();
+    const assignments = this.getAssignmentsByRole(backendRole);
+    const assignment = assignments.find(a => a.id === assignmentId);
+
+    if (!assignment?.assignedBy) return 'Unknown';
+
+    // Backend sends name directly in assignedBy
+    if (assignment.assignedBy.name) {
+      return assignment.assignedBy.name;
+    }
+
+    return this.getAssignmentUserDisplayName(assignment.assignedBy) || 'Unknown';
+  }
 
   getAssignmentUserDisplayName(user?: AssignmentUser): string {
     if (!user) return '';
@@ -418,8 +418,8 @@ getAssignedByName(role: string, assignmentId: string): string {
 
   canAssignEmployees(): boolean {
     // Can assign if event is not completed or cancelled
-    return this.event?.status !== EventStatus.COMPLETED && 
-           this.event?.status !== EventStatus.CANCELLED;
+    return this.event?.status !== EventStatus.COMPLETED &&
+      this.event?.status !== EventStatus.CANCELLED;
   }
 
   private showSuccess(message: string): void {

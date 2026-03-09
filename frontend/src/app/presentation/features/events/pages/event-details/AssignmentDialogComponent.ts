@@ -74,9 +74,6 @@ export class AssignmentDialogComponent implements OnInit, OnDestroy {
   roleColors: Record<string, string> = {
     'expert': '#7b1fa2',
     'cameraman': '#1976d2',
-    'photographer': '#e91e63',
-    'speaker': '#ff9800',
-    'organizer': '#4caf50'
   };
   
   private destroy$ = new Subject<void>();
@@ -352,7 +349,6 @@ export class AssignmentDialogComponent implements OnInit, OnDestroy {
       }
     });
   }
-
   private showError(message: string): void {
     this.snackBar.open(message, 'Close', {
       duration: 5000,
