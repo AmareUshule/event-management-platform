@@ -18,6 +18,9 @@ using EEP.EventManagement.Api.Infrastructure.Security.Claims;
 using EEP.EventManagement.Api.Infrastructure.Security.JWT;
 using EEP.EventManagement.Api.Middlewares;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.FileProviders;
+using System.IO;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -51,7 +54,11 @@ builder.Services.AddCors(options =>
 // -----------------------------
 // Register contrllers
 // -----------------------------
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
 
 
 
@@ -68,6 +75,8 @@ builder.Services.AddScoped<IUserContext, EEP.EventManagement.Api.Infrastructure.
 builder.Services.AddScoped<IEventRepository, EventRepository>();
 builder.Services.AddScoped<IDepartmentRepository, DepartmentRepository>();
 builder.Services.AddScoped<IAssignmentRepository, AssignmentRepository>();
+builder.Services.AddScoped<IAnnouncementRepository, AnnouncementRepository>();
+builder.Services.AddScoped<EEP.EventManagement.Api.Infrastructure.Storage.Interfaces.IStorageService, EEP.EventManagement.Api.Infrastructure.Storage.Implementations.LocalStorageService>();
 
 // Register custom authorization handlers
 builder.Services.AddScoped<IAuthorizationHandler, EEP.EventManagement.Api.Infrastructure.Security.Authorization.Handlers.IsCommunicationManagerHandler>();
@@ -110,6 +119,7 @@ builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
 })
 .AddJwtBearer(options =>
 {
@@ -168,6 +178,21 @@ if (app.Environment.IsDevelopment())
 
 // Enable HTTPS redirection
 app.UseHttpsRedirection();
+
+// -----------------------------
+// SERVE STATIC FILES (For Uploads)
+// -----------------------------
+var uploadsPath = Path.Combine(builder.Environment.ContentRootPath, "uploads");
+if (!Directory.Exists(uploadsPath))
+{
+    Directory.CreateDirectory(uploadsPath);
+}
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(uploadsPath),
+    RequestPath = "/uploads"
+});
 
 // -----------------------------
 // ENABLE CORS

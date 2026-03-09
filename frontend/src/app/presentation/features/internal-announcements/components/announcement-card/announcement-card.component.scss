@@ -1,0 +1,116 @@
+.announcement-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  border: 1px solid #e2e8f0;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  }
+
+  .card-image {
+    width: 100%;
+    height: 180px;
+    overflow: hidden;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+    }
+  }
+
+  &:hover img {
+    transform: scale(1.05);
+  }
+
+  mat-card-header {
+    padding: 16px;
+    
+    .header-content {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+
+      mat-card-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #1e293b;
+        margin: 0;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+
+      .status-badge {
+        .draft-badge {
+          padding: 2px 8px;
+          border-radius: 20px;
+          font-size: 10px;
+          font-weight: 700;
+          text-transform: uppercase;
+          background: rgba(245, 158, 11, 0.1);
+          color: #d97706;
+          border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+      }
+    }
+  }
+
+  mat-card-content {
+    flex: 1;
+    padding: 0 16px 16px;
+
+    .content-preview {
+      font-size: 14px;
+      color: #64748b;
+      margin-bottom: 16px;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .metadata {
+      display: flex;
+      gap: 16px;
+      color: #94a3b8;
+      font-size: 12px;
+
+      .author, .date {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+
+        mat-icon {
+          font-size: 16px;
+          width: 16px;
+          height: 16px;
+        }
+      }
+    }
+  }
+
+  mat-card-actions {
+    padding: 8px 16px;
+    border-top: 1px solid #f1f5f9;
+
+    button {
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    .delete-item {
+      color: #ef4444;
+    }
+  }
+}

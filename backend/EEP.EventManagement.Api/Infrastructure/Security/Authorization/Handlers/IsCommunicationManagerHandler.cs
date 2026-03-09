@@ -27,6 +27,13 @@ namespace EEP.EventManagement.Api.Infrastructure.Security.Authorization.Handlers
                 return;
             }
 
+            // Admins can always act as communication managers
+            if (context.User.IsInRole("Admin"))
+            {
+                context.Succeed(requirement);
+                return;
+            }
+
             var user = await _userManager.GetUserAsync(context.User);
             if (user == null)
             {

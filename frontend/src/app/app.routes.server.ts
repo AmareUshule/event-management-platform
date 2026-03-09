@@ -6,6 +6,18 @@ export const serverRoutes: ServerRoute[] = [
     renderMode: RenderMode.Server,
   },
   {
+    path: 'internal-announcements/:id',
+    renderMode: RenderMode.Server,
+  },
+  {
+    path: 'internal-announcements',
+    renderMode: RenderMode.Server,
+  },
+  {
+    path: 'register',
+    renderMode: RenderMode.Server,
+  },
+  {
     path: '**',
     renderMode: RenderMode.Prerender,
   },
