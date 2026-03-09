@@ -16,8 +16,22 @@
     <div class="detail-header">
       <button mat-icon-button (click)="goBack()"><mat-icon>arrow_back</mat-icon></button>
       <div class="header-info">
+        <div class="header-badges">
+          <span class="type-badge" [class.job]="announcement.type === 'JobOpening'">
+            {{ announcement.type === 'JobOpening' ? 'INTERNAL JOB OPENING' : 'GENERAL ANNOUNCEMENT' }}
+          </span>
+          <span class="status" *ngIf="announcement.status === 'Draft'">DRAFT</span>
+        </div>
         <h1>{{ announcement.title }}</h1>
         <div class="meta">
+          <span class="dept">
+            <mat-icon>groups</mat-icon>
+            {{ announcement.department?.name || 'General' }}
+          </span>
+          <span class="deadline" *ngIf="announcement.deadline">
+            <mat-icon>event_available</mat-icon>
+            Deadline: {{ announcement.deadline | date:'MMMM d, y' }}
+          </span>
           <span class="author">
             <mat-icon>person</mat-icon>
             {{ announcement.createdBy?.name }}
@@ -26,19 +40,27 @@
             <mat-icon>calendar_today</mat-icon>
             {{ announcement.createdAt | date:'MMMM d, y' }}
           </span>
-          <span class="status" *ngIf="announcement.status === 'Draft'">DRAFT</span>
         </div>
       </div>
     </div>
 
+    <div class="job-banner" *ngIf="announcement.type === 'JobOpening' && announcement.deadline">
+      <mat-icon>info</mat-icon>
+      <p>This internal opportunity is open until <strong>{{ announcement.deadline | date:'MMMM d, y' }}</strong>. Please review the details and images below carefully.</p>
+    </div>
+
     <div class="detail-body">
       <div class="image-gallery" *ngIf="announcement.images && announcement.images.length > 0">
+        <div class="image-tip">
+          <mat-icon>lightbulb</mat-icon>
+          <span>Tip: Click on the images to see full details (job descriptions, requirements, etc.)</span>
+        </div>
         <div class="main-image">
-          <img [src]="announcement.images[0].imageUrl" alt="Announcement main image">
+          <img [src]="getFullImageUrl(announcement.images[0].imageUrl)" alt="Announcement main image">
         </div>
         <div class="thumbnail-grid" *ngIf="announcement.images.length > 1">
           <div *ngFor="let img of announcement.images.slice(1)" class="thumbnail">
-            <img [src]="img.imageUrl" alt="Announcement thumbnail">
+            <img [src]="getFullImageUrl(img.imageUrl)" alt="Announcement thumbnail">
           </div>
         </div>
       </div>

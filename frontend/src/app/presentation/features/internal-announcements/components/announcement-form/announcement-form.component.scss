@@ -47,6 +47,12 @@ $dark-200: #e2e8f0;
       margin-bottom: 16px;
     }
 
+    .section-hint {
+      font-size: 13px;
+      color: #64748b;
+      margin-bottom: 16px;
+    }
+
     .upload-controls {
       display: flex;
       align-items: center;
@@ -89,6 +95,21 @@ $dark-200: #e2e8f0;
           height: 18px;
         }
       }
+    }
+  }
+
+  .form-row {
+    display: flex;
+    gap: 20px;
+    width: 100%;
+
+    @media (max-width: 600px) {
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .flex-1 {
+      flex: 1;
     }
   }
 

@@ -81,6 +81,37 @@ $dark-200: #e2e8f0;
       align-items: flex-start;
       gap: 12px;
 
+      .title-section {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+
+        .type-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 11px;
+          font-weight: 700;
+          color: $primary-color;
+          text-transform: uppercase;
+          background: rgba($primary-color, 0.08);
+          padding: 2px 8px;
+          border-radius: 4px;
+          width: fit-content;
+
+          &.job {
+            color: $accent-color;
+            background: rgba($accent-color, 0.08);
+          }
+
+          mat-icon {
+            font-size: 14px;
+            width: 14px;
+            height: 14px;
+          }
+        }
+      }
+
       mat-card-title {
         font-size: 19px;
         font-weight: 700;
@@ -127,14 +158,14 @@ $dark-200: #e2e8f0;
 
     .metadata {
       display: flex;
-      align-items: center;
+      flex-wrap: wrap;
       gap: 16px;
       color: $dark-400;
       font-size: 12px;
       padding-top: 16px;
       border-top: 1px solid rgba($dark-200, 0.5);
 
-      .author, .date {
+      .meta-item {
         display: flex;
         align-items: center;
         gap: 6px;

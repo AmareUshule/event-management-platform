@@ -1,3 +1,4 @@
+using EEP.EventManagement.Api.Application.Features.Events.DTOs;
 using System;
 using System.Collections.Generic;
 

@@ -8,6 +8,7 @@ import { AnnouncementService } from '../../services/announcement.service';
 import { Announcement } from '../../models/announcement.model';
 import { HeaderComponent } from '../../../../layouts/header/header.component';
 import { finalize } from 'rxjs/operators';
+import { environment } from '../../../../../../environments/environment';
 
 @Component({
   selector: 'app-announcement-detail-page',
@@ -68,6 +69,15 @@ export class AnnouncementDetailPageComponent implements OnInit {
           }
         });
     });
+  }
+
+  getFullImageUrl(url: string): string {
+    if (!url) return '';
+    if (url.startsWith('http')) return url;
+    
+    // Remove leading slash if present
+    const cleanUrl = url.startsWith('/') ? url.substring(1) : url;
+    return `${environment.apiUrl}/${cleanUrl}`;
   }
 
   goBack(): void {

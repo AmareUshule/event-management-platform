@@ -31,6 +31,27 @@
       }
 
       .header-info {
+        .header-badges {
+          display: flex;
+          gap: 12px;
+          margin-bottom: 12px;
+
+          .type-badge {
+            background: rgba(30, 89, 12, 0.1);
+            color: #1E590C;
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+
+            &.job {
+              background: rgba(221, 20, 7, 0.1);
+              color: #DD1407;
+            }
+          }
+        }
+
         h1 {
           font-size: 32px;
           font-weight: 800;
@@ -41,6 +62,7 @@
 
         .meta {
           display: flex;
+          flex-wrap: wrap;
           gap: 24px;
           color: #94a3b8;
           font-size: 14px;
@@ -55,6 +77,7 @@
               font-size: 18px;
               width: 18px;
               height: 18px;
+              color: #1E590C;
             }
           }
 
@@ -72,11 +95,42 @@
       }
     }
 
+    .job-banner {
+      margin: 0 32px;
+      padding: 16px 24px;
+      background: rgba(221, 20, 7, 0.05);
+      border-radius: 12px;
+      border: 1px dashed rgba(221, 20, 7, 0.3);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      color: #DD1407;
+
+      p {
+        margin: 0;
+        font-size: 15px;
+      }
+    }
+
     .detail-body {
       padding: 32px;
 
       .image-gallery {
-        margin-bottom: 32px;
+        margin-bottom: 40px;
+
+        .image-tip {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          color: #1E590C;
+          font-size: 13px;
+          font-weight: 600;
+          margin-bottom: 12px;
+          background: rgba(30, 89, 12, 0.05);
+          padding: 8px 16px;
+          border-radius: 8px;
+          width: fit-content;
+        }
 
         .main-image {
           width: 100%;

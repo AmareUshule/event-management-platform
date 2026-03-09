@@ -3,6 +3,12 @@ export interface Announcement {
   title: string;
   content: string;
   status: string; // 'Draft' | 'Published'
+  type: string; // 'General' | 'JobOpening'
+  deadline?: string;
+  department?: {
+    id: string;
+    name: string;
+  };
   createdBy?: {
     id: string;
     employeeId: string;
@@ -27,11 +33,17 @@ export interface AnnouncementImage {
 export interface CreateAnnouncementDto {
   title: string;
   content: string;
+  type: string;
+  deadline?: string;
+  departmentId?: string;
   image?: File;
 }
 
 export interface UpdateAnnouncementDto {
   title: string;
   content: string;
+  type: string;
+  deadline?: string;
+  departmentId?: string;
   image?: File;
 }

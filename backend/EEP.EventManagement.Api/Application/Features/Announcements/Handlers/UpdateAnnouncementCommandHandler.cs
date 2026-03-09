@@ -6,6 +6,7 @@ using EEP.EventManagement.Api.Domain.Enums;
 using EEP.EventManagement.Api.Infrastructure.Repositories.Interfaces;
 using EEP.EventManagement.Api.Infrastructure.Security.Claims;
 using MediatR;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -32,24 +33,30 @@ namespace EEP.EventManagement.Api.Application.Features.Announcements.Handlers
             if (announcement == null)
                 throw new NotFoundException($"Announcement with ID {request.Id} not found.");
 
-            // Check if only author or Communication Manager can edit Draft
-            if (announcement.Status == AnnouncementStatus.Draft)
-            {
-                // Communication Manager check would normally be done via policy in controller,
-                // but if we are here, we might need to check if the user is the author or has the role.
-                // However, the requirement says "Edit their own Draft announcements".
-                // Communication Manager can "Edit any Draft announcements".
-                // I'll assume the controller handles the "is Communication Manager" check via policy,
-                // so here I just need to check if it's the author if they are NOT a Communication Manager.
-                // But it's easier to check permissions in the handler if we have the roles.
-            }
+            // Check if only author or Communication Manager can edit
+            var isAuthor = announcement.CreatedBy == userId;
+            var isCommManager = _userContext.IsInRole("Admin") || _userContext.HasClaim("Permission", "IsCommunicationManager");
+
+            if (!isAuthor && !isCommManager)
+                throw new UnauthorizedException("You do not have permission to edit this announcement.");
+
+            if (announcement.Status != AnnouncementStatus.Draft && !isCommManager)
+                throw new BadRequestException("Only draft announcements can be edited by authors.");
 
             _mapper.Map(request.UpdateAnnouncementDto, announcement);
             announcement.UpdatedAt = DateTime.UtcNow;
 
+            if (announcement.Deadline.HasValue)
+            {
+                announcement.Deadline = DateTime.SpecifyKind(announcement.Deadline.Value, DateTimeKind.Utc);
+            }
+
             await _announcementRepository.UpdateAsync(announcement);
 
-            return _mapper.Map<AnnouncementDto>(announcement);
+            // Re-fetch to get navigation properties
+            var updatedAnnouncement = await _announcementRepository.GetByIdAsync(announcement.Id);
+
+            return _mapper.Map<AnnouncementDto>(updatedAnnouncement);
         }
     }
 }

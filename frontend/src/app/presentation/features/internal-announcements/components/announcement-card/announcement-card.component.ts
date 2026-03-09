@@ -8,6 +8,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatDividerModule } from '@angular/material/divider';
 import { Announcement } from '../../models/announcement.model';
 import { RouterModule } from '@angular/router';
+import { environment } from '../../../../../../environments/environment';
 
 @Component({
   selector: 'app-announcement-card',
@@ -37,9 +38,18 @@ export class AnnouncementCardComponent {
 
   get bannerImage(): string | null {
     if (this.announcement.images && this.announcement.images.length > 0) {
-      return this.announcement.images[0].imageUrl;
+      return this.getFullImageUrl(this.announcement.images[0].imageUrl);
     }
     return null;
+  }
+
+  getFullImageUrl(url: string): string {
+    if (!url) return '';
+    if (url.startsWith('http')) return url;
+    
+    // Remove leading slash if present
+    const cleanUrl = url.startsWith('/') ? url.substring(1) : url;
+    return `${environment.apiUrl}/${cleanUrl}`;
   }
 
   onEdit(event: Event) {

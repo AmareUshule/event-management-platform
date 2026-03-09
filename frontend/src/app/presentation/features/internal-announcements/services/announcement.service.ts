@@ -68,7 +68,7 @@ export class AnnouncementService {
     );
   }
 
-  createAnnouncement(data: { title: string; content: string }): Observable<Announcement> {
+  createAnnouncement(data: CreateAnnouncementDto): Observable<Announcement> {
     return this.http.post<Announcement>(this.API_URL, data, {
       headers: this.getHeaders()
     }).pipe(
@@ -77,7 +77,7 @@ export class AnnouncementService {
     );
   }
 
-  updateAnnouncement(id: string, data: { title: string; content: string }): Observable<Announcement> {
+  updateAnnouncement(id: string, data: UpdateAnnouncementDto): Observable<Announcement> {
     return this.http.put<Announcement>(`${this.API_URL}/${id}`, data, {
       headers: this.getHeaders()
     }).pipe(
