@@ -110,7 +110,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   // =========== STATISTICS (DERIVED FROM MASTER DATA) =============
   totalEvents = 0;
-  publishedEvents = 0;
+  scheduledEvents = 0;
   draftEvents = 0;
   todaysEvents = 0;
   pendingApprovals = 0;
@@ -243,7 +243,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       total: this.masterEvents.length,
       filtered: this.filteredEvents.length,
       paginated: this.paginatedEvents.length,
-      stats: { total: this.totalEvents, published: this.publishedEvents, draft: this.draftEvents }
+      stats: { total: this.totalEvents, scheduled: this.scheduledEvents, draft: this.draftEvents }
     });
   }
 
@@ -284,8 +284,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
    */
   private calculateStatistics(): void {
     this.totalEvents = this.masterEvents.length;
-    this.publishedEvents = this.masterEvents.filter(e =>
-      e.status === 'Approved' || e.status === 'Completed'
+    this.scheduledEvents = this.masterEvents.filter(e =>
+      e.status === 'Scheduled' || e.status === 'Completed'
     ).length;
     this.draftEvents = this.masterEvents.filter(e => e.status === 'Draft').length;
 
@@ -632,14 +632,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.showError('You do not have permission to create events');
     }
   }
-   navigateToUploadVacancy(): void {
-    if (this.authService.canUploadVacancy()) {
-      this.router.navigate(['upload-vacancy']);
-    } else {
-      this.showError('You do not have permission to upload vacancy');
-    }
-  }
-
   toggleMobileMenu(): void {
     this.isMobileMenuOpen = !this.isMobileMenuOpen;
   }
