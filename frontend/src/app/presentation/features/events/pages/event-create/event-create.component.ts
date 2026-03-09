@@ -209,7 +209,7 @@ export class EventCreateComponent implements OnInit, OnDestroy {
   }
 
   submitForApproval(): void {
-    this.submitEvent(EventStatus.PENDING);
+    this.submitEvent(EventStatus.DRAFT);
   }
 
   saveAsDraft(): void {
@@ -335,7 +335,7 @@ export class EventCreateComponent implements OnInit, OnDestroy {
         this.isSubmitting = false;
         console.log('✅ Event created successfully:', response);
 
-        const message = status === EventStatus.PENDING
+        const message = status === EventStatus.DRAFT
           ? 'Event submitted for approval!'
           : 'Draft saved successfully!';
 

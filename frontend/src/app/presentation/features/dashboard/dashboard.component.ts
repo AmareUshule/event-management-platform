@@ -585,7 +585,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         description: event.raw.description
       };
 
-      this.eventService.updateEvent(event.id, formData, EventStatus.PENDING)
+      this.eventService.updateEvent(event.id, formData, EventStatus.DRAFT)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: () => {
@@ -619,7 +619,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
   }
 
-  // ==================== NAVIGATION ====================
+  // ========= NAVIGATION ==========
 
   navigateToCreateEvent(): void {
     if (this.authService.canCreateEvents()) {

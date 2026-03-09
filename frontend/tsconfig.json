@@ -2,6 +2,7 @@
   "compilerOptions": {
     "moduleResolution": "bundler",
     "emitDecoratorMetadata": false,
+    "experimentalDecorators": true,
     "target": "es2022",
     "module": "preserve",
     "lib": ["es2020", "dom"],

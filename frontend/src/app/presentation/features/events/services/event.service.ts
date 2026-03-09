@@ -2,9 +2,18 @@
 
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
+import { Observable, throwError, forkJoin } from 'rxjs';
 import { catchError, retry, timeout, map, tap } from 'rxjs/operators';
-import { Event, CreateEventRequest, EventFormData, EventStatus, EventType } from '../models/event.model';
+import { 
+  Event, 
+  CreateEventRequest, 
+  EventFormData, 
+  EventStatus, 
+  EventType, 
+  AssignmentPayload,
+  EventAssignments,
+  AssignmentApiRequest,
+  AssignmentResponse} from '../models/event.model';
 import { environment } from '../../../../../environments/environment';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { AuthUser } from '../../../../core/models/auth-user.model';
@@ -35,7 +44,7 @@ export class EventService {
     const token = this.authService.getToken();
     return new HttpHeaders({
       'Content-Type': 'application/json',
-      'Accept': 'text/plain', // backend expects text/plain
+      'Accept': 'application/json',
       'Authorization': `Bearer ${token}`
     });
   }
@@ -48,42 +57,50 @@ export class EventService {
     
     let errorMessage = 'An unexpected error occurred';
     
-    if (error.error instanceof ErrorEvent) {
+    if (typeof ErrorEvent !== 'undefined' && error.error instanceof ErrorEvent) {
       // Client-side error
       errorMessage = `Client Error: ${error.error.message}`;
     } else {
       // Server-side error
-      switch (error.status) {
-        case 400:
-          errorMessage = 'Invalid data provided';
-          break;
-        case 401:
-          errorMessage = 'Your session has expired. Please login again.';
-          break;
-        case 403:
-          errorMessage = 'You do not have permission to perform this action';
-          break;
-        case 404:
-          errorMessage = 'Event not found';
-          break;
-        case 409:
-          errorMessage = 'Event conflict occurred';
-          break;
-        case 422:
-          errorMessage = 'Validation failed';
-          break;
-        case 500:
-          errorMessage = 'Server error. Please try again later.';
-          break;
-        default:
-          errorMessage = `Server Error: ${error.status} - ${error.message}`;
+      // Try to get detail from backend error object first
+      if (error.error && typeof error.error === 'object') {
+        errorMessage = error.error.detail || error.error.message || errorMessage;
+      }
+      
+      // If we still have generic message, use status-based defaults
+      if (errorMessage === 'An unexpected error occurred' || errorMessage === 'Invalid data provided') {
+        switch (error.status) {
+          case 400:
+            errorMessage = 'Invalid data provided';
+            break;
+          case 401:
+            errorMessage = 'Your session has expired. Please login again.';
+            break;
+          case 403:
+            errorMessage = 'You do not have permission to perform this action';
+            break;
+          case 404:
+            errorMessage = 'Event not found';
+            break;
+          case 409:
+            errorMessage = 'Event conflict occurred';
+            break;
+          case 422:
+            errorMessage = 'Validation failed';
+            break;
+          case 500:
+            errorMessage = 'Server error. Please try again later.';
+            break;
+          default:
+            errorMessage = `Server Error: ${error.status} - ${error.message}`;
+        }
       }
     }
     
     return throwError(() => ({
       status: error.status,
       message: errorMessage,
-      errors: error.error?.errors
+      errors: error.error?.errors || error.error
     }));
   }
 
@@ -104,11 +121,11 @@ export class EventService {
       eventPlace: eventPlace?.trim() || '',
       status: status,
       department: {
-        id: formData.departmentId.toString() // Convert number to string  API expects string
+        id: formData.departmentId.toString() // Convert number to string - API expects string
       },
       createdBy: {
         id: user.adObjectId,        // This is the GUID/string ID from backend
-        employeeId: user.employeeId.toString() // Convert number to string  API expects string
+        employeeId: user.employeeId.toString() // Convert number to string - API expects string
       }
     };
   }
@@ -189,18 +206,17 @@ export class EventService {
   /**
    * Get event by ID
    */
-
-getEventById(id: string): Observable<Event> {
-    // Fix: Don't add extra 'events' - just use the ID
+  getEventById(id: string): Observable<Event> {
     const url = `${this.API_URL}/${id}`;
-    console.log('Fetching event from:', url); // Should be: http://10.27.52.39:5230/api/events/019c9481-f1c5-7097-b781-9b79c1a34740
+    console.log('Fetching event from:', url);
     
-    return this.http.get<Event>(url).pipe(
+    return this.http.get<Event>(url, {
+      headers: this.getHeaders()
+    }).pipe(
       tap(event => console.log('Event fetched successfully:', event)),
-      catchError(this.handleError)
+      catchError(this.handleError.bind(this))
     );
   }
-
 
   /**
    * Update event
@@ -287,6 +303,172 @@ getEventById(id: string): Observable<Event> {
     ).pipe(
       timeout(this.REQUEST_TIMEOUT),
       retry(1),
+      catchError(this.handleError.bind(this))
+    );
+  }
+ 
+
+  /**
+   * Assign a single employee to an event
+   * API expects a single assignment object, not an array
+   */
+   
+
+
+assignEmployeeToEvent(eventId: string, assignment: AssignmentPayload): Observable<Event> {
+  console.log('📦 Sending single assignment:', { eventId, ...assignment });
+  
+  // Try both ID formats to see which one works
+  const payload = {
+    eventId: eventId,
+    employeeId: assignment.employeeId, // This might need to be the string ID
+    role: assignment.role
+  };
+  
+  console.log('Full payload being sent:', JSON.stringify(payload, null, 2));
+  
+  return this.http.post<Event>(
+    `${this.API_URL}/${eventId}/assignments`, 
+    payload,
+    { 
+      headers: this.getHeaders(),
+      responseType: 'json'
+    }
+  ).pipe(
+    timeout(this.REQUEST_TIMEOUT),
+    tap(result => console.log('✅ Assignment successful:', result)),
+    catchError(error => {
+      console.error('❌ Failed with payload:', payload);
+      console.error('Error details:', error.error);
+      return throwError(() => error);
+    })
+  );
+}
+
+// Update assignMultipleEmployees:
+assignMultipleEmployees(eventId: string, assignments: AssignmentPayload[]): Observable<Event[]> {
+  console.log(`📦 Sending ${assignments.length} assignments one by one`);
+  console.log('Original assignments:', assignments);
+  
+  if (assignments.length === 0) {
+    return throwError(() => new Error('No assignments provided'));
+  }
+  
+  // Send them sequentially instead of in parallel to better identify which one fails
+  const requests = assignments.map((assignment, index) => {
+    const payload = {
+      eventId: eventId,
+      employeeId: assignment.employeeId,
+      role: assignment.role
+    };
+    
+    console.log(`Request ${index + 1}:`, payload);
+    
+    return this.http.post<Event>(
+      `${this.API_URL}/${eventId}/assignments`,
+      payload,
+      { 
+        headers: this.getHeaders(),
+        responseType: 'json'
+      }
+    ).pipe(
+      timeout(this.REQUEST_TIMEOUT),
+      catchError(error => {
+        console.error(`❌ Failed assignment ${index + 1}:`, assignment, error);
+        // Return the error but don't stop other requests
+        return throwError(() => ({
+          assignment,
+          error,
+          index
+        }));
+      })
+    );
+  });
+  
+  // Use forkJoin to execute all requests
+  return forkJoin(requests).pipe(
+    tap(results => console.log(`✅ All assignments processed:`, results)),
+    catchError(error => {
+      console.error('❌ Some assignments failed:', error);
+      return throwError(() => error);
+    })
+  );
+}
+
+
+  /**
+   * Remove an assignment
+   */
+  removeAssignment(eventId: string, role: string, assignmentId: string): Observable<Event> {
+    return this.http.delete<Event>(
+      `${this.API_URL}/${eventId}/assignments/${role}/${assignmentId}`,
+      { 
+        headers: this.getHeaders(),
+        responseType: 'json'
+      }
+    ).pipe(
+      timeout(this.REQUEST_TIMEOUT),
+      tap(result => console.log('✅ Assignment removed:', result)),
+      catchError(this.handleError.bind(this))
+    );
+  }
+
+  /**
+   * Get all assignments for an event
+   */
+  getEventAssignments(eventId: string): Observable<EventAssignments> {
+    const url = `${this.API_URL}/${eventId}/assignments`;
+    
+    return this.http.get<EventAssignments>(
+      url,
+      {
+        headers: this.getHeaders(),
+        responseType: 'json'
+      }
+    ).pipe(
+      timeout(this.REQUEST_TIMEOUT),
+      tap(assignments => console.log('📋 Event assignments:', assignments)),
+      catchError(this.handleError.bind(this))
+    );
+  }
+
+  /**
+   * Update an existing assignment
+   */
+  updateAssignment(eventId: string, assignmentId: string, updatedData: Partial<AssignmentPayload>): Observable<Event> {
+    const url = `${this.API_URL}/${eventId}/assignments/${assignmentId}`;
+    
+    return this.http.put<Event>(
+      url,
+      updatedData,
+      {
+        headers: this.getHeaders(),
+        responseType: 'json'
+      }
+    ).pipe(
+      timeout(this.REQUEST_TIMEOUT),
+      tap(updatedEvent => console.log('✅ Assignment updated successfully:', updatedEvent)),
+      catchError(this.handleError.bind(this))
+    );
+  }
+
+  /**
+   * Bulk assign multiple employees with different roles
+   * Note: Check with backend if this endpoint exists
+   */
+  bulkAssignEmployees(eventId: string, assignmentsByRole: { [key: string]: string[] }): Observable<Event> {
+    const url = `${this.API_URL}/${eventId}/assignments/bulk`;
+    
+    return this.http.post<Event>(
+      url,
+      assignmentsByRole,
+      {
+        headers: this.getHeaders(),
+        responseType: 'json'
+      }
+    ).pipe(
+      timeout(this.REQUEST_TIMEOUT),
+      tap(updatedEvent => console.log('✅ Bulk assignment successful:', updatedEvent)),
       catchError(this.handleError.bind(this))
     );
   }

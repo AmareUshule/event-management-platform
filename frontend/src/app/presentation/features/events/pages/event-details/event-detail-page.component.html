@@ -57,6 +57,12 @@
                     </mat-icon>
                     <span>{{ event.status }}</span>
                 </div>
+                
+                <!-- Assign Employee Button - moved inside the card after status, aligned to right -->
+                <button class="assign-employee-btn" (click)="assignEmployee()" matTooltip="Assign employee to event">
+                    <mat-icon>person_add</mat-icon>
+                    <span>Assign Expert</span>
+                </button>
             </div>
 
             <div class="info-grid">
@@ -115,6 +121,40 @@
             <div class="description-section" *ngIf="event.description">
                 <h3>About this event</h3>
                 <p>{{ event.description }}</p>
+            </div>
+
+            <!-- Assignments Section -->
+            <div class="assignments-section" *ngIf="getTotalAssignments() > 0">
+                <h3>Assigned Personnel</h3>
+                <div class="assignments-grid">
+                    <ng-container *ngFor="let role of getActiveRoles()">
+                        <div class="role-group">
+                            <h4 class="role-title">{{ formatRoleName(role) }}</h4>
+                            <div class="assignment-list">
+                                <div class="assignment-item" *ngFor="let assignment of getAssignmentsByRole(role)">
+                                    <div class="assignee-info">
+                                        <div class="assignee-avatar">
+                                            <mat-icon>person</mat-icon>
+                                        </div>
+                                        <div class="assignee-details">
+                                            <span class="assignee-name">{{ getAssigneeName(role, assignment.id) }}</span>
+                                            <span class="assigned-by" *ngIf="assignment.assignedBy">
+                                                Assigned by: {{ getAssignedByName(role, assignment.id) }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <button mat-icon-button color="warn" 
+                                            class="remove-btn"
+                                            *ngIf="canAssignEmployees()"
+                                            (click)="removeAssignment(role, assignment.id)"
+                                            matTooltip="Remove assignment">
+                                        <mat-icon>person_remove</mat-icon>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </ng-container>
+                </div>
             </div>
         </div>
 

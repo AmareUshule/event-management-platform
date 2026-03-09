@@ -64,7 +64,7 @@ export class AuthService {
     this.loadUserFromStorage();
   }
 
-  // =============== PUBLIC API ===============
+  // ====== PUBLIC API ======
 
   login(credentials: LoginCredentials): Observable<AuthUser> {
     this.setLoading(true);
