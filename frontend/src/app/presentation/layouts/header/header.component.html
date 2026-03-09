@@ -17,6 +17,10 @@
           <mat-icon>dashboard</mat-icon>
           <span>Dashboard</span>
         </button>
+        <button class="nav-tab" routerLink="/internal-announcements" [routerLinkActive]="['active']">
+          <mat-icon>announcement</mat-icon>
+          <span>Internal Announcements</span>
+        </button>
         <button class="nav-tab">
           <mat-icon>calendar_month</mat-icon>
           <span>Calendar</span>
@@ -28,10 +32,6 @@
         <button class="nav-tab">
           <mat-icon>people</mat-icon>
           <span>Attendance</span>
-        </button>
-        <button class="nav-tab" routerLink="/internal-announcements" [routerLinkActive]="['active']">
-          <mat-icon>announcement</mat-icon>
-          <span>Internal Announcements</span>
         </button>
       </div>
     </div>
@@ -120,6 +120,10 @@
         <mat-icon>dashboard</mat-icon>
         <span>Dashboard</span>
       </button>
+      <button class="mobile-nav-item" routerLink="/internal-announcements" [routerLinkActive]="['active']" (click)="toggleMobileMenu()">
+        <mat-icon>announcement</mat-icon>
+        <span>Internal Announcements</span>
+      </button>
       <button class="mobile-nav-item" (click)="toggleMobileMenu()">
         <mat-icon>calendar_month</mat-icon>
         <span>Calendar</span>
@@ -131,10 +135,6 @@
       <button class="mobile-nav-item" (click)="toggleMobileMenu()">
         <mat-icon>people</mat-icon>
         <span>Attendance</span>
-      </button>
-      <button class="mobile-nav-item" routerLink="/internal-announcements" [routerLinkActive]="['active']" (click)="toggleMobileMenu()">
-        <mat-icon>announcement</mat-icon>
-        <span>Internal Announcements</span>
       </button>
     </div>
   </div>

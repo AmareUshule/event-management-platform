@@ -9,6 +9,9 @@ namespace EEP.EventManagement.Api.Application.Features.Announcements.DTOs
         public string Title { get; set; } = string.Empty;
         public string Content { get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty;
+        public string Type { get; set; } = string.Empty;
+        public DateTime? Deadline { get; set; }
+        public SimplifiedDepartmentDto? Department { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
 

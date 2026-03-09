@@ -166,7 +166,7 @@ export class RegistrationComponent implements OnInit {
       'linear-gradient(135deg, #f44336, #d32f2f)', // Red for weak
       'linear-gradient(135deg, #ff9800, #f57c00)', // Orange for fair
       'linear-gradient(135deg, #4caf50, #388e3c)', // Green for good
-      'linear-gradient(135deg, #2e7d32, #1b5e20)'  // Dark green for strong
+      'linear-gradient(135deg, #2e7d32, #1E590C)'  // Dark green for strong
     ];
     
     if (index < this.passwordStrength) {
