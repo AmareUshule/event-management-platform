@@ -10,15 +10,22 @@
         </div>
 
         <div class="header-actions" *ngIf="event">
-            <!-- Publish button - only show when status is Draft -->
-            <button class="action-btn" *ngIf="event.status === 'Draft'" (click)="approveEvent()"
+            <!-- Approve button - only for Admin or Communication Manager and only when status is Draft -->
+            <button
+                class="action-btn"
+                *ngIf="event.status === 'Draft' && (authService.isAdmin() || authService.isCommunicationManager())"
+                (click)="approveEvent()"
                 matTooltip="Approve this event">
                 <mat-icon>check_circle</mat-icon>
                 <span>Approve</span>
             </button>
 
-            <!-- Edit button - show for all statuses except maybe completed?   change to editEvent()-->
-            <button class="action-btn" (click)="approveEvent()" matTooltip="Edit event">
+            <!-- Edit button - only for Admin or department manager of this event -->
+            <button
+                class="action-btn"
+                *ngIf="authService.isAdmin() || (authService.isManager() && authService.getDepartmentGuid() === event.department?.id)"
+                (click)="editEvent()"
+                matTooltip="Edit event">
                 <mat-icon>edit</mat-icon>
                 <span>Edit</span>
             </button>
@@ -52,8 +59,12 @@
                     <span>{{ event.status }}</span>
                 </div>
 
-                <!-- Assign Employee Button - moved inside the card after status, aligned to right -->
-                <button class="assign-employee-btn" (click)="assignEmployee()" matTooltip="Assign employee to event">
+            <!-- Assign Employee Button - only for Admin or Communication Manager while event is active -->
+            <button
+                class="assign-employee-btn"
+                *ngIf="canAssignEmployees()"
+                (click)="assignEmployee()"
+                matTooltip="Assign employee to event">
                     <mat-icon>person_add</mat-icon>
                     <span>Assign Expert</span>
                 </button>

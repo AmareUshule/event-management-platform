@@ -135,7 +135,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   // ========== DEPENDENCY INJECTION ==========
-  private authService = inject(AuthService);
+  authService = inject(AuthService);
   private eventService = inject(EventService);
   private reportService = inject(ReportService);
   private announcementService = inject(AnnouncementService);
@@ -679,11 +679,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   editEvent(event: TableEvent): void {
-    const canEdit = this.authService.isAdmin() ||
-      (this.authService.isManager() &&
-        this.authService.getDepartmentGuid() === event.raw.department?.id);
-
-    if (canEdit) {
+    if (this.canManageEvent(event)) {
       this.router.navigate(['/events/edit', event.id]);
     } else {
       this.showError('You do not have permission to edit this event');
@@ -805,6 +801,24 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   canApproveEvents(): boolean {
     return this.authService.canApproveEvents();
+  }
+
+  /**
+   * Determine if the current user can manage (edit/delete) the given event.
+   * Admins can manage all events; managers can manage events in their own department.
+   */
+  canManageEvent(event: TableEvent): boolean {
+    if (this.authService.isAdmin()) {
+      return true;
+    }
+
+    if (this.authService.isManager()) {
+      const userDept = this.authService.getDepartmentGuid();
+      const eventDept = event.raw.department?.id;
+      return !!userDept && !!eventDept && userDept === eventDept;
+    }
+
+    return false;
   }
 
   // ==================== ERROR HANDLING ====================

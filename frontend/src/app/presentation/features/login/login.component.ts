@@ -89,22 +89,16 @@ export class LoginComponent {
     }
   }
 
-private getDefaultRoute(user: AuthUser): string {
-  // Role-based routing using your ROLES constant
-  if (user.roles?.includes(ROLES.Admin)) {
-    return '/admin/dashboard';
-  }
-
-  if (user.roles?.includes(ROLES.Manager)) {
-    if (user.departmentId === DEPARTMENTS.COMMUNICATION) {
-      return '/communication/dashboard';
+  private getDefaultRoute(user: AuthUser): string {
+    // Role-based routing using existing routes:
+    // - Admins -> /admin/dashboard
+    // - All other authenticated users -> /dashboard
+    if (user.roles?.includes(ROLES.Admin)) {
+      return '/admin/dashboard';
     }
-    return '/manager/dashboard';
-  }
 
-  // Experts, Cameramen, Employees and any other roles fall back to the main dashboard
-  return '/dashboard';
-}
+    return '/dashboard';
+  }
 
   private showSuccess(message: string): void {
     this.snackBar.open(message, 'Close', {

@@ -8,7 +8,10 @@
       <!-- Dashboard Header -->
       <div class="dashboard-header">
         <div class="header-content">
-          <button class="create-event-btn" (click)="navigateToCreateEvent()">
+          <button
+            class="create-event-btn"
+            *ngIf="authService.canCreateEvents()"
+            (click)="navigateToCreateEvent()">
             <mat-icon>add</mat-icon>
             CREATE EVENT
           </button>
@@ -203,16 +206,26 @@
                       <mat-icon>visibility</mat-icon>
                       <span>View Details</span>
                     </button>
-                    <button mat-menu-item (click)="editEvent(element)">
+                  <button
+                    mat-menu-item
+                    *ngIf="canManageEvent(element)"
+                    (click)="editEvent(element)">
                       <mat-icon>edit</mat-icon>
                       <span>Edit Event</span>
                     </button>
-                    <button mat-menu-item *ngIf="element.status === 'Draft'" (click)="publishEvent(element)">
+                    <button
+                      mat-menu-item
+                      *ngIf="element.status === 'Draft' && canApproveEvents()"
+                      (click)="publishEvent(element)">
                       <mat-icon>publish</mat-icon>
                       <span>Publish Event</span>
                     </button>
                     <mat-divider></mat-divider>
-                    <button mat-menu-item (click)="deleteEvent(element)" class="delete-menu-item">
+                    <button
+                      mat-menu-item
+                      *ngIf="canManageEvent(element)"
+                      (click)="deleteEvent(element)"
+                      class="delete-menu-item">
                       <mat-icon color="warn">delete</mat-icon>
                       <span>Delete Event</span>
                     </button>
@@ -382,20 +395,33 @@
               <h4>Quick Actions</h4>
             </div>
             <div class="sidebar-content">
-              <button class="quick-action-btn" (click)="navigateToCreateEvent()">
+              <button
+                class="quick-action-btn"
+                *ngIf="authService.canCreateEvents()"
+                (click)="navigateToCreateEvent()">
                 <mat-icon>add</mat-icon>
                 Create Event
               </button>
-              <button class="quick-action-btn" (click)="navigateToCreateAnnouncement()">
+              <button
+                class="quick-action-btn"
+                *ngIf="authService.isAdmin() || authService.isManager()"
+                (click)="navigateToCreateAnnouncement()">
                 <mat-icon>campaign</mat-icon>
                 Post Announcement
               </button>
-              <button class="quick-action-btn" (click)="generateReport()" [disabled]="isLoadingReport">
+              <button
+                class="quick-action-btn"
+                *ngIf="authService.isAdmin() || authService.isManager()"
+                (click)="generateReport()"
+                [disabled]="isLoadingReport">
                 <mat-icon *ngIf="!isLoadingReport">add_chart</mat-icon>
                 <mat-spinner *ngIf="isLoadingReport" diameter="18"></mat-spinner>
                 {{ isLoadingReport ? 'Generating...' : 'Generate Report' }}
               </button>
-              <button class="quick-action-btn" (click)="exportData()">
+              <button
+                class="quick-action-btn"
+                *ngIf="authService.isAdmin() || authService.isManager()"
+                (click)="exportData()">
                 <mat-icon>download</mat-icon>
                 Export Data
               </button>

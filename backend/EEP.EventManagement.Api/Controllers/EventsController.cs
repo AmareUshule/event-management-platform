@@ -20,20 +20,75 @@ namespace EEP.EventManagement.Api.Controllers
         private readonly IMediator _mediator;
         private readonly AutoMapper.IMapper _mapper;
         private readonly IAuthorizationService _authorizationService;
+        private readonly Infrastructure.Security.IUserContext _userContext;
 
-        public EventsController(IMediator mediator, AutoMapper.IMapper mapper, IAuthorizationService authorizationService)
+        public EventsController(
+            IMediator mediator,
+            AutoMapper.IMapper mapper,
+            IAuthorizationService authorizationService,
+            Infrastructure.Security.IUserContext userContext)
         {
             _mediator = mediator;
             _mapper = mapper;
             _authorizationService = authorizationService;
+            _userContext = userContext;
         }
 
         [HttpGet]
         public async Task<ActionResult<List<EventDto>>> GetAllEvents()
         {
-            var query = new GetAllEventsQuery();
-            var result = await _mediator.Send(query);
-            return Ok(result);
+            // Enforce per-role visibility rules:
+            // - Admin, Communication Manager: all events
+            // - Department Manager: events for their department
+            // - Expert/Cameraman: events assigned to them
+            // - Employee: approved events only
+
+            var roles = _userContext.GetRoles();
+            var currentUserId = _userContext.GetUserId();
+            var departmentId = _userContext.GetDepartmentId();
+
+            // Admin can see all events
+            if (roles.Contains("Admin"))
+            {
+                var all = await _mediator.Send(new GetAllEventsQuery());
+                return Ok(all);
+            }
+
+            // Communication Manager (Manager in Communication dept) can also see all
+            var isCommManager = (await _authorizationService.AuthorizeAsync(
+                User,
+                null,
+                Infrastructure.Security.Authorization.AuthorizationPolicies.IsCommunicationManager)).Succeeded;
+
+            if (isCommManager)
+            {
+                var all = await _mediator.Send(new GetAllEventsQuery());
+                return Ok(all);
+            }
+
+            // Department Manager (non-Communication) can see only their department's events
+            if (roles.Contains("Manager") && departmentId.HasValue)
+            {
+                var deptEvents = await _mediator.Send(new GetDepartmentEventsQuery
+                {
+                    DepartmentId = departmentId.Value
+                });
+                return Ok(deptEvents);
+            }
+
+            // Operational staff: Experts and Cameramen see events assigned to them
+            if (roles.Contains("Expert") || roles.Contains("Cameraman"))
+            {
+                var assignedEvents = await _mediator.Send(new GetAssignedEventsQuery
+                {
+                    EmployeeId = currentUserId
+                });
+                return Ok(assignedEvents);
+            }
+
+            // Employees and any other authenticated users: only approved events
+            var approved = await _mediator.Send(new GetApprovedEventsQuery());
+            return Ok(approved);
         }
 
         [HttpGet("upcoming")]

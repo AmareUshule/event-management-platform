@@ -27,6 +27,7 @@ import {
 } from '../../models/event.model';
 
 import { EventService } from '../../services/event.service';
+import { AuthService } from '../../../../../core/auth/auth.service';
 import { AssignmentDialogComponent } from './assignment-dialog.component';
 import { ConfirmationDialogComponent, ConfirmationDialogData } from '../../../confirmation-dialog.component';
 
@@ -59,6 +60,7 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
   private eventService = inject(EventService);
   private cdr = inject(ChangeDetectorRef);
   private dialog = inject(MatDialog);
+  private authService = inject(AuthService);
 
   event: Event | null = null;
   loading = true;
@@ -127,8 +129,6 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
   }
 
 
-  // Add this method to your EventDetailPageComponent class
-
   approveEvent(): void {
   if (!this.event?.id) return;
 
@@ -165,11 +165,25 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
     }
   });
 }
-
   
+  editEvent(): void {
+    if (!this.event?.id) {
+      return;
+    }
 
+    // Only Admin or department manager of this event can edit
+    const canEdit =
+      this.authService.isAdmin() ||
+      (this.authService.isManager() &&
+        this.authService.getDepartmentGuid() === this.event.department?.id);
 
+    if (!canEdit) {
+      this.showError('You do not have permission to edit this event');
+      return;
+    }
 
+    this.router.navigate(['/events/edit', this.event.id]);
+  }
   private refreshEventData(): void {
     if (this.event?.id) {
       this.fetchEventDetails(this.event.id);
@@ -426,9 +440,21 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
   }
 
   canAssignEmployees(): boolean {
-    // Can assign if event is not completed or cancelled
-    return this.event?.status !== EventStatus.COMPLETED &&
-      this.event?.status !== EventStatus.CANCELLED;
+    // Only Admin or Communication Manager can assign staff,
+    // and only while the event is not completed or cancelled
+    if (!this.event) {
+      return false;
+    }
+
+    const notFinal =
+      this.event.status !== EventStatus.COMPLETED &&
+      this.event.status !== EventStatus.CANCELLED;
+
+    const canAssign =
+      this.authService.isAdmin() ||
+      this.authService.isCommunicationManager();
+
+    return notFinal && canAssign;
   }
 
   private showSuccess(message: string): void {

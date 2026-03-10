@@ -365,15 +365,8 @@ export class EventCreateComponent implements OnInit, OnDestroy {
   }
 
   private checkPermissions(): boolean {
-    const user = this.authService.getCurrentUser();
-    if (!user) return false;
-
-    const hasPermission =
-      this.authService.isAdmin() ||
-      this.authService.isManager() ||
-      this.authService.canCreateEvents();
-
-    if (!hasPermission) {
+    // Only Admins and Managers are allowed to create events
+    if (!this.authService.canCreateEvents()) {
       this.showError('You do not have permission to create events');
       this.router.navigate(['/dashboard']);
       return false;

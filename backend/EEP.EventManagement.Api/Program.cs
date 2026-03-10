@@ -153,7 +153,8 @@ using (var scope = app.Services.CreateScope())
 {
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
 
-    string[] roles = { "Admin", "Manager", "Expert", "Cameraman" };
+    // Ensure all application roles exist in Identity, including Employee
+    string[] roles = { "Admin", "Manager", "Expert", "Cameraman", "Employee" };
 
     foreach (var role in roles)
     {
