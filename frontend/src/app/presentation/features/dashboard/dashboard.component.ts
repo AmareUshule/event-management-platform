@@ -89,6 +89,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private masterEvents: Event[] = [];           // Raw events from API - NEVER TOUCH AFTER SET
   private masterTableEvents: TableEvent[] = []; // Transformed events - NEVER MODIFY AFTER SET
   upcomingEvents: Event[] = [];                 // Upcoming events from API
+  todaysEvents: number = 0; // or string, or whatever type you need
   reportSummary: ReportSummary | null = null;   // Report summary from API
   latestAnnouncements: Announcement[] = [];     // Latest announcements (preview)
   isLoadingAnnouncements = false;
@@ -111,6 +112,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   selectedTabIndex = 0;
   searchTerm: string = '';
   isMobileMenuOpen = false;
+    
 
   // ======== TABLE CONFIGURATION ============
   displayedColumns: string[] = ['id', 'eventName', 'location', 'date', 'actions'];

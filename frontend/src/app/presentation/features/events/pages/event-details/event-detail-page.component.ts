@@ -118,15 +118,7 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
           this.loading = false;
           this.cdr.detectChanges();
         }
-      },
-      error: (error) => {
-        if (this.isSubscribed) {
-          this.loading = false;
-          this.showError('Failed to load event details');
-          this.cdr.detectChanges();
-        }
-        console.error('Error fetching event:', error);
-      }
+      } 
     });
   }
 
