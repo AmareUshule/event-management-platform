@@ -47,9 +47,10 @@
           </div>
         </div>
 
-        <div class="announcements-content" *ngIf="!showForm">
-          <mat-tab-group animationDuration="0ms" class="modern-tabs">
-            <mat-tab label="Published">
+        <div class="announcements-layout" *ngIf="!showForm">
+          <section class="announcements-content">
+            <mat-tab-group animationDuration="0ms" class="modern-tabs">
+              <mat-tab label="Published">
               <ng-template mat-tab-label>
                 <div class="tab-label-content">
                   <mat-icon>check_circle</mat-icon>
@@ -80,9 +81,43 @@
                   </app-announcement-card>
                 </div>
               </div>
-            </mat-tab>
+              </mat-tab>
 
-            <mat-tab label="Draft" *ngIf="canSeeDrafts">
+              <mat-tab label="Pending" *ngIf="canPublish">
+                <ng-template mat-tab-label>
+                  <div class="tab-label-content">
+                    <mat-icon>hourglass_top</mat-icon>
+                    <span>Pending</span>
+                    <span class="count-badge" *ngIf="pendingAnnouncements.length > 0">{{ pendingAnnouncements.length }}</span>
+                  </div>
+                </ng-template>
+                <div class="tab-content">
+                  <div *ngIf="isLoading" class="loader">
+                    <mat-spinner diameter="40"></mat-spinner>
+                  </div>
+                  <div *ngIf="!isLoading && pendingAnnouncements.length === 0" class="empty-state">
+                    <div class="empty-icon-wrapper">
+                      <mat-icon>hourglass_top</mat-icon>
+                    </div>
+                    <p>No pending approvals.</p>
+                  </div>
+                  <div class="announcements-grid" *ngIf="!isLoading && pendingAnnouncements.length > 0">
+                    <app-announcement-card
+                      *ngFor="let announcement of pendingAnnouncements"
+                      [announcement]="announcement"
+                      [isPending]="true"
+                      [canManage]="true"
+                      [canPublish]="canPublish"
+                      (edit)="onEdit($event)"
+                      (delete)="onDelete($event)"
+                      (publish)="onPublish($event)"
+                      (reject)="onReject($event)">
+                    </app-announcement-card>
+                  </div>
+                </div>
+              </mat-tab>
+
+              <mat-tab label="Drafts">
               <ng-template mat-tab-label>
                 <div class="tab-label-content">
                   <mat-icon>edit_note</mat-icon>
@@ -108,15 +143,108 @@
                     [announcement]="announcement"
                     [isDraft]="true"
                     [canManage]="canManageAnnouncement(announcement)"
-                    [canPublish]="canPublish"
+                    [canSubmit]="canManageAnnouncement(announcement)"
                     (edit)="onEdit($event)"
                     (delete)="onDelete($event)"
-                    (publish)="onPublish($event)">
+                    (submitForApproval)="onSubmitForApproval($event)">
                   </app-announcement-card>
                 </div>
               </div>
-            </mat-tab>
-          </mat-tab-group>
+              </mat-tab>
+
+              <mat-tab label="Rejected">
+                <ng-template mat-tab-label>
+                  <div class="tab-label-content">
+                    <mat-icon>dangerous</mat-icon>
+                    <span>Rejected</span>
+                    <span class="count-badge draft" *ngIf="rejectedAnnouncements.length > 0">{{ rejectedAnnouncements.length }}</span>
+                  </div>
+                </ng-template>
+                <div class="tab-content">
+                  <div *ngIf="isLoading" class="loader">
+                    <mat-spinner diameter="40"></mat-spinner>
+                  </div>
+                  <div *ngIf="!isLoading && rejectedAnnouncements.length === 0" class="empty-state">
+                    <div class="empty-icon-wrapper">
+                      <mat-icon>dangerous</mat-icon>
+                    </div>
+                    <p>No rejected announcements.</p>
+                  </div>
+                  <div class="announcements-grid" *ngIf="!isLoading && rejectedAnnouncements.length > 0">
+                    <app-announcement-card
+                      *ngFor="let announcement of rejectedAnnouncements"
+                      [announcement]="announcement"
+                      [isRejected]="true"
+                      [canManage]="canManageAnnouncement(announcement)"
+                      [canSubmit]="canManageAnnouncement(announcement)"
+                      (edit)="onEdit($event)"
+                      (delete)="onDelete($event)"
+                      (submitForApproval)="onSubmitForApproval($event)">
+                    </app-announcement-card>
+                  </div>
+                </div>
+              </mat-tab>
+            </mat-tab-group>
+          </section>
+
+          <aside class="sidebar">
+            <div class="sidebar-card">
+              <div class="sidebar-header">
+                <mat-icon>rocket_launch</mat-icon>
+                <h4>Quick Actions</h4>
+              </div>
+              <div class="sidebar-content">
+                <button class="quick-action-btn" (click)="openCreateForm()" *ngIf="canCreate">
+                  <mat-icon>add</mat-icon>
+                  Create Announcement
+                </button>
+                <button class="quick-action-btn" (click)="router.navigate(['/dashboard'])">
+                  <mat-icon>dashboard</mat-icon>
+                  Back to Dashboard
+                </button>
+              </div>
+            </div>
+
+            <div class="sidebar-card" *ngIf="canPublish">
+              <div class="sidebar-header">
+                <mat-icon>assignment_turned_in</mat-icon>
+                <h4>Approval Queue</h4>
+              </div>
+              <div class="sidebar-content">
+                <div class="insight-item">
+                  <div class="insight-label">Pending approvals</div>
+                  <div class="insight-value">{{ pendingAnnouncements.length }}</div>
+                </div>
+                <div class="insight-item">
+                  <div class="insight-label">Published</div>
+                  <div class="insight-value">{{ publishedAnnouncements.length }}</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="sidebar-card">
+              <div class="sidebar-header">
+                <mat-icon>tips_and_updates</mat-icon>
+                <h4>Posting Tips</h4>
+              </div>
+              <div class="sidebar-content">
+                <div class="tip">
+                  <mat-icon>picture_as_pdf</mat-icon>
+                  <div>
+                    <div class="tip-title">Job vacancies</div>
+                    <div class="tip-text">Attach a PDF or image with full details. Many employees will read the attachment first.</div>
+                  </div>
+                </div>
+                <div class="tip">
+                  <mat-icon>collections</mat-icon>
+                  <div>
+                    <div class="tip-title">Multiple attachments</div>
+                    <div class="tip-text">Upload images + PDFs after saving a draft. Keep the first attachment as the “cover”.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </aside>
         </div>
       </div>
     </main>

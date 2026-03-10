@@ -2,7 +2,7 @@ export interface Announcement {
   id: string;
   title: string;
   content: string;
-  status: string; // 'Draft' | 'Published'
+  status: string; // 'Draft' | 'PendingApproval' | 'Rejected' | 'Published'
   type: string; // 'General' | 'JobOpening'
   deadline?: string;
   department?: {

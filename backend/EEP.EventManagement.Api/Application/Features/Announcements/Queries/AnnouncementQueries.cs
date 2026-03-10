@@ -9,6 +9,7 @@ namespace EEP.EventManagement.Api.Application.Features.Announcements.Queries
     public class GetAnnouncementsPagedQuery : IRequest<(List<AnnouncementDto> Items, int TotalCount)>
     {
         public AnnouncementStatus? Status { get; set; }
+        public Guid? CreatedById { get; set; }
         public int Page { get; set; } = 1;
         public int PageSize { get; set; } = 10;
     }

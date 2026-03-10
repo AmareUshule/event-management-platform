@@ -29,13 +29,18 @@ namespace EEP.EventManagement.Api.Infrastructure.Repositories.Implementations
                 .FirstOrDefaultAsync(a => a.Id == id);
         }
 
-        public async Task<(List<Announcement> Items, int TotalCount)> GetPagedAsync(AnnouncementStatus? status, int page, int pageSize)
+        public async Task<(List<Announcement> Items, int TotalCount)> GetPagedAsync(AnnouncementStatus? status, Guid? createdById, int page, int pageSize)
         {
             var query = _context.Announcements.AsQueryable();
 
             if (status.HasValue)
             {
                 query = query.Where(a => a.Status == status.Value);
+            }
+
+            if (createdById.HasValue)
+            {
+                query = query.Where(a => a.CreatedBy == createdById.Value);
             }
 
             var totalCount = await query.CountAsync();

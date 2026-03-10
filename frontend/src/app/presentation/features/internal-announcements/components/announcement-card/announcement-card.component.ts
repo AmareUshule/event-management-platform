@@ -29,12 +29,17 @@ import { environment } from '../../../../../../environments/environment';
 export class AnnouncementCardComponent {
   @Input() announcement!: Announcement;
   @Input() isDraft: boolean = false;
+  @Input() isPending: boolean = false;
+  @Input() isRejected: boolean = false;
   @Input() canManage: boolean = false;
   @Input() canPublish: boolean = false;
+  @Input() canSubmit: boolean = false;
 
   @Output() edit = new EventEmitter<Announcement>();
   @Output() delete = new EventEmitter<Announcement>();
   @Output() publish = new EventEmitter<Announcement>();
+  @Output() submitForApproval = new EventEmitter<Announcement>();
+  @Output() reject = new EventEmitter<Announcement>();
 
   get bannerImage(): string | null {
     if (this.announcement.images && this.announcement.images.length > 0) {
@@ -74,5 +79,15 @@ export class AnnouncementCardComponent {
   onPublish(event: Event) {
     event.stopPropagation();
     this.publish.emit(this.announcement);
+  }
+
+  onSubmit(event: Event) {
+    event.stopPropagation();
+    this.submitForApproval.emit(this.announcement);
+  }
+
+  onReject(event: Event) {
+    event.stopPropagation();
+    this.reject.emit(this.announcement);
   }
 }

@@ -24,6 +24,16 @@ namespace EEP.EventManagement.Api.Application.Features.Announcements.Commands
         public Guid Id { get; set; }
     }
 
+    public class SubmitAnnouncementForApprovalCommand : IRequest<AnnouncementDto>
+    {
+        public Guid Id { get; set; }
+    }
+
+    public class RejectAnnouncementCommand : IRequest<AnnouncementDto>
+    {
+        public Guid Id { get; set; }
+    }
+
     public class UploadAnnouncementImageCommand : IRequest<AnnouncementImageDto>
     {
         public Guid AnnouncementId { get; set; }

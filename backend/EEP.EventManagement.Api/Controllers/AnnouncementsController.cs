@@ -30,7 +30,7 @@ namespace EEP.EventManagement.Api.Controllers
         }
 
         [HttpPost]
-        [Authorize(Policy = AuthorizationPolicies.IsCommunicationManager)]
+        [Authorize(Roles = "Admin,Manager")]
         public async Task<ActionResult<AnnouncementDto>> Create([FromBody] CreateAnnouncementDto createDto)
         {
             var command = new CreateAnnouncementCommand { CreateAnnouncementDto = createDto };
@@ -52,12 +52,48 @@ namespace EEP.EventManagement.Api.Controllers
         }
 
         [HttpGet("drafts")]
-        [Authorize(Policy = AuthorizationPolicies.IsCommunicationManager)]
+        [Authorize(Roles = "Admin,Manager")]
         public async Task<ActionResult<object>> GetDrafts([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
+            var currentUserId = _userContext.GetUserId();
+            var isCommManager = (await _authorizationService.AuthorizeAsync(User, AuthorizationPolicies.IsCommunicationManager)).Succeeded;
+
             var query = new GetAnnouncementsPagedQuery 
             { 
                 Status = AnnouncementStatus.Draft,
+                CreatedById = isCommManager ? null : currentUserId,
+                Page = page,
+                PageSize = pageSize
+            };
+            var (items, totalCount) = await _mediator.Send(query);
+            return Ok(new { items, totalCount, page, pageSize });
+        }
+
+        [HttpGet("pending")]
+        [Authorize(Policy = AuthorizationPolicies.IsCommunicationManager)]
+        public async Task<ActionResult<object>> GetPending([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        {
+            var query = new GetAnnouncementsPagedQuery
+            {
+                Status = AnnouncementStatus.PendingApproval,
+                Page = page,
+                PageSize = pageSize
+            };
+            var (items, totalCount) = await _mediator.Send(query);
+            return Ok(new { items, totalCount, page, pageSize });
+        }
+
+        [HttpGet("rejected")]
+        [Authorize(Roles = "Admin,Manager")]
+        public async Task<ActionResult<object>> GetRejected([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        {
+            var currentUserId = _userContext.GetUserId();
+            var isCommManager = (await _authorizationService.AuthorizeAsync(User, AuthorizationPolicies.IsCommunicationManager)).Succeeded;
+
+            var query = new GetAnnouncementsPagedQuery
+            {
+                Status = AnnouncementStatus.Rejected,
+                CreatedById = isCommManager ? null : currentUserId,
                 Page = page,
                 PageSize = pageSize
             };
@@ -72,8 +108,9 @@ namespace EEP.EventManagement.Api.Controllers
             if (result == null)
                 return NotFound();
 
-            // Additional visibility check if it's a draft
-            if (result.Status == AnnouncementStatus.Draft.ToString())
+            // Visibility: only Published is public to authenticated users.
+            // Any non-published (Draft/Pending/Rejected) is visible to Author or Communication Manager.
+            if (result.Status != AnnouncementStatus.Published.ToString())
             {
                 var currentUserId = _userContext.GetUserId();
                 var isAuthor = result.CreatedBy?.Id == currentUserId;
@@ -87,7 +124,7 @@ namespace EEP.EventManagement.Api.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize(Policy = AuthorizationPolicies.IsCommunicationManager)]
+        [Authorize(Roles = "Admin,Manager")]
         public async Task<ActionResult<AnnouncementDto>> Update(Guid id, [FromBody] UpdateAnnouncementDto updateDto)
         {
             // Check if it's draft and user is author or Communication Manager
@@ -108,7 +145,7 @@ namespace EEP.EventManagement.Api.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Policy = AuthorizationPolicies.IsCommunicationManager)]
+        [Authorize(Roles = "Admin,Manager")]
         public async Task<ActionResult> Delete(Guid id)
         {
             var announcement = await _mediator.Send(new GetAnnouncementByIdQuery { Id = id });
@@ -126,11 +163,29 @@ namespace EEP.EventManagement.Api.Controllers
             return NoContent();
         }
 
+        [HttpPost("{id}/submit")]
+        [Authorize(Roles = "Admin,Manager")]
+        public async Task<ActionResult<AnnouncementDto>> SubmitForApproval(Guid id)
+        {
+            var command = new SubmitAnnouncementForApprovalCommand { Id = id };
+            var result = await _mediator.Send(command);
+            return Ok(result);
+        }
+
         [HttpPost("{id}/publish")]
         [Authorize(Policy = AuthorizationPolicies.IsCommunicationManager)]
         public async Task<ActionResult<AnnouncementDto>> Publish(Guid id)
         {
             var command = new PublishAnnouncementCommand { Id = id };
+            var result = await _mediator.Send(command);
+            return Ok(result);
+        }
+
+        [HttpPost("{id}/reject")]
+        [Authorize(Policy = AuthorizationPolicies.IsCommunicationManager)]
+        public async Task<ActionResult<AnnouncementDto>> Reject(Guid id)
+        {
+            var command = new RejectAnnouncementCommand { Id = id };
             var result = await _mediator.Send(command);
             return Ok(result);
         }
@@ -157,8 +212,8 @@ namespace EEP.EventManagement.Api.Controllers
             if (announcement == null)
                 return NotFound();
 
-            if (announcement.Status != AnnouncementStatus.Draft.ToString())
-                return BadRequest("Images can only be uploaded to draft announcements.");
+            if (announcement.Status != AnnouncementStatus.Draft.ToString() && announcement.Status != AnnouncementStatus.Rejected.ToString())
+                return BadRequest("Files can only be uploaded to Draft/Rejected announcements.");
 
             var currentUserId = _userContext.GetUserId();
             var isAuthor = announcement.CreatedBy?.Id == currentUserId;

@@ -22,7 +22,7 @@ namespace EEP.EventManagement.Api.Application.Features.Announcements.Handlers
 
         public async Task<(List<AnnouncementDto> Items, int TotalCount)> Handle(GetAnnouncementsPagedQuery request, CancellationToken cancellationToken)
         {
-            var (items, totalCount) = await _announcementRepository.GetPagedAsync(request.Status, request.Page, request.PageSize);
+            var (items, totalCount) = await _announcementRepository.GetPagedAsync(request.Status, request.CreatedById, request.Page, request.PageSize);
             var dtos = _mapper.Map<List<AnnouncementDto>>(items);
             return (dtos, totalCount);
         }
