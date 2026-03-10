@@ -4,6 +4,7 @@ using EEP.EventManagement.Api.Infrastructure.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace EEP.EventManagement.Api.Infrastructure.Repositories.Implementations
@@ -56,6 +57,51 @@ namespace EEP.EventManagement.Api.Infrastructure.Repositories.Implementations
                     .ThenInclude(a => a.AssignedByUser)
                 .Where(e => e.StartDate >= now && e.Status == Domain.Enums.EventStatus.Scheduled)
                 .OrderBy(e => e.StartDate)
+                .ToListAsync();
+        }
+
+        public async Task<List<Event>> GetByDepartmentIdAsync(Guid departmentId)
+        {
+            return await _context.Events
+                .Include(e => e.Department)
+                .Include(e => e.CreatedByUser)
+                .Include(e => e.ApprovedByUser)
+                .Include(e => e.Assignments)
+                    .ThenInclude(a => a.Employee)
+                .Include(e => e.Assignments)
+                    .ThenInclude(a => a.AssignedByUser)
+                .Where(e => e.DepartmentId == departmentId)
+                .OrderByDescending(e => e.CreatedAt)
+                .ToListAsync();
+        }
+
+        public async Task<List<Event>> GetByEmployeeIdAsync(Guid employeeId)
+        {
+            return await _context.Events
+                .Include(e => e.Department)
+                .Include(e => e.CreatedByUser)
+                .Include(e => e.ApprovedByUser)
+                .Include(e => e.Assignments)
+                    .ThenInclude(a => a.Employee)
+                .Include(e => e.Assignments)
+                    .ThenInclude(a => a.AssignedByUser)
+                .Where(e => e.Assignments.Any(a => a.EmployeeId == employeeId))
+                .OrderByDescending(e => e.CreatedAt)
+                .ToListAsync();
+        }
+
+        public async Task<List<Event>> GetApprovedAsync()
+        {
+            return await _context.Events
+                .Include(e => e.Department)
+                .Include(e => e.CreatedByUser)
+                .Include(e => e.ApprovedByUser)
+                .Include(e => e.Assignments)
+                    .ThenInclude(a => a.Employee)
+                .Include(e => e.Assignments)
+                    .ThenInclude(a => a.AssignedByUser)
+                .Where(e => e.Status == Domain.Enums.EventStatus.Scheduled || e.Status == Domain.Enums.EventStatus.Completed)
+                .OrderByDescending(e => e.CreatedAt)
                 .ToListAsync();
         }
 

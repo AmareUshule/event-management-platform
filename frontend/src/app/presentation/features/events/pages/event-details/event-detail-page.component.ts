@@ -53,14 +53,14 @@ import { ConfirmationDialogComponent, ConfirmationDialogData } from '../../../co
   styleUrls: ['./event-detail-page.component.scss']
 })
 export class EventDetailPageComponent implements OnInit, OnDestroy {
-  private route = inject(ActivatedRoute);
-  private router = inject(Router);
-  private location = inject(Location);
-  private snackBar = inject(MatSnackBar);
-  private eventService = inject(EventService);
-  private cdr = inject(ChangeDetectorRef);
-  private dialog = inject(MatDialog);
-  private authService = inject(AuthService);
+  public route = inject(ActivatedRoute);
+  public router = inject(Router);
+  public location = inject(Location);
+  public snackBar = inject(MatSnackBar);
+  public eventService = inject(EventService);
+  public cdr = inject(ChangeDetectorRef);
+  public dialog = inject(MatDialog);
+  public authService = inject(AuthService);
 
   event: Event | null = null;
   loading = true;

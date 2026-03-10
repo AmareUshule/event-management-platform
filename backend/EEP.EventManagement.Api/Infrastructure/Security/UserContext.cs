@@ -24,12 +24,12 @@ namespace EEP.EventManagement.Api.Infrastructure.Security
             return userIdClaim != null && Guid.TryParse(userIdClaim, out var userId) ? userId : Guid.Empty;
         }
 
-        public string GetUserName()
+        public string? GetUserName()
         {
             return User?.Identity?.Name;
         }
 
-        public string GetUserEmail()
+        public string? GetUserEmail()
         {
             return User?.FindFirst(ClaimTypes.Email)?.Value;
         }
@@ -47,6 +47,17 @@ namespace EEP.EventManagement.Api.Infrastructure.Security
         public bool HasClaim(string type, string value)
         {
             return User?.HasClaim(type, value) ?? false;
+        }
+
+        public IEnumerable<string> GetRoles()
+        {
+            return User?.FindAll(ClaimTypes.Role).Select(c => c.Value) ?? Enumerable.Empty<string>();
+        }
+
+        public Guid? GetDepartmentId()
+        {
+            var deptClaim = User?.FindFirst("DepartmentId")?.Value;
+            return deptClaim != null && Guid.TryParse(deptClaim, out var deptId) ? deptId : null;
         }
     }
 }

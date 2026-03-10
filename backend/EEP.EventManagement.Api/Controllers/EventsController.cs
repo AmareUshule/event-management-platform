@@ -3,11 +3,13 @@ using EEP.EventManagement.Api.Application.Features.Events.Queries;
 using EEP.EventManagement.Api.Application.Features.Events.DTOs;
 using EEP.EventManagement.Api.Application.Features.Approval.Commands;
 using EEP.EventManagement.Api.Infrastructure.Security.Authorization.Requirements;
+using EEP.EventManagement.Api.Infrastructure.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace EEP.EventManagement.Api.Controllers
@@ -20,13 +22,13 @@ namespace EEP.EventManagement.Api.Controllers
         private readonly IMediator _mediator;
         private readonly AutoMapper.IMapper _mapper;
         private readonly IAuthorizationService _authorizationService;
-        private readonly Infrastructure.Security.IUserContext _userContext;
+        private readonly IUserContext _userContext;
 
         public EventsController(
             IMediator mediator,
             AutoMapper.IMapper mapper,
             IAuthorizationService authorizationService,
-            Infrastructure.Security.IUserContext userContext)
+            IUserContext userContext)
         {
             _mediator = mediator;
             _mapper = mapper;

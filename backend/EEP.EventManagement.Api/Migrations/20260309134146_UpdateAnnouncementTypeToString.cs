@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace EEP.EventManagement.Api.Infrastructure.Persistence.Migrations
+namespace EEP.EventManagement.Api.Migrations
 {
     /// <inheritdoc />
     public partial class UpdateAnnouncementTypeToString : Migration

@@ -9,11 +9,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace EEP.EventManagement.Api.Infrastructure.Persistence.Migrations
+namespace EEP.EventManagement.Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260306080226_AddAnnouncementsModule")]
-    partial class AddAnnouncementsModule
+    [Migration("20260309133158_UpdateAnnouncementsWithJobOpeningFields")]
+    partial class UpdateAnnouncementsWithJobOpeningFields
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -46,6 +46,12 @@ namespace EEP.EventManagement.Api.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("CreatedBy")
                         .HasColumnType("uuid");
 
+                    b.Property<DateTime?>("Deadline")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("DepartmentId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -55,6 +61,9 @@ namespace EEP.EventManagement.Api.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("UpdatedAt")
                         .ValueGeneratedOnAdd()
@@ -66,6 +75,8 @@ namespace EEP.EventManagement.Api.Infrastructure.Persistence.Migrations
                     b.HasIndex("ApprovedBy");
 
                     b.HasIndex("CreatedBy");
+
+                    b.HasIndex("DepartmentId");
 
                     b.ToTable("Announcements", (string)null);
                 });
@@ -528,9 +539,15 @@ namespace EEP.EventManagement.Api.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("EEP.EventManagement.Api.Domain.Entities.Department", "Department")
+                        .WithMany()
+                        .HasForeignKey("DepartmentId");
+
                     b.Navigation("ApprovedByUser");
 
                     b.Navigation("CreatedByUser");
+
+                    b.Navigation("Department");
                 });
 
             modelBuilder.Entity("EEP.EventManagement.Api.Domain.Entities.AnnouncementImage", b =>

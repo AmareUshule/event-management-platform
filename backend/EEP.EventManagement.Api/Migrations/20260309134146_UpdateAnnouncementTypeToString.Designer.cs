@@ -9,7 +9,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace EEP.EventManagement.Api.Infrastructure.Persistence.Migrations
+namespace EEP.EventManagement.Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
     [Migration("20260309134146_UpdateAnnouncementTypeToString")]
