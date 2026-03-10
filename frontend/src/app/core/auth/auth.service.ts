@@ -321,6 +321,12 @@ export class AuthService {
     const fullName = `${response.firstName} ${response.lastName}`.trim();
     const username = response.employeeId || response.email.split('@')[0];
 
+    // Map backend role string into our canonical role set.
+    // Any role that is not Admin/Manager/Expert/Cameraman is treated as Employee.
+    const backendRole = response.role;
+    const knownRoles = [ROLES.Admin, ROLES.Manager, ROLES.Expert, ROLES.Cameraman];
+    const mappedRole = knownRoles.includes(backendRole) ? backendRole : ROLES.Employee;
+
     return {
       employeeId: employeeId,
       adObjectId: response.userId,
@@ -329,7 +335,7 @@ export class AuthService {
       email: response.email,
       departmentId: departmentId,
       departmentName: this.getDepartmentName(departmentId),
-      roles: [response.role]
+      roles: [mappedRole]
     };
   }
 
