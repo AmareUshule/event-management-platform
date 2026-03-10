@@ -285,7 +285,7 @@
               </div>
 
               <div class="list" *ngIf="upcomingEvents.length > 0">
-                <button class="list-item" *ngFor="let event of upcomingEvents | slice:0:5" (click)="router.navigate(['/events', event.id])">
+                <button class="list-item" *ngFor="let event of upcomingEvents | slice:0:5" (click)="navigateToUpcomingEvent(event)">
                   <div class="list-item-main">
                     <div class="list-item-title">{{ event.title }}</div>
                     <div class="list-item-meta">

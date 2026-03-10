@@ -665,6 +665,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.snackBar.open('Exporting report...', 'Close', { duration: 3000 });
   }
 
+  navigateToUpcomingEvent(event: Event): void {
+    this.router.navigate(['/events', event.id], {
+      state: { event }
+    });
+  }
+
   onRowClick(event: TableEvent): void {
     console.log('Navigating to event:', event.id, event);
     this.router.navigate(['/events', event.id], {
