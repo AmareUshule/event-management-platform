@@ -93,16 +93,17 @@ private getDefaultRoute(user: AuthUser): string {
   // Role-based routing using your ROLES constant
   if (user.roles?.includes(ROLES.Admin)) {
     return '/admin/dashboard';
-  } else if (user.roles?.includes(ROLES.Manager)) {
+  }
+
+  if (user.roles?.includes(ROLES.Manager)) {
     if (user.departmentId === DEPARTMENTS.COMMUNICATION) {
       return '/communication/dashboard';
     }
     return '/manager/dashboard';
-  } else if (user.roles?.includes(ROLES.Staff)) { 
-    return '/staff/dashboard';
-  } else {
-    return '/dashboard';
   }
+
+  // Experts, Cameramen, Employees and any other roles fall back to the main dashboard
+  return '/dashboard';
 }
 
   private showSuccess(message: string): void {

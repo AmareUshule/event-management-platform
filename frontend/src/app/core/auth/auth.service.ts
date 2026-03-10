@@ -217,26 +217,18 @@ export class AuthService {
   // =============== PERMISSION METHODS ===============
 
   canCreateEvents(): boolean {
-    if (this.isAdmin()) return true;
-    if (this.isCommunicationManager()) return true;
-    if (this.isDepartmentManager()) return true;
-    if (this.isStaff() && this.isInCommunicationDepartment()) return true;
-    return false;
+    // Only Admin and Managers (including Communication + Department managers)
+    return this.isAdmin() || this.isManager();
   }
 
   canUploadVacancy(): boolean {
-    if (this.isAdmin()) return true;
-    if (this.isCommunicationManager()) return true;
-    if (this.isDepartmentManager()) return true;
-    if (this.isStaff() && this.isInCommunicationDepartment()) return true;
-    return false;
+    // Same rule as event creation
+    return this.isAdmin() || this.isManager();
   }
 
   canApproveEvents(): boolean {
-    if (this.isAdmin()) return true;
-    if (this.isCommunicationManager()) return true;
-    if (this.isDepartmentManager()) return true;
-    return false;
+    // Only Admin + Communication Manager can approve
+    return this.isAdmin() || this.isCommunicationManager();
   }
 
   canViewAllEvents(): boolean {
