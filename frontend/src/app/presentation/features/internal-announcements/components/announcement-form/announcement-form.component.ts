@@ -79,8 +79,8 @@ export class AnnouncementFormComponent implements OnInit {
     } else {
       // Default to user's department
       const user = this.authService.getCurrentUser();
-      if (user?.departmentId) {
-        this.form.patchValue({ departmentId: user.departmentId.toString() });
+      if (user?.departmentGuid) {
+        this.form.patchValue({ departmentId: user.departmentGuid });
       }
     }
   }
@@ -91,8 +91,8 @@ export class AnnouncementFormComponent implements OnInit {
         this.departments = depts;
         // If we have a user department but it wasn't set yet (because depts weren't loaded)
         const user = this.authService.getCurrentUser();
-        if (!this.announcement && user?.departmentId && !this.form.get('departmentId')?.value) {
-          this.form.patchValue({ departmentId: user.departmentId.toString() });
+        if (!this.announcement && user?.departmentGuid && !this.form.get('departmentId')?.value) {
+          this.form.patchValue({ departmentId: user.departmentGuid });
         }
       },
       error: (err) => console.error('Failed to load departments', err)

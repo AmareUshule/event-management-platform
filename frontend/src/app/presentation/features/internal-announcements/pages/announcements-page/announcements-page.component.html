@@ -75,6 +75,7 @@
                     *ngFor="let announcement of publishedAnnouncements" 
                     [announcement]="announcement"
                     [canManage]="canManageAnnouncement(announcement)"
+                    [canPublish]="canPublish"
                     (edit)="onEdit($event)"
                     (delete)="onDelete($event)"
                     (publish)="onPublish($event)">
@@ -117,7 +118,7 @@
                 </div>
               </mat-tab>
 
-              <mat-tab label="Drafts">
+              <mat-tab label="Drafts" *ngIf="canCreate">
               <ng-template mat-tab-label>
                 <div class="tab-label-content">
                   <mat-icon>edit_note</mat-icon>
@@ -152,7 +153,7 @@
               </div>
               </mat-tab>
 
-              <mat-tab label="Rejected">
+              <mat-tab label="Rejected" *ngIf="canCreate">
                 <ng-template mat-tab-label>
                   <div class="tab-label-content">
                     <mat-icon>dangerous</mat-icon>

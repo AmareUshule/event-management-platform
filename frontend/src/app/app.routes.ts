@@ -53,6 +53,13 @@ export const appRoutes: Routes = [
     loadComponent: () => import('./presentation/features/register/register.component')
       .then(m => m.RegistrationComponent)
   },
+  
+  {
+    path: 'profile',
+    loadComponent: () => import('./presentation/features/profile/pages/profile-page/profile-page.component')
+      .then(m => m.ProfilePageComponent),
+    canActivate: [authGuard]
+  },
 
   { path: '**', redirectTo: '' }
 ];

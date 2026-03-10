@@ -334,6 +334,7 @@ export class AuthService {
       fullName: fullName,
       email: response.email,
       departmentId: departmentId,
+      departmentGuid: response.departmentId,
       departmentName: this.getDepartmentName(departmentId),
       roles: [mappedRole]
     };
