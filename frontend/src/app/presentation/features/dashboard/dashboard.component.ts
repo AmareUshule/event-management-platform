@@ -285,8 +285,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private calculateStatistics(): void {
     this.totalEvents = this.masterEvents.length;
     this.scheduledEvents = this.masterEvents.filter(e =>
-      e.status === 'Scheduled' || e.status === 'Completed'
-    ).length;
+      e.status === 'Scheduled' ).length;
     this.draftEvents = this.masterEvents.filter(e => e.status === 'Draft').length;
 
     const today = new Date();
@@ -382,7 +381,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     switch (this.selectedTabIndex) {
       case 1: // Published
         filtered = filtered.filter(e =>
-          e.status === 'Approved' || e.status === 'Completed'
+          e.status === 'Scheduled'
         );
         break;
       case 2: // Draft
