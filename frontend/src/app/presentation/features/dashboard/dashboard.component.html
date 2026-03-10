@@ -278,12 +278,12 @@
             <div class="sidebar-content">
               <div class="insight-item">
                 <div class="insight-label">Upcoming Events</div>
-                <div class="insight-value">12</div>
+                <div class="insight-value">{{ upcomingEventsCount }}</div>
               </div>
 
               <div class="insight-item">
                 <div class="insight-label">Pending Approvals</div>
-                <div class="insight-value">3</div>
+                <div class="insight-value">{{ pendingApprovalsCount }}</div>
               </div>
             </div>
           </div>
@@ -294,15 +294,16 @@
               <h4>Quick Actions</h4>
             </div>
             <div class="sidebar-content">
-              <button class="quick-action-btn">
-                <mat-icon>add_chart</mat-icon>
-                Generate Report
+              <button class="quick-action-btn" (click)="generateReport()" [disabled]="isLoadingReport">
+                <mat-icon *ngIf="!isLoadingReport">add_chart</mat-icon>
+                <mat-spinner *ngIf="isLoadingReport" diameter="18"></mat-spinner>
+                {{ isLoadingReport ? 'Generating...' : 'Generate Report' }}
               </button>
               <button class="quick-action-btn">
                 <mat-icon>group_add</mat-icon>
                 Invite Staff
               </button>
-              <button class="quick-action-btn">
+              <button class="quick-action-btn" (click)="exportData()">
                 <mat-icon>download</mat-icon>
                 Export Data
               </button>

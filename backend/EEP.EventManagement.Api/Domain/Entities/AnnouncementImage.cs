@@ -7,6 +7,8 @@ namespace EEP.EventManagement.Api.Domain.Entities
     {
         public Guid AnnouncementId { get; set; }
         public string ImageUrl { get; set; } = string.Empty;
+        public string FileName { get; set; } = string.Empty;
+        public string ContentType { get; set; } = string.Empty;
         public DateTime UploadedAt { get; set; }
 
         // Navigation properties

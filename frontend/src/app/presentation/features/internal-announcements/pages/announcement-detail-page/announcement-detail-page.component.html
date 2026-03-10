@@ -50,17 +50,43 @@
     </div>
 
     <div class="detail-body">
-      <div class="image-gallery" *ngIf="announcement.images && announcement.images.length > 0">
+      <div class="image-gallery" *ngIf="images.length > 0">
         <div class="image-tip">
-          <mat-icon>lightbulb</mat-icon>
-          <span>Tip: Click on the images to see full details (job descriptions, requirements, etc.)</span>
+          <mat-icon>zoom_in</mat-icon>
+          <span>Tip: Click on images to zoom and download</span>
         </div>
-        <div class="main-image">
-          <img [src]="getFullImageUrl(announcement.images[0].imageUrl)" alt="Announcement main image">
+        <div class="main-image" (click)="openLightbox(images[0])">
+          <img [src]="getFullImageUrl(images[0].imageUrl)" alt="Announcement main image">
+          <div class="zoom-overlay">
+            <mat-icon>zoom_in</mat-icon>
+          </div>
         </div>
-        <div class="thumbnail-grid" *ngIf="announcement.images.length > 1">
-          <div *ngFor="let img of announcement.images.slice(1)" class="thumbnail">
+        <div class="thumbnail-grid" *ngIf="images.length > 1">
+          <div *ngFor="let img of images.slice(1)" class="thumbnail" (click)="openLightbox(img)">
             <img [src]="getFullImageUrl(img.imageUrl)" alt="Announcement thumbnail">
+            <div class="zoom-overlay">
+              <mat-icon>zoom_in</mat-icon>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="documents-section" *ngIf="pdfs.length > 0">
+        <h3><mat-icon>attachment</mat-icon> Documents</h3>
+        <div class="pdf-list">
+          <div class="pdf-item" *ngFor="let pdf of pdfs">
+            <div class="pdf-info">
+              <mat-icon class="pdf-icon">picture_as_pdf</mat-icon>
+              <span class="file-name">{{ pdf.fileName || 'Document.pdf' }}</span>
+            </div>
+            <div class="pdf-actions">
+              <a [href]="getFullImageUrl(pdf.imageUrl)" target="_blank" mat-button color="primary">
+                <mat-icon>visibility</mat-icon> VIEW
+              </a>
+              <button mat-button color="accent" (click)="downloadFile(pdf)">
+                <mat-icon>download</mat-icon> DOWNLOAD
+              </button>
+            </div>
           </div>
         </div>
       </div>

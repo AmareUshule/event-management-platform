@@ -55,6 +55,7 @@ $dark-200: #e2e8f0;
     height: 200px;
     overflow: hidden;
     position: relative;
+    background: $dark-200;
 
     &::after {
       content: '';
@@ -68,6 +69,32 @@ $dark-200: #e2e8f0;
       height: 100%;
       object-fit: cover;
       transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    &.pdf-banner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background-color: #fff1f0;
+      color: $accent-color;
+      gap: 12px;
+
+      &::after {
+        display: none;
+      }
+
+      mat-icon {
+        font-size: 48px;
+        width: 48px;
+        height: 48px;
+      }
+
+      span {
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.5px;
+      }
     }
   }
 

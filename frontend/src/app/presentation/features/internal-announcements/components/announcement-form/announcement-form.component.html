@@ -62,7 +62,8 @@
   </div>
 
   <div class="image-section" *ngIf="announcement">
-    <h3>Images</h3>
+    <h3>Attachments (Images & PDFs)</h3>
+    <p class="section-hint">Upload any supporting documents, requirements, or informative images.</p>
     <app-announcement-image-upload 
       [announcementId]="announcement.id" 
       [existingImages]="announcement.images">

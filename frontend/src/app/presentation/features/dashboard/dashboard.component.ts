@@ -29,6 +29,7 @@ import { HeaderComponent } from '../../layouts/header/header.component';
 // Services
 import { AuthService } from '../../../core/auth/auth.service';
 import { EventService } from '../events/services/event.service';
+import { ReportService, ReportSummary } from '../../../core/services/report.service';
 
 // Models
 import { Event, EventFormData, EventStatus } from '../events/models/event.model';
@@ -85,6 +86,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
   // ==================== MASTER DATA (SOURCE OF TRUTH - NEVER MODIFIED) ====================
   private masterEvents: Event[] = [];           // Raw events from API - NEVER TOUCH AFTER SET
   private masterTableEvents: TableEvent[] = []; // Transformed events - NEVER MODIFY AFTER SET
+  upcomingEvents: Event[] = [];                 // Upcoming events from API
+  reportSummary: ReportSummary | null = null;   // Report summary from API
 
   // ==================== FILTERED DATA (FOR DISPLAY - MODIFIED BY FILTERS ONLY) ====================
   filteredEvents: TableEvent[] = [];             // All filtered events - UPDATED ONLY VIA applyFilters()
@@ -100,6 +103,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   user: AuthUser | null = null;
   isLoading = true;
   isLoadingEvents = true;
+  isLoadingReport = false;
   currentDate = new Date();
   selectedTabIndex = 0;
   searchTerm: string = '';
@@ -128,6 +132,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   // ========== DEPENDENCY INJECTION ==========
   private authService = inject(AuthService);
   private eventService = inject(EventService);
+  private reportService = inject(ReportService);
   private router = inject(Router);
   private snackBar = inject(MatSnackBar);
   private cdr = inject(ChangeDetectorRef);
@@ -161,6 +166,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     this.user = this.authService.getCurrentUser();
     this.loadEvents();
+    this.loadUpcomingEvents();
+    if (this.authService.isAdmin() || this.authService.isManager()) {
+      this.loadReportSummary();
+    }
     this.setDefaultAgenda();
   }
 
@@ -224,6 +233,43 @@ export class DashboardComponent implements OnInit, OnDestroy {
       });
   }
 
+  private loadUpcomingEvents(): void {
+    this.eventService.getUpcomingEvents()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (events) => {
+          this.upcomingEvents = events;
+          this.upcomingEventsCount = events.length;
+          this.cdr.detectChanges();
+        },
+        error: (error) => {
+          console.error('Failed to load upcoming events:', error);
+        }
+      });
+  }
+
+  private loadReportSummary(): void {
+    this.reportService.getReportSummary()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (summary) => {
+          this.reportSummary = summary;
+          this.updateStatsFromSummary(summary);
+          this.cdr.detectChanges();
+        },
+        error: (error) => {
+          console.error('Failed to load report summary:', error);
+        }
+      });
+  }
+
+  private updateStatsFromSummary(summary: ReportSummary): void {
+    this.totalEvents = summary.totalEvents;
+    this.scheduledEvents = summary.scheduledCount;
+    this.draftEvents = summary.draftCount;
+    this.pendingApprovalsCount = summary.pendingApprovalsCount;
+  }
+
   private setMasterData(events: Event[]): void {
     // 1. Set master raw events (never modify after this)
     this.masterEvents = events;
@@ -232,8 +278,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.masterTableEvents = this.transformToTableEvents(events);
 
     // 3. Calculate all derived data from master
-    this.calculateStatistics();
-    this.updateInsights();
+    if (!this.reportSummary) {
+      this.calculateStatistics();
+      this.updateInsights();
+    }
     this.updateAgendaFromMaster();
 
     // 4. Apply current filters to populate filteredEvents and paginatedEvents for display
@@ -305,14 +353,16 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private updateInsights(): void {
     this.pendingApprovals = this.masterEvents.filter(e => e.status === 'Pending').length;
 
-    const now = new Date();
-    const weekFromNow = new Date();
-    weekFromNow.setDate(weekFromNow.getDate() + 7);
+    if (this.upcomingEvents.length === 0) {
+      const now = new Date();
+      const weekFromNow = new Date();
+      weekFromNow.setDate(weekFromNow.getDate() + 7);
 
-    this.upcomingEventsCount = this.masterEvents.filter(e => {
-      const eventDate = new Date(e.startDate);
-      return eventDate >= now && eventDate <= weekFromNow;
-    }).length;
+      this.upcomingEventsCount = this.masterEvents.filter(e => {
+        const eventDate = new Date(e.startDate);
+        return eventDate >= now && eventDate <= weekFromNow;
+      }).length;
+    }
 
     this.pendingApprovalsCount = this.pendingApprovals;
   }
@@ -555,6 +605,29 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   // ==================== ACTIONS ====================
   // All actions that modify data MUST reload from API to refresh master data
+
+  generateReport(): void {
+    this.isLoadingReport = true;
+    this.reportService.getReportSummary()
+      .pipe(
+        finalize(() => this.isLoadingReport = false)
+      )
+      .subscribe({
+        next: (summary) => {
+          this.reportSummary = summary;
+          this.updateStatsFromSummary(summary);
+          this.snackBar.open('Report generated successfully', 'Close', { duration: 3000 });
+        },
+        error: (error) => {
+          this.showError('Failed to generate report');
+        }
+      });
+  }
+
+  exportData(): void {
+    this.reportService.exportReportSummary();
+    this.snackBar.open('Exporting report...', 'Close', { duration: 3000 });
+  }
 
   onRowClick(event: TableEvent): void {
     console.log('Navigating to event:', event.id, event);

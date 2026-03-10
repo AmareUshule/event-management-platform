@@ -205,6 +205,22 @@ export class EventService {
   }
 
   /**
+   * Get upcoming events
+   */
+  getUpcomingEvents(): Observable<Event[]> {
+    const url = `${this.API_URL}/upcoming`;
+    
+    return this.http.get<Event[]>(url, { 
+      headers: this.getHeaders(),
+      responseType: 'json'
+    }).pipe(
+      timeout(this.REQUEST_TIMEOUT),
+      retry(1),
+      catchError(this.handleError.bind(this))
+    );
+  }
+
+  /**
    * Get event by ID
    */
   getEventById(id: string): Observable<Event> {

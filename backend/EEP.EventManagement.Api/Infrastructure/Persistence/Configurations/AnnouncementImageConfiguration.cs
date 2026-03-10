@@ -15,6 +15,12 @@ namespace EEP.EventManagement.Api.Infrastructure.Persistence.Configurations
             builder.Property(i => i.ImageUrl)
                 .IsRequired();
 
+            builder.Property(i => i.FileName)
+                .IsRequired();
+
+            builder.Property(i => i.ContentType)
+                .IsRequired();
+
             builder.Property(i => i.UploadedAt)
                 .HasDefaultValueSql("now()");
 
