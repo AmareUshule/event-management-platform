@@ -43,6 +43,22 @@ namespace EEP.EventManagement.Api.Infrastructure.Repositories.Implementations
                 .ToListAsync();
         }
 
+        public async Task<List<Event>> GetUpcomingAsync()
+        {
+            var now = DateTime.UtcNow;
+            return await _context.Events
+                .Include(e => e.Department)
+                .Include(e => e.CreatedByUser)
+                .Include(e => e.ApprovedByUser)
+                .Include(e => e.Assignments)
+                    .ThenInclude(a => a.Employee)
+                .Include(e => e.Assignments)
+                    .ThenInclude(a => a.AssignedByUser)
+                .Where(e => e.StartDate >= now && e.Status == Domain.Enums.EventStatus.Scheduled)
+                .OrderBy(e => e.StartDate)
+                .ToListAsync();
+        }
+
         public async Task<Event> AddAsync(Event entity)
         {
             _context.Events.Add(entity);

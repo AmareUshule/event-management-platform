@@ -32,6 +32,15 @@ export class AnnouncementImageUploadComponent implements OnInit {
     this.images = [...this.existingImages];
   }
 
+  isImage(file: AnnouncementImage): boolean {
+    return !file.contentType || file.contentType.startsWith('image/') || 
+           (file.imageUrl.toLowerCase().match(/\.(jpg|jpeg|png|gif)$/) !== null);
+  }
+
+  isPdf(file: AnnouncementImage): boolean {
+    return file.contentType === 'application/pdf' || file.imageUrl.toLowerCase().endsWith('.pdf');
+  }
+
   onFileSelected(event: any): void {
     const file: File = event.target.files[0];
     if (file) {
@@ -41,14 +50,19 @@ export class AnnouncementImageUploadComponent implements OnInit {
         .subscribe({
           next: (image) => {
             this.images.push(image);
-            this.snackBar.open('Image uploaded successfully', 'Close', { duration: 3000 });
+            this.snackBar.open('File uploaded successfully', 'Close', { duration: 3000 });
           },
           error: (error) => {
-            console.error('Error uploading image:', error);
-            this.snackBar.open('Failed to upload image', 'Close', { duration: 3000 });
+            console.error('Error uploading file:', error);
+            this.snackBar.open('Failed to upload file', 'Close', { duration: 3000 });
           }
         });
     }
+  }
+
+  deleteFile(fileId: string): void {
+    // Optional: implement delete if service supports it
+    this.images = this.images.filter(img => img.id !== fileId);
   }
 
   triggerUpload(): void {

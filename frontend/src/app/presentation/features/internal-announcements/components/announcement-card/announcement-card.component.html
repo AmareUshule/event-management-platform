@@ -1,6 +1,10 @@
 <mat-card class="announcement-card" [routerLink]="['/internal-announcements', announcement.id]">
-  <div class="card-image" *ngIf="bannerImage">
+  <div class="card-image" *ngIf="bannerImage && isBannerAnImage">
     <img [src]="bannerImage" [alt]="announcement.title">
+  </div>
+  <div class="card-image pdf-banner" *ngIf="bannerImage && !isBannerAnImage">
+    <mat-icon>picture_as_pdf</mat-icon>
+    <span>PDF ATTACHED</span>
   </div>
   
   <mat-card-header>

@@ -29,10 +29,13 @@ import { HeaderComponent } from '../../layouts/header/header.component';
 // Services
 import { AuthService } from '../../../core/auth/auth.service';
 import { EventService } from '../events/services/event.service';
+import { ReportService, ReportSummary } from '../../../core/services/report.service';
+import { AnnouncementService } from '../internal-announcements/services/announcement.service';
 
 // Models
 import { Event, EventFormData, EventStatus } from '../events/models/event.model';
 import { AuthUser } from '../../../core/models/auth-user.model';
+import { Announcement } from '../internal-announcements/models/announcement.model';
 
 // Interface for table display
 export interface TableEvent {
@@ -85,6 +88,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
   // ==================== MASTER DATA (SOURCE OF TRUTH - NEVER MODIFIED) ====================
   private masterEvents: Event[] = [];           // Raw events from API - NEVER TOUCH AFTER SET
   private masterTableEvents: TableEvent[] = []; // Transformed events - NEVER MODIFY AFTER SET
+  upcomingEvents: Event[] = [];                 // Upcoming events from API
+  reportSummary: ReportSummary | null = null;   // Report summary from API
+  latestAnnouncements: Announcement[] = [];     // Latest announcements (preview)
+  isLoadingAnnouncements = false;
 
   // ==================== FILTERED DATA (FOR DISPLAY - MODIFIED BY FILTERS ONLY) ====================
   filteredEvents: TableEvent[] = [];             // All filtered events - UPDATED ONLY VIA applyFilters()
@@ -99,6 +106,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   // ===== UI STATE =======
   user: AuthUser | null = null;
   isLoadingEvents = true;
+  isLoadingReport = false;
   currentDate = new Date();
   selectedTabIndex = 0;
   searchTerm: string = '';
@@ -111,7 +119,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   totalEvents = 0;
   scheduledEvents = 0;
   draftEvents = 0;
-  todaysEvents = 0;
+  eventsThisWeek = 0;
   pendingApprovals = 0;
 
   // ============ INSIGHTS (DERIVED FROM MASTER DATA) ============
@@ -127,6 +135,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
   // ========== DEPENDENCY INJECTION ==========
   private authService = inject(AuthService);
   private eventService = inject(EventService);
+  private reportService = inject(ReportService);
+  private announcementService = inject(AnnouncementService);
   private router = inject(Router);
   private snackBar = inject(MatSnackBar);
   private cdr = inject(ChangeDetectorRef);
@@ -160,6 +170,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     this.user = this.authService.getCurrentUser();
     this.loadEvents();
+    this.loadUpcomingEvents();
+    this.loadLatestAnnouncements();
+    if (this.authService.isAdmin() || this.authService.isManager()) {
+      this.loadReportSummary();
+    }
     this.setDefaultAgenda();
   }
 
@@ -218,6 +233,64 @@ export class DashboardComponent implements OnInit, OnDestroy {
       });
   }
 
+  private loadUpcomingEvents(): void {
+    this.eventService.getUpcomingEvents()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (events) => {
+          this.upcomingEvents = events;
+          this.upcomingEventsCount = events.length;
+          this.cdr.detectChanges();
+        },
+        error: (error) => {
+          console.error('Failed to load upcoming events:', error);
+        }
+      });
+  }
+
+  private loadReportSummary(): void {
+    this.reportService.getReportSummary()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (summary) => {
+          this.reportSummary = summary;
+          this.updateStatsFromSummary(summary);
+          this.cdr.detectChanges();
+        },
+        error: (error) => {
+          console.error('Failed to load report summary:', error);
+        }
+      });
+  }
+
+  private loadLatestAnnouncements(): void {
+    this.isLoadingAnnouncements = true;
+    this.announcementService.getPublishedAnnouncements(1, 3)
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => {
+          this.isLoadingAnnouncements = false;
+          this.cdr.detectChanges();
+        })
+      )
+      .subscribe({
+        next: (response) => {
+          this.latestAnnouncements = response.items || [];
+        },
+        error: (error) => {
+          console.error('Failed to load latest announcements:', error);
+          this.latestAnnouncements = [];
+        }
+      });
+  }
+
+  private updateStatsFromSummary(summary: ReportSummary): void {
+    this.totalEvents = summary.totalEvents;
+    this.scheduledEvents = summary.scheduledCount;
+    this.draftEvents = summary.draftCount;
+    this.pendingApprovalsCount = summary.pendingApprovalsCount;
+  }
+
   private setMasterData(events: Event[]): void {
     // 1. Set master raw events (never modify after this)
     this.masterEvents = events;
@@ -226,8 +299,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.masterTableEvents = this.transformToTableEvents(events);
 
     // 3. Calculate all derived data from master
-    this.calculateStatistics();
-    this.updateInsights();
+    if (!this.reportSummary) {
+      this.calculateStatistics();
+      this.updateInsights();
+    }
+    this.updateEventsThisWeek();
     this.updateAgendaFromMaster();
 
     // 4. Apply current filters to populate filteredEvents and paginatedEvents for display
@@ -281,14 +357,23 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.scheduledEvents = this.masterEvents.filter(e =>
       e.status === 'Scheduled' ).length;
     this.draftEvents = this.masterEvents.filter(e => e.status === 'Draft').length;
+    this.updateEventsThisWeek();
+  }
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+  private updateEventsThisWeek(): void {
+    const now = new Date();
+    const startOfWeek = new Date(now);
+    const day = startOfWeek.getDay(); // 0 (Sun) - 6 (Sat)
+    const diffToMonday = (day === 0 ? -6 : 1) - day; // Monday as week start
+    startOfWeek.setDate(startOfWeek.getDate() + diffToMonday);
+    startOfWeek.setHours(0, 0, 0, 0);
 
-    this.todaysEvents = this.masterEvents.filter(e => {
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(endOfWeek.getDate() + 7);
+
+    this.eventsThisWeek = this.masterEvents.filter(e => {
       const eventDate = new Date(e.startDate);
-      eventDate.setHours(0, 0, 0, 0);
-      return eventDate.getTime() === today.getTime();
+      return eventDate >= startOfWeek && eventDate < endOfWeek;
     }).length;
   }
 
@@ -298,14 +383,16 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private updateInsights(): void {
     this.pendingApprovals = this.masterEvents.filter(e => e.status === 'Pending').length;
 
-    const now = new Date();
-    const weekFromNow = new Date();
-    weekFromNow.setDate(weekFromNow.getDate() + 7);
+    if (this.upcomingEvents.length === 0) {
+      const now = new Date();
+      const weekFromNow = new Date();
+      weekFromNow.setDate(weekFromNow.getDate() + 7);
 
-    this.upcomingEventsCount = this.masterEvents.filter(e => {
-      const eventDate = new Date(e.startDate);
-      return eventDate >= now && eventDate <= weekFromNow;
-    }).length;
+      this.upcomingEventsCount = this.masterEvents.filter(e => {
+        const eventDate = new Date(e.startDate);
+        return eventDate >= now && eventDate <= weekFromNow;
+      }).length;
+    }
 
     this.pendingApprovalsCount = this.pendingApprovals;
   }
@@ -549,6 +636,35 @@ export class DashboardComponent implements OnInit, OnDestroy {
   // ==================== ACTIONS ====================
   // All actions that modify data MUST reload from API to refresh master data
 
+  generateReport(): void {
+    this.isLoadingReport = true;
+    this.reportService.getReportSummary()
+      .pipe(
+        finalize(() => this.isLoadingReport = false)
+      )
+      .subscribe({
+        next: (summary) => {
+          this.reportSummary = summary;
+          this.updateStatsFromSummary(summary);
+          this.snackBar.open('Report generated successfully', 'Close', { duration: 3000 });
+        },
+        error: (error) => {
+          this.showError('Failed to generate report');
+        }
+      });
+  }
+
+  exportData(): void {
+    this.reportService.exportReportSummary();
+    this.snackBar.open('Exporting report...', 'Close', { duration: 3000 });
+  }
+
+  navigateToUpcomingEvent(event: Event): void {
+    this.router.navigate(['/events', event.id], {
+      state: { event }
+    });
+  }
+
   onRowClick(event: TableEvent): void {
     console.log('Navigating to event:', event.id, event);
     this.router.navigate(['/events', event.id], {
@@ -624,6 +740,18 @@ export class DashboardComponent implements OnInit, OnDestroy {
     } else {
       this.showError('You do not have permission to create events');
     }
+  }
+
+  navigateToCreateAnnouncement(): void {
+    if (this.authService.isAdmin() || this.authService.isManager() || this.authService.isCommunicationManager()) {
+      this.router.navigate(['/internal-announcements'], { queryParams: { create: 'true' } });
+    } else {
+      this.showError('You do not have permission to create announcements');
+    }
+  }
+
+  navigateToAnnouncements(): void {
+    this.router.navigate(['/internal-announcements']);
   }
   toggleMobileMenu(): void {
     this.isMobileMenuOpen = !this.isMobileMenuOpen;

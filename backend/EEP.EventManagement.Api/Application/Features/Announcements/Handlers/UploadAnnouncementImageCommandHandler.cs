@@ -44,6 +44,8 @@ namespace EEP.EventManagement.Api.Application.Features.Announcements.Handlers
                 Id = Guid.NewGuid(),
                 AnnouncementId = announcement.Id,
                 ImageUrl = imageUrl,
+                FileName = request.FileName,
+                ContentType = request.ContentType,
                 UploadedAt = DateTime.UtcNow,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow

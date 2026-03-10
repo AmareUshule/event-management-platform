@@ -1,17 +1,25 @@
 <div class="image-upload-container">
   <div class="image-previews">
-    <div *ngFor="let image of images" class="image-preview">
-      <img [src]="image.imageUrl" alt="Announcement Image">
-      <button mat-icon-button class="delete-btn" aria-label="Delete image">
+    <div *ngFor="let file of images" class="image-preview">
+      <ng-container *ngIf="isImage(file)">
+        <img [src]="file.imageUrl" [alt]="file.fileName">
+      </ng-container>
+      <ng-container *ngIf="isPdf(file)">
+        <div class="pdf-file-preview">
+          <mat-icon>picture_as_pdf</mat-icon>
+          <span class="file-name">{{ file.fileName }}</span>
+        </div>
+      </ng-container>
+      <button mat-icon-button class="delete-btn" aria-label="Delete image" (click)="deleteFile(file.id)">
         <mat-icon>delete</mat-icon>
       </button>
     </div>
     
     <div class="upload-btn-container" *ngIf="!isUploading">
-      <input type="file" id="fileInput" (change)="onFileSelected($event)" accept="image/*" style="display: none">
+      <input type="file" id="fileInput" (change)="onFileSelected($event)" accept="image/*,.pdf" style="display: none">
       <button mat-stroked-button type="button" class="upload-placeholder" (click)="triggerUpload()">
         <mat-icon>add_photo_alternate</mat-icon>
-        <span>ADD IMAGE</span>
+        <span>ADD IMAGE OR PDF</span>
       </button>
     </div>
     

@@ -142,15 +142,15 @@ namespace EEP.EventManagement.Api.Controllers
             if (file == null || file.Length == 0)
                 return BadRequest("File is required.");
 
-            // Validation: Only image files allowed (jpg, png, jpeg)
-            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png" };
+            // Validation: Image files and PDF documents allowed
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".pdf" };
             var extension = System.IO.Path.GetExtension(file.FileName).ToLower();
             if (!System.Linq.Enumerable.Contains(allowedExtensions, extension))
-                return BadRequest("Only image files (.jpg, .jpeg, .png) are allowed.");
+                return BadRequest("Only images (.jpg, .jpeg, .png) and PDF files (.pdf) are allowed.");
 
-            // Max file size limit (5MB)
-            if (file.Length > 5 * 1024 * 1024)
-                return BadRequest("File size exceeds 5MB limit.");
+            // Max file size limit (10MB for documents)
+            if (file.Length > 10 * 1024 * 1024)
+                return BadRequest("File size exceeds 10MB limit.");
 
             // Check if it's draft and user is author or Communication Manager
             var announcement = await _mediator.Send(new GetAnnouncementByIdQuery { Id = id });

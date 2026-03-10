@@ -1,1 +1,40 @@
 /* You can add global styles to this file, and also import other style files */
+
+:root {
+  --eep-red: #DD1407;
+  --eep-green: #1E590C;
+  --bg-neutral: #F5F7FA;
+  --surface: #FFFFFF;
+  --border: #E5E7EB;
+  --text: #0f172a;
+  --muted: #475569;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg-neutral);
+  color: var(--text);
+  font-family: Inter, "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+
+.eep-page {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 32px;
+}
+
+.full-screen-dialog {
+  max-width: 100vw !important;
+  max-height: 100vh !important;
+  height: 100vh !important;
+  width: 100vw !important;
+  
+  .mat-mdc-dialog-container {
+    padding: 0 !important;
+    background-color: black !important;
+  }
+}

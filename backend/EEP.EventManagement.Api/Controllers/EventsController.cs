@@ -36,6 +36,14 @@ namespace EEP.EventManagement.Api.Controllers
             return Ok(result);
         }
 
+        [HttpGet("upcoming")]
+        public async Task<ActionResult<List<EventDto>>> GetUpcomingEvents()
+        {
+            var query = new GetUpcomingEventsQuery();
+            var result = await _mediator.Send(query);
+            return Ok(result);
+        }
+
         [HttpGet("{id}")]
         public async Task<ActionResult<EventDto>> GetEventById(Guid id)
         {

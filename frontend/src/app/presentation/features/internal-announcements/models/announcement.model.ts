@@ -27,6 +27,8 @@ export interface Announcement {
 export interface AnnouncementImage {
   id: string;
   imageUrl: string;
+  fileName: string;
+  contentType: string;
   uploadedAt: string;
 }
 

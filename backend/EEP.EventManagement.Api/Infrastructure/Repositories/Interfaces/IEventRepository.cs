@@ -9,6 +9,7 @@ namespace EEP.EventManagement.Api.Infrastructure.Repositories.Interfaces
     {
         Task<Event> GetByIdAsync(Guid id);
         Task<List<Event>> GetAllAsync();
+        Task<List<Event>> GetUpcomingAsync();
         Task<Event> AddAsync(Event entity);
         Task UpdateAsync(Event entity);
         Task DeleteAsync(Event entity);

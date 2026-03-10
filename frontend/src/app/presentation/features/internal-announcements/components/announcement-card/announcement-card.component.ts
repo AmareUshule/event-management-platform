@@ -43,6 +43,15 @@ export class AnnouncementCardComponent {
     return null;
   }
 
+  get isBannerAnImage(): boolean {
+    if (this.announcement.images && this.announcement.images.length > 0) {
+      const first = this.announcement.images[0];
+      return !first.contentType || first.contentType.startsWith('image/') || 
+             first.imageUrl.toLowerCase().match(/\.(jpg|jpeg|png|gif)$/) !== null;
+    }
+    return false;
+  }
+
   getFullImageUrl(url: string): string {
     if (!url) return '';
     if (url.startsWith('http')) return url;
