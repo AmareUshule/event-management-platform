@@ -40,8 +40,14 @@ namespace EEP.EventManagement.Api.Application.Features.Announcements.Handlers
             if (!isAuthor && !isCommManager)
                 throw new UnauthorizedException("You do not have permission to edit this announcement.");
 
-            if (announcement.Status != AnnouncementStatus.Draft && !isCommManager)
-                throw new BadRequestException("Only draft announcements can be edited by authors.");
+            if ((announcement.Status == AnnouncementStatus.Published) && !isCommManager)
+                throw new BadRequestException("Published announcements cannot be edited by authors.");
+
+            if (announcement.Status == AnnouncementStatus.PendingApproval && !isCommManager)
+                throw new BadRequestException("Announcements pending approval cannot be edited until rejected.");
+
+            if (announcement.Status == AnnouncementStatus.Published && isCommManager)
+                throw new BadRequestException("Published announcements are immutable.");
 
             _mapper.Map(request.UpdateAnnouncementDto, announcement);
             announcement.UpdatedAt = DateTime.UtcNow;

@@ -59,6 +59,24 @@ export class AnnouncementService {
     );
   }
 
+  getPendingAnnouncements(page: number = 1, pageSize: number = 10): Observable<PagedResponse<Announcement>> {
+    return this.http.get<PagedResponse<Announcement>>(`${this.API_URL}/pending?page=${page}&pageSize=${pageSize}`, {
+      headers: this.getHeaders()
+    }).pipe(
+      timeout(this.REQUEST_TIMEOUT),
+      catchError(this.handleError.bind(this))
+    );
+  }
+
+  getRejectedAnnouncements(page: number = 1, pageSize: number = 10): Observable<PagedResponse<Announcement>> {
+    return this.http.get<PagedResponse<Announcement>>(`${this.API_URL}/rejected?page=${page}&pageSize=${pageSize}`, {
+      headers: this.getHeaders()
+    }).pipe(
+      timeout(this.REQUEST_TIMEOUT),
+      catchError(this.handleError.bind(this))
+    );
+  }
+
   getAnnouncementById(id: string): Observable<Announcement> {
     return this.http.get<Announcement>(`${this.API_URL}/${id}`, {
       headers: this.getHeaders()
@@ -97,6 +115,24 @@ export class AnnouncementService {
 
   publishAnnouncement(id: string): Observable<Announcement> {
     return this.http.post<Announcement>(`${this.API_URL}/${id}/publish`, {}, {
+      headers: this.getHeaders()
+    }).pipe(
+      timeout(this.REQUEST_TIMEOUT),
+      catchError(this.handleError.bind(this))
+    );
+  }
+
+  submitForApproval(id: string): Observable<Announcement> {
+    return this.http.post<Announcement>(`${this.API_URL}/${id}/submit`, {}, {
+      headers: this.getHeaders()
+    }).pipe(
+      timeout(this.REQUEST_TIMEOUT),
+      catchError(this.handleError.bind(this))
+    );
+  }
+
+  rejectAnnouncement(id: string): Observable<Announcement> {
+    return this.http.post<Announcement>(`${this.API_URL}/${id}/reject`, {}, {
       headers: this.getHeaders()
     }).pipe(
       timeout(this.REQUEST_TIMEOUT),

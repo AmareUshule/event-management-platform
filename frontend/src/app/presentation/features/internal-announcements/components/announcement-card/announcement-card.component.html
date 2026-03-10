@@ -16,8 +16,10 @@
         </div>
         <mat-card-title>{{ announcement.title }}</mat-card-title>
       </div>
-      <div class="status-badge" *ngIf="isDraft">
-        <span class="draft-badge">Draft</span>
+      <div class="status-badge" *ngIf="isDraft || isPending || isRejected">
+        <span class="draft-badge" *ngIf="isDraft">Draft</span>
+        <span class="pending-badge" *ngIf="isPending">Pending</span>
+        <span class="rejected-badge" *ngIf="isRejected">Rejected</span>
       </div>
     </div>
   </mat-card-header>
@@ -53,9 +55,17 @@
           <mat-icon>edit</mat-icon>
           <span>Edit</span>
         </button>
-        <button mat-menu-item *ngIf="isDraft && canPublish" (click)="onPublish($event)">
+        <button mat-menu-item *ngIf="isDraft && canSubmit" (click)="onSubmit($event)">
+          <mat-icon>send</mat-icon>
+          <span>Submit for approval</span>
+        </button>
+        <button mat-menu-item *ngIf="isPending && canPublish" (click)="onPublish($event)">
           <mat-icon>publish</mat-icon>
           <span>Approve & Publish</span>
+        </button>
+        <button mat-menu-item *ngIf="isPending && canPublish" (click)="onReject($event)">
+          <mat-icon>block</mat-icon>
+          <span>Reject</span>
         </button>
         <mat-divider></mat-divider>
         <button mat-menu-item (click)="onDelete($event)" class="delete-item">

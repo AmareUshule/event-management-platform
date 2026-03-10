@@ -6,46 +6,47 @@ using EEP.EventManagement.Api.Domain.Enums;
 using EEP.EventManagement.Api.Infrastructure.Repositories.Interfaces;
 using EEP.EventManagement.Api.Infrastructure.Security.Claims;
 using MediatR;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace EEP.EventManagement.Api.Application.Features.Announcements.Handlers
 {
-    public class PublishAnnouncementCommandHandler : IRequestHandler<PublishAnnouncementCommand, AnnouncementDto>
+    public class RejectAnnouncementCommandHandler : IRequestHandler<RejectAnnouncementCommand, AnnouncementDto>
     {
         private readonly IAnnouncementRepository _announcementRepository;
         private readonly IMapper _mapper;
         private readonly IUserContext _userContext;
 
-        public PublishAnnouncementCommandHandler(IAnnouncementRepository announcementRepository, IMapper mapper, IUserContext userContext)
+        public RejectAnnouncementCommandHandler(IAnnouncementRepository announcementRepository, IMapper mapper, IUserContext userContext)
         {
             _announcementRepository = announcementRepository;
             _mapper = mapper;
             _userContext = userContext;
         }
 
-        public async Task<AnnouncementDto> Handle(PublishAnnouncementCommand request, CancellationToken cancellationToken)
+        public async Task<AnnouncementDto> Handle(RejectAnnouncementCommand request, CancellationToken cancellationToken)
         {
-            var userId = _userContext.GetUserId();
             var announcement = await _announcementRepository.GetByIdAsync(request.Id);
-
             if (announcement == null)
                 throw new NotFoundException($"Announcement with ID {request.Id} not found.");
 
-            if (announcement.Status == AnnouncementStatus.Published)
-                throw new BadRequestException("Announcement is already published.");
+            var isCommManager = _userContext.IsInRole("Admin") || _userContext.HasClaim("Permission", "IsCommunicationManager");
+            if (!isCommManager)
+                throw new UnauthorizedException("Only Communication Manager can reject announcements.");
 
-            // Only allow publishing when it has been submitted (or when comm manager publishes directly).
-            if (announcement.Status != AnnouncementStatus.PendingApproval && announcement.Status != AnnouncementStatus.Draft)
-                throw new BadRequestException("Only Draft or PendingApproval announcements can be published.");
+            if (announcement.Status != AnnouncementStatus.PendingApproval)
+                throw new BadRequestException("Only PendingApproval announcements can be rejected.");
 
-            announcement.Status = AnnouncementStatus.Published;
-            announcement.ApprovedBy = userId;
+            announcement.Status = AnnouncementStatus.Rejected;
+            announcement.ApprovedBy = null;
             announcement.UpdatedAt = DateTime.UtcNow;
 
             await _announcementRepository.UpdateAsync(announcement);
 
-            return _mapper.Map<AnnouncementDto>(announcement);
+            var updated = await _announcementRepository.GetByIdAsync(announcement.Id);
+            return _mapper.Map<AnnouncementDto>(updated);
         }
     }
 }
+

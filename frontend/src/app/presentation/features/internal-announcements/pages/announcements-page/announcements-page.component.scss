@@ -21,11 +21,13 @@ $white: #ffffff;
 $glass-bg: rgba(255, 255, 255, 0.9);
 $glass-border: rgba(255, 255, 255, 0.2);
 $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+$neutral-bg: #F5F7FA;
+$border-color: #E5E7EB;
 
 .dashboard-container {
   min-height: 100vh;
   padding-top: 72px;
-  background: linear-gradient(135deg, $dark-50 0%, $primary-bg 50%, $dark-50 100%);
+  background: $neutral-bg;
   font-family: 'Inter', 'Segoe UI', sans-serif;
   position: relative;
   overflow-x: hidden;
@@ -185,13 +187,19 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
     }
   }
 
+  .announcements-layout {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 32px;
+    align-items: start;
+  }
+
   .announcements-content {
-    background: $glass-bg;
-    backdrop-filter: blur(10px);
+    background: $white;
     border-radius: 24px;
     padding: 24px;
-    border: 1px solid $glass-border;
-    box-shadow: $glass-shadow;
+    border: 1px solid $border-color;
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
 
     .modern-tabs {
       ::ng-deep {
@@ -267,6 +275,126 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
       p { font-size: 18px; font-weight: 500; color: $dark-500; margin: 0; }
     }
   }
+
+  .sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+
+    .sidebar-card {
+      background: $white;
+      border-radius: 20px;
+      overflow: hidden;
+      border: 1px solid $border-color;
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+      transition: all 0.3s ease;
+
+      &:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12);
+      }
+
+      .sidebar-header {
+        padding: 16px 20px;
+        border-bottom: 1px solid $border-color;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+
+        mat-icon {
+          color: $primary-color;
+          font-size: 20px;
+          width: 20px;
+          height: 20px;
+        }
+
+        h4 {
+          font-size: 15px;
+          font-weight: 600;
+          color: $dark-900;
+          margin: 0;
+        }
+      }
+
+      .sidebar-content {
+        padding: 16px;
+
+        .insight-item {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 10px 0;
+
+          &:not(:last-child) {
+            border-bottom: 1px solid $border-color;
+          }
+
+          .insight-label {
+            font-size: 13px;
+            color: $dark-600;
+          }
+
+          .insight-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: $primary-color;
+          }
+        }
+
+        .quick-action-btn {
+          width: 100%;
+          margin-bottom: 10px;
+          padding: 10px 16px;
+          border-radius: 10px;
+          border: 1px solid $border-color;
+          background: $white;
+          color: $dark-700;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          cursor: pointer;
+          transition: all 0.3s ease;
+
+          &:hover {
+            border-color: $primary-color;
+            color: $primary-color;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba($primary-color, 0.1);
+          }
+
+          mat-icon {
+            font-size: 18px;
+            width: 18px;
+            height: 18px;
+          }
+        }
+
+        .tip {
+          display: flex;
+          gap: 12px;
+          padding: 10px 6px;
+          color: $dark-600;
+
+          mat-icon {
+            color: $primary-color;
+          }
+
+          .tip-title {
+            font-weight: 700;
+            color: $dark-800;
+            font-size: 13px;
+          }
+
+          .tip-text {
+            margin-top: 2px;
+            font-size: 12.5px;
+            color: $dark-500;
+            line-height: 1.4;
+          }
+        }
+      }
+    }
+  }
 }
 
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
@@ -278,6 +406,10 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
       align-items: stretch;
       gap: 20px;
       .header-right .action-buttons { flex-direction: column; }
+    }
+    .announcements-layout {
+      grid-template-columns: 1fr;
+      gap: 24px;
     }
     .announcements-grid { grid-template-columns: 1fr; }
   }

@@ -9,7 +9,7 @@ namespace EEP.EventManagement.Api.Infrastructure.Repositories.Interfaces
     public interface IAnnouncementRepository
     {
         Task<Announcement?> GetByIdAsync(Guid id);
-        Task<(List<Announcement> Items, int TotalCount)> GetPagedAsync(AnnouncementStatus? status, int page, int pageSize);
+        Task<(List<Announcement> Items, int TotalCount)> GetPagedAsync(AnnouncementStatus? status, Guid? createdById, int page, int pageSize);
         Task<Announcement> AddAsync(Announcement entity);
         Task UpdateAsync(Announcement entity);
         Task DeleteAsync(Announcement entity);

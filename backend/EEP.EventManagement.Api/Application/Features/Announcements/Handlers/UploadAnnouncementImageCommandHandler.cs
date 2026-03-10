@@ -33,8 +33,8 @@ namespace EEP.EventManagement.Api.Application.Features.Announcements.Handlers
             if (announcement == null)
                 throw new NotFoundException($"Announcement with ID {request.AnnouncementId} not found.");
 
-            if (announcement.Status != AnnouncementStatus.Draft)
-                throw new BadRequestException("Images can only be uploaded when status = Draft.");
+            if (announcement.Status != AnnouncementStatus.Draft && announcement.Status != AnnouncementStatus.Rejected)
+                throw new BadRequestException("Files can only be uploaded when status = Draft or Rejected.");
 
             var folderPath = $"/uploads/announcements/{announcement.Id}/";
             var imageUrl = await _storageService.SaveFileAsync(request.FileStream, request.FileName, folderPath);

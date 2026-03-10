@@ -43,6 +43,8 @@ export class AnnouncementsPageComponent implements OnInit, OnDestroy {
 
   publishedAnnouncements: Announcement[] = [];
   draftAnnouncements: Announcement[] = [];
+  pendingAnnouncements: Announcement[] = [];
+  rejectedAnnouncements: Announcement[] = [];
   
   isLoading = false;
   isSaving = false;
@@ -72,10 +74,10 @@ export class AnnouncementsPageComponent implements OnInit, OnDestroy {
       this.isLoading = true;
       this.loadPublished();
       
-      if (this.canSeeDrafts) {
-        this.loadDrafts();
-      } else {
-        this.isLoading = false;
+      this.loadDrafts();
+      this.loadRejected();
+      if (this.canPublish) {
+        this.loadPending();
       }
       this.cdr.detectChanges();
     });
@@ -86,7 +88,7 @@ export class AnnouncementsPageComponent implements OnInit, OnDestroy {
       .pipe(
         takeUntil(this.destroy$),
         finalize(() => { 
-          if (!this.canSeeDrafts) this.isLoading = false; 
+          this.isLoading = false; 
           this.cdr.detectChanges();
         })
       )
@@ -104,7 +106,6 @@ export class AnnouncementsPageComponent implements OnInit, OnDestroy {
       .pipe(
         takeUntil(this.destroy$),
         finalize(() => {
-          this.isLoading = false;
           this.cdr.detectChanges();
         })
       )
@@ -117,12 +118,36 @@ export class AnnouncementsPageComponent implements OnInit, OnDestroy {
       });
   }
 
-  get canCreate(): boolean {
-    return this.authService.isAdmin() || this.authService.isManager();
+  loadPending(): void {
+    this.announcementService.getPendingAnnouncements()
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => this.cdr.detectChanges())
+      )
+      .subscribe({
+        next: (response: any) => {
+          this.pendingAnnouncements = response.items || [];
+        },
+        error: () => this.snackBar.open('Failed to load pending announcements', 'Close', { duration: 3000 })
+      });
   }
 
-  get canSeeDrafts(): boolean {
-    return this.authService.isCommunicationManager() || this.authService.isAdmin();
+  loadRejected(): void {
+    this.announcementService.getRejectedAnnouncements()
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => this.cdr.detectChanges())
+      )
+      .subscribe({
+        next: (response: any) => {
+          this.rejectedAnnouncements = response.items || [];
+        },
+        error: () => this.snackBar.open('Failed to load rejected announcements', 'Close', { duration: 3000 })
+      });
+  }
+
+  get canCreate(): boolean {
+    return this.authService.isAdmin() || this.authService.isManager();
   }
 
   get canManage(): boolean {
@@ -176,6 +201,28 @@ export class AnnouncementsPageComponent implements OnInit, OnDestroy {
           this.loadAnnouncements();
         },
         error: () => this.snackBar.open('Failed to publish announcement', 'Close', { duration: 3000 })
+      });
+  }
+
+  onSubmitForApproval(announcement: Announcement): void {
+    this.announcementService.submitForApproval(announcement.id)
+      .subscribe({
+        next: () => {
+          this.snackBar.open('Submitted for approval', 'Close', { duration: 3000 });
+          this.loadAnnouncements();
+        },
+        error: () => this.snackBar.open('Failed to submit for approval', 'Close', { duration: 3000 })
+      });
+  }
+
+  onReject(announcement: Announcement): void {
+    this.announcementService.rejectAnnouncement(announcement.id)
+      .subscribe({
+        next: () => {
+          this.snackBar.open('Announcement rejected', 'Close', { duration: 3000 });
+          this.loadAnnouncements();
+        },
+        error: () => this.snackBar.open('Failed to reject announcement', 'Close', { duration: 3000 })
       });
   }
 
