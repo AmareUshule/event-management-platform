@@ -13,7 +13,7 @@ import { AnnouncementCardComponent } from '../../components/announcement-card/an
 import { AnnouncementFormComponent } from '../../components/announcement-form/announcement-form.component';
 import { HeaderComponent } from '../../../../layouts/header/header.component';
 import { Subject, takeUntil, finalize, switchMap, of } from 'rxjs';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-announcements-page',
@@ -38,6 +38,7 @@ export class AnnouncementsPageComponent implements OnInit, OnDestroy {
   private snackBar = inject(MatSnackBar);
   private dialog = inject(MatDialog);
   public router = inject(Router);
+  private route = inject(ActivatedRoute);
   private cdr = inject(ChangeDetectorRef);
 
   publishedAnnouncements: Announcement[] = [];
@@ -52,6 +53,13 @@ export class AnnouncementsPageComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadAnnouncements();
+    this.route.queryParamMap
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(params => {
+        if (params.get('create') === 'true' && this.canCreate) {
+          this.openCreateForm();
+        }
+      });
   }
 
   ngOnDestroy(): void {

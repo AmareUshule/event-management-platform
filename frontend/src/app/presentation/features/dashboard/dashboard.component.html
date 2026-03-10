@@ -59,7 +59,7 @@
               <mat-icon>today</mat-icon>
             </div>
             <div class="stat-details">
-              <h3 class="stat-value">{{ todaysEvents }}</h3>
+              <h3 class="stat-value">{{ eventsThisWeek }}</h3>
               <p class="stat-label">This Week</p>
             </div>
           </div>
@@ -272,6 +272,78 @@
         <div class="sidebar">
           <div class="sidebar-card">
             <div class="sidebar-header">
+              <mat-icon>event_upcoming</mat-icon>
+              <h4>Upcoming Events</h4>
+            </div>
+            <div class="sidebar-content">
+              <div class="empty-state" *ngIf="upcomingEvents.length === 0">
+                <mat-icon>event_busy</mat-icon>
+                <div>
+                  <div class="empty-title">No upcoming events</div>
+                  <div class="empty-subtitle">You’re all caught up for now.</div>
+                </div>
+              </div>
+
+              <div class="list" *ngIf="upcomingEvents.length > 0">
+                <button class="list-item" *ngFor="let event of upcomingEvents | slice:0:5" (click)="router.navigate(['/events', event.id])">
+                  <div class="list-item-main">
+                    <div class="list-item-title">{{ event.title }}</div>
+                    <div class="list-item-meta">
+                      <mat-icon>location_on</mat-icon>
+                      <span>{{ event.eventPlace }}</span>
+                    </div>
+                  </div>
+                  <div class="list-item-right">
+                    <div class="pill">
+                      <mat-icon>schedule</mat-icon>
+                      <span>{{ event.startDate | date:'MMM d' }}</span>
+                    </div>
+                  </div>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="sidebar-card">
+            <div class="sidebar-header">
+              <mat-icon>campaign</mat-icon>
+              <h4>Latest Announcements</h4>
+            </div>
+            <div class="sidebar-content">
+              <div class="empty-state" *ngIf="!isLoadingAnnouncements && latestAnnouncements.length === 0">
+                <mat-icon>announcement</mat-icon>
+                <div>
+                  <div class="empty-title">No announcements yet</div>
+                  <div class="empty-subtitle">Create one to keep everyone in sync.</div>
+                </div>
+              </div>
+
+              <div class="skeleton" *ngIf="isLoadingAnnouncements">
+                <div class="skeleton-row" *ngFor="let _ of [1,2,3]"></div>
+              </div>
+
+              <div class="list" *ngIf="!isLoadingAnnouncements && latestAnnouncements.length > 0">
+                <button class="list-item" *ngFor="let a of latestAnnouncements" [routerLink]="['/internal-announcements', a.id]">
+                  <div class="list-item-main">
+                    <div class="list-item-title">{{ a.title }}</div>
+                    <div class="list-item-preview">{{ a.content }}</div>
+                    <div class="list-item-date">
+                      <mat-icon>calendar_today</mat-icon>
+                      <span>{{ a.createdAt | date:'MMM d, y' }}</span>
+                    </div>
+                  </div>
+                </button>
+              </div>
+
+              <button class="link-btn" (click)="navigateToAnnouncements()">
+                View all announcements
+                <mat-icon>chevron_right</mat-icon>
+              </button>
+            </div>
+          </div>
+
+          <div class="sidebar-card">
+            <div class="sidebar-header">
               <mat-icon>insights</mat-icon>
               <h4>Event Insights</h4>
             </div>
@@ -294,14 +366,18 @@
               <h4>Quick Actions</h4>
             </div>
             <div class="sidebar-content">
+              <button class="quick-action-btn" (click)="navigateToCreateEvent()">
+                <mat-icon>add</mat-icon>
+                Create Event
+              </button>
+              <button class="quick-action-btn" (click)="navigateToCreateAnnouncement()">
+                <mat-icon>campaign</mat-icon>
+                Post Announcement
+              </button>
               <button class="quick-action-btn" (click)="generateReport()" [disabled]="isLoadingReport">
                 <mat-icon *ngIf="!isLoadingReport">add_chart</mat-icon>
                 <mat-spinner *ngIf="isLoadingReport" diameter="18"></mat-spinner>
                 {{ isLoadingReport ? 'Generating...' : 'Generate Report' }}
-              </button>
-              <button class="quick-action-btn">
-                <mat-icon>group_add</mat-icon>
-                Invite Staff
               </button>
               <button class="quick-action-btn" (click)="exportData()">
                 <mat-icon>download</mat-icon>
