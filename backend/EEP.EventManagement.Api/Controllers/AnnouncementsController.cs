@@ -30,7 +30,7 @@ namespace EEP.EventManagement.Api.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin,Manager")]
+        [Authorize(Policy = AuthorizationPolicies.IsCommunicationManager)]
         public async Task<ActionResult<AnnouncementDto>> Create([FromBody] CreateAnnouncementDto createDto)
         {
             var command = new CreateAnnouncementCommand { CreateAnnouncementDto = createDto };
@@ -87,16 +87,13 @@ namespace EEP.EventManagement.Api.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize(Roles = "Admin,Manager")]
+        [Authorize(Policy = AuthorizationPolicies.IsCommunicationManager)]
         public async Task<ActionResult<AnnouncementDto>> Update(Guid id, [FromBody] UpdateAnnouncementDto updateDto)
         {
             // Check if it's draft and user is author or Communication Manager
             var announcement = await _mediator.Send(new GetAnnouncementByIdQuery { Id = id });
             if (announcement == null)
                 return NotFound();
-
-            if (announcement.Status != AnnouncementStatus.Draft.ToString())
-                return BadRequest("Only draft announcements can be edited.");
 
             var currentUserId = _userContext.GetUserId();
             var isAuthor = announcement.CreatedBy?.Id == currentUserId;
@@ -111,7 +108,7 @@ namespace EEP.EventManagement.Api.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin,Manager")]
+        [Authorize(Policy = AuthorizationPolicies.IsCommunicationManager)]
         public async Task<ActionResult> Delete(Guid id)
         {
             var announcement = await _mediator.Send(new GetAnnouncementByIdQuery { Id = id });

@@ -6,6 +6,7 @@ using EEP.EventManagement.Api.Domain.Enums;
 using EEP.EventManagement.Api.Infrastructure.Repositories.Interfaces;
 using EEP.EventManagement.Api.Infrastructure.Security.Claims;
 using MediatR;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -33,6 +34,11 @@ namespace EEP.EventManagement.Api.Application.Features.Announcements.Handlers
             announcement.CreatedBy = userId;
             announcement.CreatedAt = DateTime.UtcNow;
             announcement.UpdatedAt = DateTime.UtcNow;
+
+            if (announcement.Deadline.HasValue)
+            {
+                announcement.Deadline = DateTime.SpecifyKind(announcement.Deadline.Value, DateTimeKind.Utc);
+            }
 
             announcement = await _announcementRepository.AddAsync(announcement);
 

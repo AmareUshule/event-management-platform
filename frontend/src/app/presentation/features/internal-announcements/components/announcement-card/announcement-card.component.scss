@@ -1,37 +1,78 @@
+$primary-color: #1E590C;
+$accent-color: #DD1407;
+$dark-900: #0f172a;
+$dark-700: #334155;
+$dark-600: #475569;
+$dark-500: #64748b;
+$dark-400: #94a3b8;
+$dark-200: #e2e8f0;
+
 .announcement-card {
   height: 100%;
   display: flex;
   flex-direction: column;
-  border-radius: 12px;
+  border-radius: 20px;
   overflow: hidden;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
-  border: 1px solid #e2e8f0;
+  border: 1px solid $dark-200;
+  background: #ffffff;
+  position: relative;
 
   &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    border-color: rgba($primary-color, 0.2);
+
+    .card-image img {
+      transform: scale(1.1);
+    }
+
+    mat-card-header mat-card-title {
+      color: $primary-color;
+    }
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, $primary-color, $accent-color);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 1;
+  }
+
+  &:hover::before {
+    opacity: 1;
   }
 
   .card-image {
     width: 100%;
-    height: 180px;
+    height: 200px;
     overflow: hidden;
+    position: relative;
+
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, transparent 60%, rgba(0,0,0,0.4));
+    }
 
     img {
       width: 100%;
       height: 100%;
       object-fit: cover;
-      transition: transform 0.3s ease;
+      transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
     }
   }
 
-  &:hover img {
-    transform: scale(1.05);
-  }
-
   mat-card-header {
-    padding: 16px;
+    padding: 24px 20px 12px;
     
     .header-content {
       width: 100%;
@@ -40,27 +81,61 @@
       align-items: flex-start;
       gap: 12px;
 
+      .title-section {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+
+        .type-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 11px;
+          font-weight: 700;
+          color: $primary-color;
+          text-transform: uppercase;
+          background: rgba($primary-color, 0.08);
+          padding: 2px 8px;
+          border-radius: 4px;
+          width: fit-content;
+
+          &.job {
+            color: $accent-color;
+            background: rgba($accent-color, 0.08);
+          }
+
+          mat-icon {
+            font-size: 14px;
+            width: 14px;
+            height: 14px;
+          }
+        }
+      }
+
       mat-card-title {
-        font-size: 18px;
+        font-size: 19px;
         font-weight: 700;
-        color: #1e293b;
+        color: $dark-900;
         margin: 0;
+        line-height: 1.4;
         display: -webkit-box;
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
         overflow: hidden;
+        transition: color 0.3s ease;
       }
 
       .status-badge {
         .draft-badge {
-          padding: 2px 8px;
-          border-radius: 20px;
+          padding: 4px 10px;
+          border-radius: 30px;
           font-size: 10px;
           font-weight: 700;
           text-transform: uppercase;
-          background: rgba(245, 158, 11, 0.1);
-          color: #d97706;
-          border: 1px solid rgba(245, 158, 11, 0.2);
+          letter-spacing: 0.5px;
+          background: rgba($accent-color, 0.1);
+          color: $accent-color;
+          border: 1px solid rgba($accent-color, 0.1);
         }
       }
     }
@@ -68,12 +143,13 @@
 
   mat-card-content {
     flex: 1;
-    padding: 0 16px 16px;
+    padding: 0 20px 20px;
 
     .content-preview {
       font-size: 14px;
-      color: #64748b;
-      margin-bottom: 16px;
+      line-height: 1.6;
+      color: $dark-600;
+      margin-bottom: 20px;
       display: -webkit-box;
       -webkit-line-clamp: 3;
       -webkit-box-orient: vertical;
@@ -82,31 +158,38 @@
 
     .metadata {
       display: flex;
+      flex-wrap: wrap;
       gap: 16px;
-      color: #94a3b8;
+      color: $dark-400;
       font-size: 12px;
+      padding-top: 16px;
+      border-top: 1px solid rgba($dark-200, 0.5);
 
-      .author, .date {
+      .meta-item {
         display: flex;
         align-items: center;
-        gap: 4px;
+        gap: 6px;
 
         mat-icon {
           font-size: 16px;
           width: 16px;
           height: 16px;
+          color: $primary-color;
         }
       }
     }
   }
 
   mat-card-actions {
-    padding: 8px 16px;
-    border-top: 1px solid #f1f5f9;
+    padding: 12px 20px;
+    background: #fafafa;
+    border-top: 1px solid $dark-200;
 
     button {
       font-weight: 600;
+      font-size: 13px;
       letter-spacing: 0.5px;
+      color: $primary-color;
     }
 
     .delete-item {

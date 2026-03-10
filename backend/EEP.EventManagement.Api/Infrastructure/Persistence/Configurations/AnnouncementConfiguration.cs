@@ -25,6 +25,15 @@ namespace EEP.EventManagement.Api.Infrastructure.Persistence.Configurations
                 .IsRequired()
                 .HasConversion<string>();
 
+            builder.Property(a => a.Type)
+                .HasMaxLength(20)
+                .IsRequired()
+                .HasConversion<string>()
+                .HasDefaultValue(EEP.EventManagement.Api.Domain.Enums.AnnouncementType.General);
+
+            builder.Property(a => a.Deadline)
+                .IsRequired(false);
+
             builder.Property(a => a.CreatedBy)
                 .IsRequired();
 
@@ -43,6 +52,12 @@ namespace EEP.EventManagement.Api.Infrastructure.Persistence.Configurations
                 .WithMany()
                 .HasForeignKey(a => a.ApprovedBy)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasOne(a => a.Department)
+                .WithMany()
+                .HasForeignKey(a => a.DepartmentId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.SetNull);
 
             builder.HasMany(a => a.Images)
                 .WithOne(i => i.Announcement)

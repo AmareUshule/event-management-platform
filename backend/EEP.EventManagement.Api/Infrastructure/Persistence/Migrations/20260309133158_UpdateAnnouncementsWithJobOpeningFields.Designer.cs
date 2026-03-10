@@ -3,17 +3,20 @@ using System;
 using EEP.EventManagement.Api.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace EEP.EventManagement.Api.Migrations
+namespace EEP.EventManagement.Api.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260309133158_UpdateAnnouncementsWithJobOpeningFields")]
+    partial class UpdateAnnouncementsWithJobOpeningFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -59,12 +62,8 @@ namespace EEP.EventManagement.Api.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
-                        .HasDefaultValue("General");
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("UpdatedAt")
                         .ValueGeneratedOnAdd()
@@ -542,8 +541,7 @@ namespace EEP.EventManagement.Api.Migrations
 
                     b.HasOne("EEP.EventManagement.Api.Domain.Entities.Department", "Department")
                         .WithMany()
-                        .HasForeignKey("DepartmentId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .HasForeignKey("DepartmentId");
 
                     b.Navigation("ApprovedByUser");
 

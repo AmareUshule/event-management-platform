@@ -24,6 +24,7 @@ namespace EEP.EventManagement.Api.Infrastructure.Repositories.Implementations
             return await _context.Announcements
                 .Include(a => a.CreatedByUser)
                 .Include(a => a.ApprovedByUser)
+                .Include(a => a.Department)
                 .Include(a => a.Images)
                 .FirstOrDefaultAsync(a => a.Id == id);
         }
@@ -41,6 +42,7 @@ namespace EEP.EventManagement.Api.Infrastructure.Repositories.Implementations
             var items = await query
                 .Include(a => a.CreatedByUser)
                 .Include(a => a.ApprovedByUser)
+                .Include(a => a.Department)
                 .Include(a => a.Images)
                 .OrderByDescending(a => a.CreatedAt)
                 .Skip((page - 1) * pageSize)

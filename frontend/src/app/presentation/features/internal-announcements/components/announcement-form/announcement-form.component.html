@@ -1,11 +1,39 @@
 <form [formGroup]="form" (ngSubmit)="onSubmit()" class="announcement-form">
   <mat-progress-bar *ngIf="isLoading" mode="indeterminate"></mat-progress-bar>
   
+  <div class="form-row">
+    <mat-form-field appearance="outline" class="flex-1">
+      <mat-label>Announcement Type</mat-label>
+      <mat-select formControlName="type">
+        <mat-option *ngFor="let type of announcementTypes" [value]="type.value">
+          {{ type.label }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="flex-1">
+      <mat-label>Target Department</mat-label>
+      <mat-select formControlName="departmentId">
+        <mat-option *ngFor="let dept of departments" [value]="dept.id">
+          {{ dept.name }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+
   <mat-form-field appearance="outline" class="full-width">
     <mat-label>Title</mat-label>
-    <input matInput formControlName="title" placeholder="Enter announcement title">
+    <input matInput formControlName="title" placeholder="e.g. Senior Backend Developer Opportunity">
     <mat-error *ngIf="form.get('title')?.hasError('required')">Title is required</mat-error>
     <mat-error *ngIf="form.get('title')?.hasError('maxlength')">Title cannot exceed 200 characters</mat-error>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="full-width" *ngIf="isJobOpening">
+    <mat-label>Application Deadline</mat-label>
+    <input matInput [matDatepicker]="picker" formControlName="deadline">
+    <mat-hint>MM/DD/YYYY</mat-hint>
+    <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+    <mat-datepicker #picker></mat-datepicker>
   </mat-form-field>
 
   <mat-form-field appearance="outline" class="full-width">

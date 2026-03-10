@@ -35,19 +35,13 @@ namespace EEP.EventManagement.Api.Application.Features.Events.Handlers
                 throw new NotFoundException(nameof(Event), request.UpdateEventDto.Id);
             }
 
-            // Check if status is changing to Scheduled (Approval)
-            if (eventToUpdate.Status != EventStatus.Scheduled && request.UpdateEventDto.Status == EventStatus.Scheduled)
-            {
-                eventToUpdate.ApprovedBy = _userContext.GetUserId();
-            }
-            
             _mapper.Map(request.UpdateEventDto, eventToUpdate);
             
             eventToUpdate.UpdatedAt = DateTime.UtcNow;
 
             await _eventRepository.UpdateAsync(eventToUpdate);
 
-            // Re-fetch to include navigation properties (like ApprovedByUser)
+            // Re-fetch to include navigation properties
             var updatedEvent = await _eventRepository.GetByIdAsync(eventToUpdate.Id);
 
             return _mapper.Map<EventDto>(updatedEvent);
