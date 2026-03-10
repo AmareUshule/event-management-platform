@@ -1,14 +1,6 @@
 <div class="dashboard-container">
-  <!-- Loading Overlay -->
-  <div *ngIf="isLoading" class="loading-overlay">
-    <div class="loading-content">
-      <div class="loader-spinner"></div>
-      <p class="loading-text">Loading Event Portal...</p>
-    </div>
-  </div>
-
-  <!-- Main Content -->
-  <div *ngIf="!isLoading && user" class="main-content">
+  <!-- Main Content - Visible once user is authenticated -->
+  <div *ngIf="user" class="main-content">
     <app-header></app-header>
 
     <!-- Main Dashboard Content -->
@@ -24,45 +16,65 @@
 
         <!-- Stats Cards -->
         <div class="stats-cards">
-          <div class="stat-card">
-            <div class="stat-icon total-events">
-              <mat-icon>event</mat-icon>
+          <!-- Skeleton Stats -->
+          <ng-container *ngIf="isLoadingEvents">
+            <div class="stat-card skeleton-card" *ngFor="let i of [1,2,3,4]">
+              <div class="stat-icon skeleton-circle"></div>
+              <div class="stat-details">
+                <div class="skeleton-title"></div>
+                <div class="skeleton-text"></div>
+              </div>
             </div>
-            <div class="stat-details">
-              <h3 class="stat-value">{{ totalEvents }}</h3>
-              <p class="stat-label">Total Events</p>
-            </div>
-          </div>
+          </ng-container>
 
-          <div class="stat-card">
-            <div class="stat-icon published">
-              <mat-icon>check_circle</mat-icon>
+          <!-- Actual Stats -->
+          <ng-container *ngIf="!isLoadingEvents">
+            <div class="stat-card">
+              <div class="stat-icon total-events">
+                <mat-icon>event</mat-icon>
+              </div>
+              <div class="stat-details">
+                <h3 class="stat-value">{{ totalEvents }}</h3>
+                <p class="stat-label">Total Events</p>
+              </div>
             </div>
-            <div class="stat-details">
-              <h3 class="stat-value">{{ scheduledEvents }}</h3>
-              <p class="stat-label">Scheduled</p>
-            </div>
-          </div>
 
-          <div class="stat-card">
-            <div class="stat-icon draft">
-              <mat-icon>edit_note</mat-icon>
+            <div class="stat-card">
+              <div class="stat-icon published">
+                <mat-icon>check_circle</mat-icon>
+              </div>
+              <div class="stat-details">
+                <h3 class="stat-value">{{ scheduledEvents }}</h3>
+                <p class="stat-label">Scheduled</p>
+              </div>
             </div>
-            <div class="stat-details">
-              <h3 class="stat-value">{{ draftEvents }}</h3>
-              <p class="stat-label">Draft</p>
-            </div>
-          </div>
 
-          <div class="stat-card">
-            <div class="stat-icon today">
-              <mat-icon>today</mat-icon>
+            <div class="stat-card">
+              <div class="stat-icon draft">
+                <mat-icon>edit_note</mat-icon>
+              </div>
+              <div class="stat-details">
+                <h3 class="stat-value">{{ draftEvents }}</h3>
+                <p class="stat-label">Draft</p>
+              </div>
             </div>
+<<<<<<< HEAD
+
+            <div class="stat-card">
+              <div class="stat-icon today">
+                <mat-icon>today</mat-icon>
+              </div>
+              <div class="stat-details">
+                <h3 class="stat-value">{{ todaysEvents }}</h3>
+                <p class="stat-label">This Week</p>
+              </div>
+=======
             <div class="stat-details">
               <h3 class="stat-value">{{ eventsThisWeek }}</h3>
               <p class="stat-label">This Week</p>
+>>>>>>> 790bd55a6bd553cbd407f8cc8645203ca8186f64
             </div>
-          </div>
+          </ng-container>
         </div>
       </div>
 
@@ -112,7 +124,7 @@
               </div>
             </div>
 
-            <!-- Search Results Info (below the header) -->
+            <!-- Search Results Info -->
             <div class="search-info" *ngIf="searchTerm">
               <span class="search-term">Search results for: "{{ searchTerm }}"</span>
               <span class="result-count">{{ filteredEvents.length }} event(s) found</span>
@@ -121,8 +133,19 @@
 
           <!-- Events Table with Pagination -->
           <div class="events-table-wrapper">
-            <!-- Use paginatedEvents instead of dataSource directly -->
-            <table mat-table [dataSource]="paginatedEvents" class="modern-table">
+            <!-- Skeleton Table -->
+            <div *ngIf="isLoadingEvents" class="skeleton-table">
+              <div class="skeleton-row" *ngFor="let i of [1,2,3,4,5]">
+                <div class="skeleton-cell skeleton-circle" style="width: 32px; height: 32px;"></div>
+                <div class="skeleton-cell" style="flex: 2;"><div class="skeleton-title" style="margin-bottom: 0;"></div></div>
+                <div class="skeleton-cell" style="flex: 1;"><div class="skeleton-text"></div></div>
+                <div class="skeleton-cell" style="flex: 1;"><div class="skeleton-text"></div></div>
+                <div class="skeleton-cell" style="width: 40px;"><div class="skeleton-circle" style="width: 24px; height: 24px;"></div></div>
+              </div>
+            </div>
+
+            <!-- Actual Table -->
+            <table mat-table [dataSource]="paginatedEvents" class="modern-table" *ngIf="!isLoadingEvents">
 
               <!-- # Column - Fixed index calculation -->
               <ng-container matColumnDef="id">

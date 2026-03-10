@@ -69,58 +69,6 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   }
 }
 
-// Modern Loading Overlay
-.loading-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, $dark-900 0%, $primary-dark 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-
-  .loading-content {
-    text-align: center;
-    animation: fadeInUp 0.5s ease-out;
-
-    .loader-spinner {
-      width: 64px;
-      height: 64px;
-      border: 3px solid transparent;
-      border-top-color: $white;
-      border-right-color: rgba($white, 0.5);
-      border-radius: 50%;
-      animation: spin 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
-      margin: 0 auto 24px;
-      position: relative;
-
-      &::before {
-        content: '';
-        position: absolute;
-        inset: -6px;
-        border: 2px solid transparent;
-        border-top-color: rgba($white, 0.3);
-        border-radius: 50%;
-        animation: spin 2s linear infinite reverse;
-      }
-    }
-
-    .loading-text {
-      color: $white;
-      font-size: 18px;
-      font-weight: 500;
-      letter-spacing: 0.5px;
-      background: linear-gradient(90deg, $white, rgba($white, 0.7));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-  }
-}
-
 // Modern Top Navigation
 .top-nav {
   background: $glass-bg;
@@ -1236,16 +1184,26 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
       .table-row {
         background: $white;
         border-radius: 12px;
-        transition: all 0.3s ease;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         position: relative;
 
         &:hover {
           transform: translateY(-2px);
-          box-shadow: 0 10px 24px rgba($primary-color, 0.12);
+          box-shadow: 0 4px 12px rgba($primary-color, 0.15);
           background: $white;
 
           &::after {
-            opacity: 0.5;
+            opacity: 0.8;
+          }
+
+          .index-badge {
+            background: $white;
+            transform: scale(1.1);
+          }
+
+          .event-icon {
+            transform: scale(1.05);
+            box-shadow: 0 4px 10px rgba($primary-color, 0.2);
           }
         }
 
@@ -1842,6 +1800,65 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 
   .cdk-overlay-pane {
     margin-top: 8px !important;
+  }
+}
+
+// Skeleton Loader Animations
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite linear;
+  border-radius: 4px;
+}
+
+.skeleton-text {
+  height: 12px;
+  width: 100%;
+  @extend .skeleton;
+}
+
+.skeleton-title {
+  height: 20px;
+  width: 60%;
+  margin-bottom: 12px;
+  @extend .skeleton;
+}
+
+.skeleton-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  @extend .skeleton;
+}
+
+.skeleton-table {
+  width: 100%;
+  padding: 16px 0;
+
+  .skeleton-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    background: $white;
+    border-radius: 12px;
+    margin-bottom: 8px;
+    border: 1px solid $dark-100;
+
+    .skeleton-cell {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
   }
 }
 

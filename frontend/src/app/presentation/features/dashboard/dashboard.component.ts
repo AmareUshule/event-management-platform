@@ -105,7 +105,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   // ===== UI STATE =======
   user: AuthUser | null = null;
-  isLoading = true;
   isLoadingEvents = true;
   isLoadingReport = false;
   currentDate = new Date();
@@ -223,7 +222,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
         takeUntil(this.destroy$),
         finalize(() => {
           this.isLoadingEvents = false;
-          this.isLoading = false;
           this.cdr.detectChanges();
         })
       )
@@ -232,10 +230,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
           console.log('📥 Master events loaded:', events.length);
           this.setMasterData(events);
         },
-        error: (error) => {
-          console.error('Failed to load events:', error);
-          this.showError('Failed to load events');
-        }
       });
   }
 
