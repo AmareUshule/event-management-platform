@@ -25,7 +25,7 @@
           <mat-icon>calendar_month</mat-icon>
           <span>Calendar</span>
         </button>
-        <a class="nav-tab external-link" href="https://communicationportal.val.run/" target="_blank" *ngIf="isAdmin() || isInCommunicationDepartment()">
+        <a class="nav-tab external-link" href="https://communicationportal.val.run/" target="_blank" *ngIf="isInCommunicationDepartment()">
           <mat-icon>language</mat-icon>
           <span>Communication Portal</span>
           <mat-icon class="external-icon">open_in_new</mat-icon>
@@ -88,7 +88,7 @@
         </div>
         <div class="user-info">
           <span class="user-name">{{ user?.fullName }}</span>
-          <span class="user-role">{{ roleDisplay }}</span>
+          <span class="user-role" *ngIf="user?.departmentName">{{ user?.departmentName }}</span>
         </div>
         <mat-icon class="dropdown-icon">arrow_drop_down</mat-icon>
       </div>
@@ -102,7 +102,11 @@
           </div>
           <div class="menu-user-info">
             <div class="menu-user-name">{{ user?.fullName }}</div>
-            <div class="menu-user-email">{{ user?.email || 'user@eep.com' }}</div>
+            <div class="menu-user-dept" *ngIf="user?.departmentName">
+              <mat-icon>business</mat-icon>
+              {{ user?.departmentName }}
+            </div>
+            <div class="menu-user-email">{{ user?.email }}</div>
             <div class="menu-user-role-badge">{{ roleDisplay }}</div>
           </div>
         </div>
@@ -165,7 +169,7 @@
         <mat-icon>calendar_month</mat-icon>
         <span>Calendar</span>
       </button>
-      <a class="mobile-nav-item external-link" href="https://communicationportal.val.run/" target="_blank" *ngIf="isAdmin() || isInCommunicationDepartment()" (click)="toggleMobileMenu()">
+      <a class="mobile-nav-item external-link" href="https://communicationportal.val.run/" target="_blank" *ngIf="isInCommunicationDepartment()" (click)="toggleMobileMenu()">
         <mat-icon>language</mat-icon>
         <span>Communication Portal</span>
         <mat-icon class="external-icon-sm">open_in_new</mat-icon>
