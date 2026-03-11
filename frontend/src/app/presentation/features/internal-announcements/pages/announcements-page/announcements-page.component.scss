@@ -44,30 +44,6 @@ $border-color: #E5E7EB;
   }
 }
 
-.loading-overlay {
-  position: fixed;
-  inset: 0;
-  background: linear-gradient(135deg, $dark-900 0%, $primary-dark 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-  
-  .loading-content {
-    text-align: center;
-    .loader-spinner {
-      width: 64px;
-      height: 64px;
-      border: 3px solid transparent;
-      border-top-color: $white;
-      border-radius: 50%;
-      animation: spin 1s infinite linear;
-      margin: 0 auto 24px;
-    }
-    .loading-text { color: $white; font-size: 18px; }
-  }
-}
-
 .dashboard-main {
   max-width: 1400px;
   margin: 0 auto;

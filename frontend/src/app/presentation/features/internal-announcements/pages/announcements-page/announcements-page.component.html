@@ -1,14 +1,6 @@
 <div class="dashboard-container">
-  <!-- Loading Overlay -->
-  <div *ngIf="isLoading" class="loading-overlay">
-    <div class="loading-content">
-      <div class="loader-spinner"></div>
-      <p class="loading-text">Loading Announcements...</p>
-    </div>
-  </div>
-
   <!-- Main Content -->
-  <div *ngIf="!isLoading" class="main-content">
+  <div class="main-content">
     <app-header></app-header>
 
     <main class="dashboard-main">

@@ -32,7 +32,7 @@
 
           <!-- Actual Stats -->
           <ng-container *ngIf="!isLoadingEvents">
-            <div class="stat-card">
+            <div class="stat-card" (click)="onStatCardClick(0)">
               <div class="stat-icon total-events">
                 <mat-icon>event</mat-icon>
               </div>
@@ -42,7 +42,17 @@
               </div>
             </div>
 
-            <div class="stat-card">
+             <div class="stat-card" (click)="onStatCardClick(1)">
+              <div class="stat-icon draft">
+                <mat-icon>edit_note</mat-icon>
+              </div>
+              <div class="stat-details">
+                <h3 class="stat-value">{{ draftEvents }}</h3>
+                <p class="stat-label">Draft</p>
+              </div>
+            </div>
+
+            <div class="stat-card" (click)="onStatCardClick(2)">
               <div class="stat-icon published">
                 <mat-icon>check_circle</mat-icon>
               </div>
@@ -52,22 +62,13 @@
               </div>
             </div>
 
-            <div class="stat-card">
-              <div class="stat-icon draft">
-                <mat-icon>edit_note</mat-icon>
+            <div class="stat-card" (click)="onStatCardClick(3)">
+              <div class="stat-icon total-events" style="background: linear-gradient(135deg, #10b981, #059669);">
+                <mat-icon>task_alt</mat-icon>
               </div>
               <div class="stat-details">
-                <h3 class="stat-value">{{ draftEvents }}</h3>
-                <p class="stat-label">Draft</p>
-              </div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-icon today">
-                <mat-icon>today</mat-icon>
-              </div>
-              <div class="stat-details">
-                <h3 class="stat-value">{{ eventsThisWeek }}</h3>
-                <p class="stat-label">This Week</p>
+                <h3 class="stat-value">{{ completedEvents }}</h3>
+                <p class="stat-label">Completed</p>
               </div>
             </div>
           </ng-container>
@@ -91,10 +92,13 @@
                   ALL <span class="tab-count">{{ totalEvents }}</span>
                 </button>
                 <button class="event-tab" [class.active]="selectedTabIndex === 1" (click)="onTabChange(1)">
-                  Scheduled <span class="tab-count">{{ scheduledEvents }}</span>
+                  Draft <span class="tab-count">{{ draftEvents }}</span>
                 </button>
                 <button class="event-tab" [class.active]="selectedTabIndex === 2" (click)="onTabChange(2)">
-                  Draft <span class="tab-count">{{ draftEvents }}</span>
+                  Scheduled <span class="tab-count">{{ scheduledEvents }}</span>
+                </button>
+                <button class="event-tab" [class.active]="selectedTabIndex === 3" (click)="onTabChange(3)">
+                  Completed <span class="tab-count">{{ completedEvents }}</span>
                 </button>
               </div>
 

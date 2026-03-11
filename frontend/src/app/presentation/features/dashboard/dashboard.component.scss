@@ -725,175 +725,176 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
       }
     }
   }
-// Stats Cards
-.stats-cards {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
 
-  .stat-card {
-    background: $glass-bg;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-radius: 20px;
-    padding: 24px;
-    border: 1px solid $glass-border;
-    box-shadow: $glass-shadow;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
+  // Stats Cards
+  .stats-cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
 
-    // Top accent line
-    &::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 4px;
-      background: linear-gradient(90deg, $primary-color, $accent-color);
-      transition: all 0.4s ease;
-      z-index: 1;
-    }
+    .stat-card {
+      background: $glass-bg;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 24px;
+      border: 1px solid $glass-border;
+      box-shadow: $glass-shadow;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
 
-    // Removed the green-red gradient overlay on hover
+      // Top accent line
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, $primary-color, $accent-color);
+        transition: all 0.4s ease;
+        z-index: 1;
+      }
 
-    &:hover {
-      transform: translateY(-8px);
-      box-shadow: 0 22px 45px rgba(0, 0, 0, 0.18);
+      // Removed the green-red gradient overlay on hover
 
-      // Removed the gradient overlay activation
-      // Removed the accent bar expansion with green-red gradient
+      &:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 22px 45px rgba(0, 0, 0, 0.18);
+
+        // Removed the gradient overlay activation
+        // Removed the accent bar expansion with green-red gradient
+
+        .stat-icon {
+          transform: scale(1.1) rotate(5deg);
+          box-shadow: 0 10px 20px rgba($primary-color, 0.3);
+
+          // Keep the icon color variations on hover
+          &.total-events {
+            background: linear-gradient(135deg, $primary-color 0%, $primary-dark 100%);
+          }
+
+          &.published {
+            background: linear-gradient(135deg, $secondary-color 0%, $secondary-dark 100%);
+          }
+
+          &.draft {
+            background: linear-gradient(135deg, $warning-color 0%, $warning-dark 100%);
+          }
+
+          &.today {
+            background: linear-gradient(135deg, $accent-color 0%, $accent-dark 100%);
+          }
+
+          mat-icon {
+            transform: scale(1.1);
+          }
+        }
+
+        .stat-value {
+          transform: scale(1.05);
+          color: $primary-color;
+        }
+
+        .stat-label {
+          color: $primary-color;
+          font-weight: 600;
+        }
+      }
 
       .stat-icon {
-        transform: scale(1.1) rotate(5deg);
-        box-shadow: 0 10px 20px rgba($primary-color, 0.3);
+        width: 60px;
+        height: 60px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+        transition: all 0.4s ease;
+        position: relative;
+        z-index: 2;
+        overflow: hidden;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 
-        // Keep the icon color variations on hover
+        &::before {
+          content: '';
+          position: absolute;
+          inset: -4px;
+          border-radius: 18px;
+          filter: blur(8px);
+          opacity: 0.3;
+          transition: all 0.4s ease;
+          z-index: -1;
+        }
+
+        mat-icon {
+          font-size: 28px;
+          width: 28px;
+          height: 28px;
+          color: $white;
+          position: relative;
+          z-index: 2;
+          transition: all 0.4s ease;
+        }
+
         &.total-events {
           background: linear-gradient(135deg, $primary-color 0%, $primary-dark 100%);
+
+          &::before {
+            background: linear-gradient(135deg, $primary-color, $primary-dark);
+          }
         }
 
         &.published {
           background: linear-gradient(135deg, $secondary-color 0%, $secondary-dark 100%);
+
+          &::before {
+            background: linear-gradient(135deg, $secondary-color, $secondary-dark);
+          }
         }
 
         &.draft {
           background: linear-gradient(135deg, $warning-color 0%, $warning-dark 100%);
+
+          &::before {
+            background: linear-gradient(135deg, $warning-color, $warning-dark);
+          }
         }
 
         &.today {
           background: linear-gradient(135deg, $accent-color 0%, $accent-dark 100%);
+
+          &::before {
+            background: linear-gradient(135deg, $accent-color, $accent-dark);
+          }
         }
-
-        mat-icon {
-          transform: scale(1.1);
-        }
       }
 
-      .stat-value {
-        transform: scale(1.05);
-        color: $primary-color;
-      }
-
-      .stat-label {
-        color: $primary-color;
-        font-weight: 600;
-      }
-    }
-
-    .stat-icon {
-      width: 60px;
-      height: 60px;
-      border-radius: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 20px;
-      transition: all 0.4s ease;
-      position: relative;
-      z-index: 2;
-      overflow: hidden;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-
-      &::before {
-        content: '';
-        position: absolute;
-        inset: -4px;
-        border-radius: 18px;
-        filter: blur(8px);
-        opacity: 0.3;
-        transition: all 0.4s ease;
-        z-index: -1;
-      }
-
-      mat-icon {
-        font-size: 28px;
-        width: 28px;
-        height: 28px;
-        color: $white;
+      .stat-details {
         position: relative;
         z-index: 2;
-        transition: all 0.4s ease;
-      }
 
-      &.total-events {
-        background: linear-gradient(135deg, $primary-color 0%, $primary-dark 100%);
-
-        &::before {
-          background: linear-gradient(135deg, $primary-color, $primary-dark);
+        .stat-value {
+          font-size: 32px;
+          font-weight: 800;
+          color: $dark-900;
+          margin: 0 0 4px 0;
+          line-height: 1;
+          transition: all 0.3s ease;
         }
-      }
 
-      &.published {
-        background: linear-gradient(135deg, $secondary-color 0%, $secondary-dark 100%);
-
-        &::before {
-          background: linear-gradient(135deg, $secondary-color, $secondary-dark);
+        .stat-label {
+          font-size: 14px;
+          color: $dark-600;
+          margin: 0;
+          font-weight: 500;
+          transition: all 0.3s ease;
         }
-      }
-
-      &.draft {
-        background: linear-gradient(135deg, $warning-color 0%, $warning-dark 100%);
-
-        &::before {
-          background: linear-gradient(135deg, $warning-color, $warning-dark);
-        }
-      }
-
-      &.today {
-        background: linear-gradient(135deg, $accent-color 0%, $accent-dark 100%);
-
-        &::before {
-          background: linear-gradient(135deg, $accent-color, $accent-dark);
-        }
-      }
-    }
-
-    .stat-details {
-      position: relative;
-      z-index: 2;
-
-      .stat-value {
-        font-size: 32px;
-        font-weight: 800;
-        color: $dark-900;
-        margin: 0 0 4px 0;
-        line-height: 1;
-        transition: all 0.3s ease;
-      }
-
-      .stat-label {
-        font-size: 14px;
-        color: $dark-600;
-        margin: 0;
-        font-weight: 500;
-        transition: all 0.3s ease;
       }
     }
   }
-}
 }
 
 // Modern Dashboard Content
@@ -1170,24 +1171,24 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
         position: relative;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
         border: 1.5px solid $dark-100;
-        
+
         // REMOVED all hover color changes - only keeping bold text
         &:hover {
           transform: translateY(-2px);
           box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
           background: $white;
           border-color: $dark-200;
-          
+
           // Make title bolder on hover
           .event-title {
             font-weight: 900;
           }
-          
+
           // Make the entire row text slightly bolder
           .mat-cell {
             font-weight: 600;
           }
-          
+
           // Make index badge slightly more prominent
           .index-badge {
             font-weight: 900;
@@ -1314,7 +1315,7 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
                   font-size: 12px;
                   color: $dark-600;
                   font-weight: 500;
-                  
+
                   mat-icon {
                     font-size: 14px;
                     width: 14px;
@@ -1353,13 +1354,13 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
                   color: $accent-color;
                   border-color: rgba($accent-color, 0.15);
                 }
-                
+
                 &.completed {
                   background: rgba($secondary-color, 0.1);
                   color: $secondary-dark;
                   border-color: rgba($secondary-color, 0.2);
                 }
-                
+
                 &.cancelled {
                   background: rgba($danger-color, 0.08);
                   color: $danger-dark;
@@ -1641,9 +1642,13 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
           color: $dark-900;
           font-size: 15px;
           line-height: 1.3;
+
+          /* Standard (newer) */
+          display: box;
           display: -webkit-box;
-          -webkit-line-clamp: 2;
           -webkit-box-orient: vertical;
+          -webkit-line-clamp: 2;
+          line-clamp: 2;
           overflow: hidden;
         }
 
@@ -1652,9 +1657,12 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
           font-size: 13px;
           font-weight: 500;
           color: $dark-600;
+
+          display: box;
           display: -webkit-box;
-          -webkit-line-clamp: 2;
           -webkit-box-orient: vertical;
+          -webkit-line-clamp: 2;
+          line-clamp: 2;
           overflow: hidden;
         }
 
@@ -1876,6 +1884,7 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   0% {
     background-position: -200% 0;
   }
+
   100% {
     background-position: 200% 0;
   }
@@ -1978,8 +1987,13 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
 @keyframes shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 // Responsive Design

@@ -121,6 +121,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   totalEvents = 0;
   scheduledEvents = 0;
   draftEvents = 0;
+  completedEvents = 0;
   eventsThisWeek = 0;
   pendingApprovals = 0;
 
@@ -290,6 +291,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.totalEvents = summary.totalEvents;
     this.scheduledEvents = summary.scheduledCount;
     this.draftEvents = summary.draftCount;
+    this.completedEvents = summary.completedCount;
     this.pendingApprovalsCount = summary.pendingApprovalsCount;
   }
 
@@ -315,7 +317,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       total: this.masterEvents.length,
       filtered: this.filteredEvents.length,
       paginated: this.paginatedEvents.length,
-      stats: { total: this.totalEvents, scheduled: this.scheduledEvents, draft: this.draftEvents }
+      stats: { total: this.totalEvents, scheduled: this.scheduledEvents, draft: this.draftEvents, completed: this.completedEvents }
     });
   }
 
@@ -359,6 +361,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.scheduledEvents = this.masterEvents.filter(e =>
       e.status === 'Scheduled' ).length;
     this.draftEvents = this.masterEvents.filter(e => e.status === 'Draft').length;
+    this.completedEvents = this.masterEvents.filter(e => e.status === 'Completed').length;
     this.updateEventsThisWeek();
   }
 
@@ -425,6 +428,21 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Activate a specific tab and scroll to the table section
+   */
+  onStatCardClick(index: number): void {
+    this.onTabChange(index);
+    this.scrollToTable();
+  }
+
+  private scrollToTable(): void {
+    const tableElement = document.querySelector('.table-section');
+    if (tableElement) {
+      tableElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+
   // ==================== FILTERING ====================
   // CRITICAL: All filter methods MUST:
   // 1. Start from masterTableEvents (never from filteredEvents)
@@ -460,18 +478,16 @@ export class DashboardComponent implements OnInit, OnDestroy {
     console.log('🔍 Applying filters - Tab:', this.selectedTabIndex, 'Search:', this.searchTerm);
     console.log('📊 Master count:', this.masterTableEvents.length);
 
-    // Apply tab filter
+    // Apply tab filter based on HTML order (0: ALL, 1: Draft, 2: Scheduled, 3: Completed)
     switch (this.selectedTabIndex) {
-      case 1: // Published
-        filtered = filtered.filter(e =>
-          e.status === 'Scheduled'
-        );
-        break;
-      case 2: // Draft
+      case 1: // Draft
         filtered = filtered.filter(e => e.status === 'Draft');
         break;
-      case 3: // Pending
-        filtered = filtered.filter(e => e.status === 'Pending');
+      case 2: // Scheduled
+        filtered = filtered.filter(e => e.status === 'Scheduled');
+        break;
+      case 3: // Completed
+        filtered = filtered.filter(e => e.status === 'Completed');
         break;
       // case 0: ALL - no filter needed
     }
