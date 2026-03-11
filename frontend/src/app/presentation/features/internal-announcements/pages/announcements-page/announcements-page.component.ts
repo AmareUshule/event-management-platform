@@ -70,16 +70,20 @@ export class AnnouncementsPageComponent implements OnInit, OnDestroy {
   }
 
   loadAnnouncements(): void {
+    this.isLoading = true;
+    this.cdr.detectChanges();
+    
     setTimeout(() => {
-      this.isLoading = true;
       this.loadPublished();
       
-      this.loadDrafts();
-      this.loadRejected();
+      if (this.canCreate) {
+        this.loadDrafts();
+        this.loadRejected();
+      }
+      
       if (this.canPublish) {
         this.loadPending();
       }
-      this.cdr.detectChanges();
     });
   }
 

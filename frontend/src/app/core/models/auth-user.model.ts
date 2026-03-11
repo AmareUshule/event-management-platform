@@ -21,6 +21,7 @@ export interface AuthUser {
   fullName: string;
   email: string;
   departmentId: number;
+  departmentGuid: string;
   departmentName: string;
   roles: string[];
   // ... other properties
