@@ -12,5 +12,6 @@ namespace EEP.EventManagement.Api.Application.Features.Auth.DTOs
         public string Role { get; set; } = null!;
         public string EmployeeId { get; set; } = null!;
         public Guid? DepartmentId { get; set; }
+        public string? DepartmentName { get; set; }
     }
 }

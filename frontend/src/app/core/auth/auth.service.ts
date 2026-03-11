@@ -23,6 +23,7 @@ export interface BackendAuthResponse {
   role: string;
   employeeId: string;
   departmentId: string;
+  departmentName: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -173,7 +174,8 @@ export class AuthService {
     // Allow if they have the specific permission claim from backend OR match the hardcoded department ID
     return this.isManager() && (
       user?.permissions?.includes('IsCommunicationManager') || 
-      user?.departmentId === DEPARTMENTS.COMMUNICATION
+      user?.departmentId === DEPARTMENTS.COMMUNICATION ||
+      user?.departmentName === 'Communication'
     );
   }
 
@@ -255,7 +257,7 @@ export class AuthService {
 
   isInCommunicationDepartment(): boolean {
     const user = this.getCurrentUser();
-    return user?.departmentId === DEPARTMENTS.COMMUNICATION;
+    return user?.departmentId === DEPARTMENTS.COMMUNICATION || user?.departmentName === 'Communication';
   }
 
   isInDepartment(departmentId: number): boolean {
@@ -339,7 +341,7 @@ export class AuthService {
       email: response.email,
       departmentId: departmentId,
       departmentGuid: response.departmentId,
-      departmentName: this.getDepartmentName(departmentId),
+      departmentName: response.departmentName || this.getDepartmentName(departmentId),
       roles: [mappedRole]
     };
   }
@@ -417,6 +419,13 @@ export class AuthService {
         }
         
         user.permissions = permissions;
+        
+        // Extract Department claim if available
+        const departmentClaim = payload['Department'];
+        if (departmentClaim) {
+          user.departmentName = departmentClaim;
+        }
+        
         console.log('Permissions extracted from token:', permissions);
       }
     } catch (e) {

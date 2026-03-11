@@ -44,13 +44,20 @@ namespace EEP.EventManagement.Api.Application.Features.Auth.Handlers
             var roles = await _userManager.GetRolesAsync(user);
             var claims = new List<System.Security.Claims.Claim>();
 
-            // Add IsCommunicationManager claim if user is a Manager in the Communication department
-            if (roles.Contains("Manager") && user.DepartmentId.HasValue)
+            string? departmentName = null;
+            if (user.DepartmentId.HasValue)
             {
                 var department = await _departmentRepository.GetByIdAsync(user.DepartmentId.Value);
-                if (department != null && department.Name == "Communication")
+                if (department != null)
                 {
-                    claims.Add(new System.Security.Claims.Claim("Permission", "IsCommunicationManager"));
+                    departmentName = department.Name;
+                    claims.Add(new System.Security.Claims.Claim("Department", departmentName));
+
+                    // Add IsCommunicationManager claim if user is a Manager in the Communication department
+                    if (roles.Contains("Manager") && departmentName == "Communication")
+                    {
+                        claims.Add(new System.Security.Claims.Claim("Permission", "IsCommunicationManager"));
+                    }
                 }
             }
 
@@ -65,7 +72,8 @@ namespace EEP.EventManagement.Api.Application.Features.Auth.Handlers
                 Email = user.Email!,
                 Role = roles.FirstOrDefault() ?? string.Empty,
                 EmployeeId = user.EmployeeId,
-                DepartmentId = user.DepartmentId
+                DepartmentId = user.DepartmentId,
+                DepartmentName = departmentName
             };
         }
     }

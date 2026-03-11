@@ -139,6 +139,20 @@ $danger-color: #ef4444;
             width: 18px;
             height: 18px;
           }
+
+          &.external-link {
+            text-decoration: none;
+            position: relative;
+            
+            .external-icon {
+              font-size: 12px;
+              width: 12px;
+              height: 12px;
+              margin-left: -4px;
+              margin-top: -8px;
+              opacity: 0.6;
+            }
+          }
         }
       }
     }
@@ -335,6 +349,18 @@ $danger-color: #ef4444;
           font-size: 20px;
           width: 20px;
           height: 20px;
+        }
+
+        &.external-link {
+          text-decoration: none;
+          
+          .external-icon-sm {
+            font-size: 14px;
+            width: 14px;
+            height: 14px;
+            margin-left: 4px;
+            opacity: 0.6;
+          }
         }
       }
     }

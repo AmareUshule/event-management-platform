@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
@@ -29,6 +29,7 @@ export class HeaderComponent implements OnInit {
   private authService = inject(AuthService);
   private notificationService = inject(NotificationService);
   private router = inject(Router);
+  private cdr = inject(ChangeDetectorRef);
 
   user: AuthUser | null = null;
   isMobileMenuOpen = false;
@@ -47,12 +48,14 @@ export class HeaderComponent implements OnInit {
       next: (data) => {
         this.notifications = data;
         this.isLoadingNotifications = false;
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Failed to load notifications from backend:', err);
         // Fallback to mock data if backend fails
         this.notifications = this.getMockNotifications();
         this.isLoadingNotifications = false;
+        this.cdr.detectChanges();
       }
     });
   }
@@ -118,6 +121,10 @@ export class HeaderComponent implements OnInit {
 
   isAdmin(): boolean {
     return this.authService.isAdmin();
+  }
+
+  isInCommunicationDepartment(): boolean {
+    return this.authService.isInCommunicationDepartment();
   }
 
   toggleMobileMenu(): void {
