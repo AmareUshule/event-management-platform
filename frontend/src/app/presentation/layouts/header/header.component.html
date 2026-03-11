@@ -21,7 +21,7 @@
           <mat-icon>announcement</mat-icon>
           <span>Internal Announcements</span>
         </button>
-        <button class="nav-tab">
+        <button class="nav-tab" routerLink="/calendar" [routerLinkActive]="['active']">
           <mat-icon>calendar_month</mat-icon>
           <span>Calendar</span>
         </button>
@@ -156,7 +156,7 @@
         <mat-icon>announcement</mat-icon>
         <span>Internal Announcements</span>
       </button>
-      <button class="mobile-nav-item" (click)="toggleMobileMenu()">
+      <button class="mobile-nav-item" routerLink="/calendar" [routerLinkActive]="['active']" (click)="toggleMobileMenu()">
         <mat-icon>calendar_month</mat-icon>
         <span>Calendar</span>
       </button>

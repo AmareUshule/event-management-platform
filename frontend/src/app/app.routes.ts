@@ -60,6 +60,13 @@ export const appRoutes: Routes = [
       .then(m => m.ProfilePageComponent),
     canActivate: [authGuard]
   },
+  
+  {
+    path: 'calendar',
+    loadComponent: () => import('./presentation/features/calendar/pages/calendar-page/calendar-page.component')
+      .then(m => m.CalendarPageComponent),
+    canActivate: [authGuard]
+  },
 
   { path: '**', redirectTo: '' }
 ];
