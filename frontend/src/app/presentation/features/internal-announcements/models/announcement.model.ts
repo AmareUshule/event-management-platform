@@ -5,6 +5,15 @@ export interface Announcement {
   status: string; // 'Draft' | 'PendingApproval' | 'Rejected' | 'Published'
   type: string; // 'General' | 'JobOpening'
   deadline?: string;
+  requirements?: string;
+  experience?: string;
+  training?: string;
+  certificate?: string;
+  requiredNumber?: number;
+  otherOptionalRequirements?: string;
+  grade?: string;
+  workPlace?: string;
+  jobCode?: string;
   department?: {
     id: string;
     name: string;
@@ -38,6 +47,15 @@ export interface CreateAnnouncementDto {
   type: string;
   deadline?: string;
   departmentId?: string;
+  requirements?: string;
+  experience?: string;
+  training?: string;
+  certificate?: string;
+  requiredNumber?: number;
+  otherOptionalRequirements?: string;
+  grade?: string;
+  workPlace?: string;
+  jobCode?: string;
   image?: File;
 }
 
@@ -47,5 +65,14 @@ export interface UpdateAnnouncementDto {
   type: string;
   deadline?: string;
   departmentId?: string;
+  requirements?: string;
+  experience?: string;
+  training?: string;
+  certificate?: string;
+  requiredNumber?: number;
+  otherOptionalRequirements?: string;
+  grade?: string;
+  workPlace?: string;
+  jobCode?: string;
   image?: File;
 }

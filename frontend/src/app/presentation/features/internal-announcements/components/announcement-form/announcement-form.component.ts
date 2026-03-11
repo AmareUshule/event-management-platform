@@ -42,7 +42,7 @@ export class AnnouncementFormComponent implements OnInit {
   private departmentService = inject(DepartmentService);
 
   @Input() announcement: Announcement | null = null;
-  @Input() isLoading: boolean = false;
+  @Input() isLoading = false;
   
   @Output() submitForm = new EventEmitter<CreateAnnouncementDto | UpdateAnnouncementDto>();
   @Output() cancel = new EventEmitter<void>();
@@ -62,7 +62,16 @@ export class AnnouncementFormComponent implements OnInit {
     content: ['', [Validators.required]],
     type: ['General', [Validators.required]],
     departmentId: [null, [Validators.required]],
-    deadline: [null]
+    deadline: [null],
+    requirements: [''],
+    experience: [''],
+    training: [''],
+    certificate: [''],
+    requiredNumber: [null],
+    otherOptionalRequirements: [''],
+    grade: [''],
+    workPlace: [''],
+    jobCode: ['']
   });
 
   ngOnInit(): void {
@@ -74,7 +83,16 @@ export class AnnouncementFormComponent implements OnInit {
         content: this.announcement.content,
         type: this.announcement.type,
         departmentId: this.announcement.department?.id,
-        deadline: this.announcement.deadline
+        deadline: this.announcement.deadline,
+        requirements: this.announcement.requirements,
+        experience: this.announcement.experience,
+        training: this.announcement.training,
+        certificate: this.announcement.certificate,
+        requiredNumber: this.announcement.requiredNumber,
+        otherOptionalRequirements: this.announcement.otherOptionalRequirements,
+        grade: this.announcement.grade,
+        workPlace: this.announcement.workPlace,
+        jobCode: this.announcement.jobCode
       });
     } else {
       // Default to user's department

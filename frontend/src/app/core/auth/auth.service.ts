@@ -170,7 +170,11 @@ export class AuthService {
 
   isCommunicationManager(): boolean {
     const user = this.getCurrentUser();
-    return this.isManager() && user?.departmentId === DEPARTMENTS.COMMUNICATION;
+    // Allow if they have the specific permission claim from backend OR match the hardcoded department ID
+    return this.isManager() && (
+      user?.permissions?.includes('IsCommunicationManager') || 
+      user?.departmentId === DEPARTMENTS.COMMUNICATION
+    );
   }
 
   isDepartmentManager(): boolean {
@@ -393,16 +397,45 @@ export class AuthService {
     this.storage.setItem(this.TOKEN_KEY, response.token);
 
     const user = this.mapBackendResponseToAuthUser(response);
+    
+    // Extract permissions from JWT payload
+    try {
+      const parts = response.token.split('.');
+      if (parts.length === 3) {
+        const payload = JSON.parse(atob(parts[1]));
+        
+        // ASP.NET Core often maps claims like "Permission" to a specific key
+        // or keeps them as is if they are not standard JWT claims.
+        const permissions: string[] = [];
+        
+        // Handle single or multiple "Permission" claims
+        const permissionClaim = payload['Permission'];
+        if (typeof permissionClaim === 'string') {
+          permissions.push(permissionClaim);
+        } else if (Array.isArray(permissionClaim)) {
+          permissions.push(...permissionClaim);
+        }
+        
+        user.permissions = permissions;
+        console.log('Permissions extracted from token:', permissions);
+      }
+    } catch (e) {
+      console.error('Error parsing token for permissions:', e);
+    }
+
     this.storage.setItem(this.USER_KEY, JSON.stringify(user));
 
     try {
-      const tokenPayload = JSON.parse(atob(response.token.split('.')[1]));
-      if (tokenPayload.exp) {
-        const expiryTime = tokenPayload.exp * 1000;
-        this.storage.setItem(this.TOKEN_EXPIRY_KEY, expiryTime.toString());
-      } else {
-        const expiryTime = Date.now() + (24 * 60 * 60 * 1000);
-        this.storage.setItem(this.TOKEN_EXPIRY_KEY, expiryTime.toString());
+      const parts = response.token.split('.');
+      if (parts.length === 3) {
+        const tokenPayload = JSON.parse(atob(parts[1]));
+        if (tokenPayload.exp) {
+          const expiryTime = tokenPayload.exp * 1000;
+          this.storage.setItem(this.TOKEN_EXPIRY_KEY, expiryTime.toString());
+        } else {
+          const expiryTime = Date.now() + (24 * 60 * 60 * 1000);
+          this.storage.setItem(this.TOKEN_EXPIRY_KEY, expiryTime.toString());
+        }
       }
     } catch (e) {
       const expiryTime = Date.now() + (24 * 60 * 60 * 1000);

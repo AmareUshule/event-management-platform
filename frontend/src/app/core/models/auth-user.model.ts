@@ -24,5 +24,5 @@ export interface AuthUser {
   departmentGuid: string;
   departmentName: string;
   roles: string[];
-  // ... other properties
+  permissions?: string[];
 }

@@ -17,7 +17,7 @@ namespace EEP.EventManagement.Api.Infrastructure.Security.JWT
             _settings = settings;
         }
 
-        public string GenerateToken(ApplicationUser user, IList<string> roles)
+        public string GenerateToken(ApplicationUser user, IList<string> roles, IEnumerable<Claim>? additionalClaims = null)
         {
             var claims = new List<Claim>
             {
@@ -28,6 +28,11 @@ namespace EEP.EventManagement.Api.Infrastructure.Security.JWT
             foreach (var role in roles)
             {
                 claims.Add(new Claim(ClaimTypes.Role, role));
+            }
+
+            if (additionalClaims != null)
+            {
+                claims.AddRange(additionalClaims);
             }
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_settings.Secret));
