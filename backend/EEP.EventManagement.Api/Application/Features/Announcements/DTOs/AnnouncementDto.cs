@@ -12,6 +12,15 @@ namespace EEP.EventManagement.Api.Application.Features.Announcements.DTOs
         public string Status { get; set; } = string.Empty;
         public string Type { get; set; } = string.Empty;
         public DateTime? Deadline { get; set; }
+        public string? Requirements { get; set; }
+        public string? Experience { get; set; }
+        public string? Training { get; set; }
+        public string? Certificate { get; set; }
+        public int? RequiredNumber { get; set; }
+        public string? OtherOptionalRequirements { get; set; }
+        public string? Grade { get; set; }
+        public string? WorkPlace { get; set; }
+        public string? JobCode { get; set; }
         public SimplifiedDepartmentDto? Department { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }

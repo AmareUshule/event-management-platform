@@ -112,6 +112,37 @@
       }
     }
 
+    .job-details-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 24px;
+      margin: 24px 32px 0;
+      padding: 24px;
+      background: #f8fafc;
+      border-radius: 12px;
+      border-left: 4px solid #DD1407;
+
+      .detail-item {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+
+        .label {
+          font-size: 12px;
+          font-weight: 700;
+          color: #64748b;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+
+        .value {
+          font-size: 16px;
+          font-weight: 600;
+          color: #1e293b;
+        }
+      }
+    }
+
     .detail-body {
       padding: 32px;
 
@@ -288,6 +319,42 @@
           color: #334155;
           white-space: pre-wrap;
           margin: 0;
+        }
+      }
+
+      .requirements-section {
+        margin-bottom: 40px;
+
+        h3 {
+          font-size: 20px;
+          font-weight: 700;
+          color: #1e293b;
+          margin-bottom: 24px;
+          padding-bottom: 8px;
+          border-bottom: 2px solid #f1f5f9;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+
+        .requirement-block {
+          margin-bottom: 24px;
+
+          h4 {
+            font-size: 13px;
+            font-weight: 700;
+            color: #64748b;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+          }
+
+          p {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #334155;
+            white-space: pre-wrap;
+            margin: 0;
+          }
         }
       }
     }

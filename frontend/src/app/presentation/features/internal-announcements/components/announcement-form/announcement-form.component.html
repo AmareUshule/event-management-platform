@@ -1,46 +1,96 @@
 <form [formGroup]="form" (ngSubmit)="onSubmit()" class="announcement-form">
   <mat-progress-bar *ngIf="isLoading" mode="indeterminate"></mat-progress-bar>
   
-  <div class="form-row">
-    <mat-form-field appearance="outline" class="flex-1">
-      <mat-label>Announcement Type</mat-label>
-      <mat-select formControlName="type">
-        <mat-option *ngFor="let type of announcementTypes" [value]="type.value">
-          {{ type.label }}
-        </mat-option>
-      </mat-select>
+  <div class="form-section no-border">
+    <h3>Basic Information</h3>
+    <div class="form-row">
+      <mat-form-field appearance="outline" class="flex-1">
+        <mat-label>Announcement Type</mat-label>
+        <mat-select formControlName="type">
+          <mat-option *ngFor="let type of announcementTypes" [value]="type.value">
+            {{ type.label }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+      
+      <mat-form-field appearance="outline" class="flex-1">
+        <mat-label>Target Department</mat-label>
+        <mat-select formControlName="departmentId">
+          <mat-option *ngFor="let dept of departments" [value]="dept.id">
+            {{ dept.name }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Title</mat-label>
+      <input matInput formControlName="title" placeholder="e.g. Senior Backend Developer Opportunity">
+      <mat-error *ngIf="form.get('title')?.hasError('required')">Title is required</mat-error>
+      <mat-error *ngIf="form.get('title')?.hasError('maxlength')">Title cannot exceed 200 characters</mat-error>
     </mat-form-field>
 
-    <mat-form-field appearance="outline" class="flex-1">
-      <mat-label>Target Department</mat-label>
-      <mat-select formControlName="departmentId">
-        <mat-option *ngFor="let dept of departments" [value]="dept.id">
-          {{ dept.name }}
-        </mat-option>
-      </mat-select>
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Content</mat-label>
+      <textarea matInput formControlName="content" rows="10" placeholder="Write announcement content here..."></textarea>
+      <mat-error *ngIf="form.get('content')?.hasError('required')">Content is required</mat-error>
     </mat-form-field>
   </div>
 
-  <mat-form-field appearance="outline" class="full-width">
-    <mat-label>Title</mat-label>
-    <input matInput formControlName="title" placeholder="e.g. Senior Backend Developer Opportunity">
-    <mat-error *ngIf="form.get('title')?.hasError('required')">Title is required</mat-error>
-    <mat-error *ngIf="form.get('title')?.hasError('maxlength')">Title cannot exceed 200 characters</mat-error>
-  </mat-form-field>
+  <div class="form-section" *ngIf="isJobOpening">
+    <h3>Job Information</h3>
+    <div class="form-row">
+      <mat-form-field appearance="outline" class="flex-1">
+        <mat-label>Job Code</mat-label>
+        <input matInput formControlName="jobCode" placeholder="e.g. ENG-2026-02">
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="flex-1">
+        <mat-label>Grade</mat-label>
+        <input matInput formControlName="grade" placeholder="e.g. PR2">
+      </mat-form-field>
+    </div>
+    <div class="form-row">
+      <mat-form-field appearance="outline" class="flex-1">
+        <mat-label>Work Place</mat-label>
+        <input matInput formControlName="workPlace" placeholder="e.g. Addis Ababa">
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="flex-1">
+        <mat-label>Required Number</mat-label>
+        <input matInput type="number" formControlName="requiredNumber" placeholder="e.g. 3">
+      </mat-form-field>
+    </div>
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Application Deadline</mat-label>
+      <input matInput [matDatepicker]="picker" formControlName="deadline">
+      <mat-hint>MM/DD/YYYY</mat-hint>
+      <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+      <mat-datepicker #picker></mat-datepicker>
+    </mat-form-field>
+  </div>
 
-  <mat-form-field appearance="outline" class="full-width" *ngIf="isJobOpening">
-    <mat-label>Application Deadline</mat-label>
-    <input matInput [matDatepicker]="picker" formControlName="deadline">
-    <mat-hint>MM/DD/YYYY</mat-hint>
-    <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-    <mat-datepicker #picker></mat-datepicker>
-  </mat-form-field>
-
-  <mat-form-field appearance="outline" class="full-width">
-    <mat-label>Content</mat-label>
-    <textarea matInput formControlName="content" rows="10" placeholder="Write announcement content here..."></textarea>
-    <mat-error *ngIf="form.get('content')?.hasError('required')">Content is required</mat-error>
-  </mat-form-field>
+  <div class="form-section" *ngIf="isJobOpening">
+    <h3>Requirements</h3>
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Requirements</mat-label>
+      <textarea matInput formControlName="requirements" rows="4" placeholder="List the job requirements..."></textarea>
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Experience</mat-label>
+      <textarea matInput formControlName="experience" rows="3" placeholder="Describe required experience..."></textarea>
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Training</mat-label>
+      <textarea matInput formControlName="training" rows="3" placeholder="Describe required training..."></textarea>
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Certificate</mat-label>
+      <textarea matInput formControlName="certificate" rows="3" placeholder="Describe required certificates..."></textarea>
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Other Optional Requirements</mat-label>
+      <textarea matInput formControlName="otherOptionalRequirements" rows="3" placeholder="List any other optional requirements..."></textarea>
+    </mat-form-field>
+  </div>
 
   <div class="image-upload-section">
     <h3>Announcement Cover Image</h3>

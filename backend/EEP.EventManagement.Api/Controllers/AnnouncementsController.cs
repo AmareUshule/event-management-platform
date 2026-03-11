@@ -56,12 +56,11 @@ namespace EEP.EventManagement.Api.Controllers
         public async Task<ActionResult<object>> GetDrafts([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
             var currentUserId = _userContext.GetUserId();
-            var isCommManager = (await _authorizationService.AuthorizeAsync(User, AuthorizationPolicies.IsCommunicationManager)).Succeeded;
 
             var query = new GetAnnouncementsPagedQuery 
             { 
                 Status = AnnouncementStatus.Draft,
-                CreatedById = isCommManager ? null : currentUserId,
+                CreatedById = currentUserId,
                 Page = page,
                 PageSize = pageSize
             };
@@ -88,12 +87,11 @@ namespace EEP.EventManagement.Api.Controllers
         public async Task<ActionResult<object>> GetRejected([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
             var currentUserId = _userContext.GetUserId();
-            var isCommManager = (await _authorizationService.AuthorizeAsync(User, AuthorizationPolicies.IsCommunicationManager)).Succeeded;
 
             var query = new GetAnnouncementsPagedQuery
             {
                 Status = AnnouncementStatus.Rejected,
-                CreatedById = isCommManager ? null : currentUserId,
+                CreatedById = currentUserId,
                 Page = page,
                 PageSize = pageSize
             };

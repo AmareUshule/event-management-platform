@@ -49,6 +49,25 @@
       <p>This internal opportunity is open until <strong>{{ announcement.deadline | date:'MMMM d, y' }}</strong>. Please review the details and images below carefully.</p>
     </div>
 
+    <div class="job-details-grid" *ngIf="announcement.type === 'JobOpening' && (announcement.jobCode || announcement.grade || announcement.workPlace || announcement.requiredNumber)">
+      <div class="detail-item" *ngIf="announcement.jobCode">
+        <span class="label">Job Code</span>
+        <span class="value">{{ announcement.jobCode }}</span>
+      </div>
+      <div class="detail-item" *ngIf="announcement.grade">
+        <span class="label">Grade</span>
+        <span class="value">{{ announcement.grade }}</span>
+      </div>
+      <div class="detail-item" *ngIf="announcement.workPlace">
+        <span class="label">Work Place</span>
+        <span class="value">{{ announcement.workPlace }}</span>
+      </div>
+      <div class="detail-item" *ngIf="announcement.requiredNumber">
+        <span class="label">Required Number</span>
+        <span class="value">{{ announcement.requiredNumber }}</span>
+      </div>
+    </div>
+
     <div class="detail-body">
       <div class="image-gallery" *ngIf="images.length > 0">
         <div class="image-tip">
@@ -88,6 +107,35 @@
               </button>
             </div>
           </div>
+        </div>
+      </div>
+
+      <div class="requirements-section" *ngIf="announcement.type === 'JobOpening' && (announcement.requirements || announcement.experience || announcement.training || announcement.certificate || announcement.otherOptionalRequirements)">
+        <h3>Job Details & Requirements</h3>
+        
+        <div class="requirement-block" *ngIf="announcement.requirements">
+          <h4>Key Requirements</h4>
+          <p>{{ announcement.requirements }}</p>
+        </div>
+        
+        <div class="requirement-block" *ngIf="announcement.experience">
+          <h4>Required Experience</h4>
+          <p>{{ announcement.experience }}</p>
+        </div>
+        
+        <div class="requirement-block" *ngIf="announcement.training">
+          <h4>Mandatory Training</h4>
+          <p>{{ announcement.training }}</p>
+        </div>
+        
+        <div class="requirement-block" *ngIf="announcement.certificate">
+          <h4>Professional Certifications</h4>
+          <p>{{ announcement.certificate }}</p>
+        </div>
+        
+        <div class="requirement-block" *ngIf="announcement.otherOptionalRequirements">
+          <h4>Other Information</h4>
+          <p>{{ announcement.otherOptionalRequirements }}</p>
         </div>
       </div>
 
