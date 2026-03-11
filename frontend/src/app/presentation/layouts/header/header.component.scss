@@ -139,6 +139,20 @@ $danger-color: #ef4444;
             width: 18px;
             height: 18px;
           }
+
+          &.external-link {
+            text-decoration: none;
+            position: relative;
+            
+            .external-icon {
+              font-size: 12px;
+              width: 12px;
+              height: 12px;
+              margin-left: -4px;
+              margin-top: -8px;
+              opacity: 0.6;
+            }
+          }
         }
       }
     }
@@ -336,6 +350,18 @@ $danger-color: #ef4444;
           width: 20px;
           height: 20px;
         }
+
+        &.external-link {
+          text-decoration: none;
+          
+          .external-icon-sm {
+            font-size: 14px;
+            width: 14px;
+            height: 14px;
+            margin-left: 4px;
+            opacity: 0.6;
+          }
+        }
       }
     }
   }
@@ -371,8 +397,26 @@ $danger-color: #ef4444;
 
     .menu-user-info {
       flex: 1;
-      .menu-user-name { font-weight: 600; font-size: 16px; color: $dark-900; }
-      .menu-user-email { font-size: 12px; color: $dark-500; }
+      .menu-user-name { font-weight: 700; font-size: 18px; color: $dark-900; margin-bottom: 4px; }
+      
+      .menu-user-dept { 
+        display: flex; 
+        align-items: center; 
+        gap: 6px; 
+        font-size: 13px; 
+        font-weight: 600; 
+        color: $primary-color; 
+        margin-bottom: 2px;
+
+        mat-icon {
+          font-size: 16px;
+          width: 16px;
+          height: 16px;
+          color: $primary-color;
+        }
+      }
+
+      .menu-user-email { font-size: 12px; color: $dark-500; margin-bottom: 8px; }
       .menu-user-role-badge { 
         display: inline-block;
         padding: 4px 10px;
