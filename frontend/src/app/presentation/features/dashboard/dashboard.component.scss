@@ -1271,26 +1271,7 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
             display: flex;
             align-items: center;
             gap: 16px;
-
-            .event-icon {
-              width: 52px;
-              height: 52px;
-              background: linear-gradient(135deg, $primary-color, $accent-color);
-              border-radius: 16px;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              transition: all 0.2s ease;
-              box-shadow: 0 6px 12px rgba($primary-color, 0.15);
-
-              mat-icon {
-                color: $white;
-                font-size: 26px;
-                width: 26px;
-                height: 26px;
-              }
-            }
-
+            
             .event-info {
               .event-title {
                 display: block;

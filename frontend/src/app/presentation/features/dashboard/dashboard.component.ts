@@ -94,13 +94,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
   latestAnnouncements: Announcement[] = [];     // Latest announcements (preview)
   isLoadingAnnouncements = false;
 
-  // ==================== FILTERED DATA (FOR DISPLAY - MODIFIED BY FILTERS ONLY) ====================
-  filteredEvents: TableEvent[] = [];             // All filtered events - UPDATED ONLY VIA applyFilters()
-  paginatedEvents: TableEvent[] = [];            // Current page of events for display
+  // ==== FILTERED DATA (FOR DISPLAY - MODIFIED BY FILTERS ONLY) =======
+  filteredEvents: TableEvent[] = [];              
+  paginatedEvents: TableEvent[] = [];            
 
   // ====== PAGINATION STATE =========
   currentPage = 0;
-  pageSize = 5;
+  pageSize = 10;
   totalPages = 0;
   pageSizeOptions: number[] = [5, 10, 25, 50];
 
