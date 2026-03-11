@@ -25,6 +25,11 @@
           <mat-icon>calendar_month</mat-icon>
           <span>Calendar</span>
         </button>
+        <a class="nav-tab external-link" href="https://communicationportal.val.run/" target="_blank" *ngIf="isAdmin() || isInCommunicationDepartment()">
+          <mat-icon>language</mat-icon>
+          <span>Communication Portal</span>
+          <mat-icon class="external-icon">open_in_new</mat-icon>
+        </a>
       </div>
     </div>
 
@@ -160,6 +165,11 @@
         <mat-icon>calendar_month</mat-icon>
         <span>Calendar</span>
       </button>
+      <a class="mobile-nav-item external-link" href="https://communicationportal.val.run/" target="_blank" *ngIf="isAdmin() || isInCommunicationDepartment()" (click)="toggleMobileMenu()">
+        <mat-icon>language</mat-icon>
+        <span>Communication Portal</span>
+        <mat-icon class="external-icon-sm">open_in_new</mat-icon>
+      </a>
     </div>
   </div>
 </div>
