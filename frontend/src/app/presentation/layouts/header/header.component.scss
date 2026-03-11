@@ -157,7 +157,7 @@ $danger-color: #ef4444;
           right: 4px;
           width: 8px;
           height: 8px;
-          background: #ef4444;
+          background: $primary-color; // EEP Brand Green
           border-radius: 50%;
           border: 2px solid $white;
         }
@@ -396,5 +396,159 @@ $danger-color: #ef4444;
   .logout-menu-item {
     color: $danger-color !important;
     .mat-icon { color: $danger-color !important; }
+  }
+}
+
+::ng-deep .notification-menu {
+  width: 380px !important;
+  max-width: 380px !important;
+  border-radius: 24px !important;
+  margin-top: 12px !important;
+  background: #ffffff !important; // Explicitly solid white
+  box-shadow: 0 25px 60px rgba(15, 23, 42, 0.25) !important; // Stronger, deeper shadow for elevation
+  border: 1px solid rgba(30, 89, 12, 0.15) !important; // Brand-colored subtle border
+  overflow: hidden !important;
+  z-index: 1000 !important;
+
+  .notification-header {
+    padding: 20px 24px;
+    background: #f8fafc;
+    border-bottom: 2px solid #f1f5f9; // Thicker separator
+
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+
+      h3 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 700;
+        color: $dark-900;
+      }
+
+      .unread-count {
+        font-size: 11px;
+        font-weight: 700;
+        background: $primary-color;
+        color: $white;
+        padding: 2px 8px;
+        border-radius: 12px;
+      }
+    }
+
+    .mark-all-btn {
+      background: transparent;
+      border: none;
+      color: $primary-color;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 0;
+      
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+
+  .notification-list {
+    max-height: 400px;
+    overflow-y: auto;
+
+    .empty-notifications {
+      padding: 40px 20px;
+      text-align: center;
+      color: $dark-400;
+
+      mat-icon {
+        font-size: 48px;
+        width: 48px;
+        height: 48px;
+        margin-bottom: 12px;
+      }
+      p { margin: 0; font-weight: 500; }
+    }
+
+    .notification-item {
+      padding: 16px 20px;
+      display: flex;
+      gap: 14px;
+      cursor: pointer;
+      position: relative;
+      transition: background 0.2s ease;
+      border-bottom: 1px solid $dark-50;
+
+      &:hover {
+        background: $dark-50;
+      }
+
+      &.unread {
+        background: rgba($primary-color, 0.03);
+        
+        &:hover {
+          background: rgba($primary-color, 0.06);
+        }
+      }
+
+      .status-indicator {
+        width: 4px;
+        height: 40px;
+        border-radius: 4px;
+        flex-shrink: 0;
+        background: $primary-color; // Unified EEP Brand Green
+      }
+
+      .notification-content {
+        flex: 1;
+        min-width: 0;
+
+        .notification-title {
+          font-weight: 700;
+          font-size: 14px;
+          color: $dark-900;
+          margin-bottom: 4px;
+        }
+
+        .notification-message {
+          font-size: 13px;
+          color: $dark-600;
+          line-height: 1.4;
+          margin-bottom: 6px;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+
+        .notification-time {
+          font-size: 11px;
+          color: $dark-400;
+          font-weight: 600;
+        }
+      }
+
+      .unread-dot {
+        width: 8px;
+        height: 8px;
+        background: $primary-color;
+        border-radius: 50%;
+        margin-top: 4px;
+        flex-shrink: 0;
+      }
+    }
+  }
+
+  .notification-footer {
+    padding: 8px;
+    text-align: center;
+    background: $white;
+
+    button {
+      width: 100%;
+      font-weight: 700;
+      font-size: 13px;
+    }
   }
 }

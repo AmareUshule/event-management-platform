@@ -30,11 +30,51 @@
 
     <div class="nav-right">
       <div class="notification-wrapper">
-        <button mat-icon-button class="nav-icon-btn" matTooltip="Notifications">
+        <button mat-icon-button class="nav-icon-btn" matTooltip="Notifications" [matMenuTriggerFor]="notificationMenu">
           <mat-icon>notifications</mat-icon>
-          <div class="notification-badge"></div>
+          <div class="notification-badge" *ngIf="unreadCount > 0"></div>
         </button>
       </div>
+
+      <!-- Notification Menu -->
+      <mat-menu #notificationMenu="matMenu" class="notification-menu" xPosition="before" yPosition="below">
+        <div class="notification-header" (click)="$event.stopPropagation()">
+          <div class="header-top">
+            <h3>Notifications</h3>
+            <span class="unread-count" *ngIf="unreadCount > 0">{{ unreadCount }} New</span>
+          </div>
+          <button class="mark-all-btn" (click)="markAllAsRead()">Mark all as read</button>
+        </div>
+
+        <mat-divider></mat-divider>
+
+        <div class="notification-list" (click)="$event.stopPropagation()">
+          <div *ngIf="notifications.length === 0" class="empty-notifications">
+            <mat-icon>notifications_off</mat-icon>
+            <p>No new notifications</p>
+          </div>
+
+          <div 
+            *ngFor="let n of notifications" 
+            class="notification-item" 
+            [class.unread]="!n.isRead"
+            (click)="markAsRead(n.id)">
+            <div class="status-indicator" [class]="n.type"></div>
+            <div class="notification-content">
+              <div class="notification-title">{{ n.title }}</div>
+              <div class="notification-message">{{ n.message }}</div>
+              <div class="notification-time">{{ n.time }}</div>
+            </div>
+            <div class="unread-dot" *ngIf="!n.isRead"></div>
+          </div>
+        </div>
+
+        <mat-divider></mat-divider>
+
+        <div class="notification-footer" (click)="$event.stopPropagation()">
+          <button mat-button color="primary">View All Notifications</button>
+        </div>
+      </mat-menu>
 
       <!-- User Profile Menu -->
       <div class="user-profile" [matMenuTriggerFor]="userMenu">

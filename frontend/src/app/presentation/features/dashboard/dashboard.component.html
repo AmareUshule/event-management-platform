@@ -416,15 +416,6 @@
               <button
                 class="quick-action-btn"
                 *ngIf="authService.isAdmin() || authService.isManager()"
-                (click)="generateReport()"
-                [disabled]="isLoadingReport">
-                <mat-icon *ngIf="!isLoadingReport">add_chart</mat-icon>
-                <mat-spinner *ngIf="isLoadingReport" diameter="18"></mat-spinner>
-                {{ isLoadingReport ? 'Generating...' : 'Generate Report' }}
-              </button>
-              <button
-                class="quick-action-btn"
-                *ngIf="authService.isAdmin() || authService.isManager()"
                 (click)="exportData()">
                 <mat-icon>download</mat-icon>
                 Export Data
