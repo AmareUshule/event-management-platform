@@ -1,84 +1,82 @@
 <div class="auth-shell">
   <div class="auth-panel">
-    <div class="auth-container">
-      <mat-card class="auth-card" appearance="outlined">
-
+    <mat-card class="auth-card" appearance="outlined">
+      <mat-card-content>
         <!-- Header -->
         <div class="card-header">
-          <div class="header-logo">
-
-            <div class="header-logo-icon hoverable">
-              <img src="assets/images/eep_logo.jpg" alt="EEP Logo" class="eep-logo">
+          <div class="header-brand">
+            <div class="logo-container">
+              <img src="assets/images/eep_logo.jpg" alt="EEP Logo">
             </div>
-            <span class="header-logo-text">EEP Event Portal</span>
+            <span class="brand-text">EEP Event Portal</span>
           </div>
-          <div class="header-content">
-            <h1 class="auth-title">Welcome Back</h1>
-            <p class="auth-subtitle">
-              Sign in to access the Event Management System
-            </p>
-          </div>
-        </div>
 
-        <mat-divider class="form-divider"></mat-divider>
+          <h1 class="welcome-title">Welcome Back</h1>
+          <p class="welcome-subtitle">
+            Sign in to access the Event Management and Internal Announcement System
+          </p>
+        </div>
 
         <!-- Login Form -->
-        <div class="card-content-wrapper">
-          <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="auth-form">
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="auth-form">
 
-            <!-- Employee Id -->
-            <mat-form-field appearance="fill" class="form-field">
-              <mat-label>Employee ID</mat-label>
-              <mat-icon matPrefix>badge</mat-icon>
-              <input matInput formControlName="employeeId" placeholder="Enter your employee ID" autocomplete="username"
-                [attr.aria-describedby]="loginForm.get('employeeId')?.invalid ? 'employeeId-error' : null">
+          <!-- Employee Id -->
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Employee ID</mat-label>
+            <mat-icon matPrefix>badge</mat-icon>
+            <input matInput formControlName="employeeId" placeholder="Enter your Employee ID" autocomplete="username"
+              [attr.aria-describedby]="loginForm.get('employeeId')?.invalid ? 'employeeId-error' : null">
 
-              <mat-error *ngIf="loginForm.get('employeeId')?.hasError('required')" id="employeeId-error">
-                Employee ID is required
-              </mat-error>
-              <mat-error *ngIf="loginForm.get('employeeId')?.hasError('minlength')">
-                Employee ID must be at least 3 characters
-              </mat-error>
-            </mat-form-field>
+            <mat-error *ngIf="loginForm.get('employeeId')?.hasError('required')" id="employeeId-error">
+              Employee ID is required
+            </mat-error>
+            <mat-error *ngIf="loginForm.get('employeeId')?.hasError('minlength')">
+              Employee ID must be at least 3 characters
+            </mat-error>
+          </mat-form-field>
 
-            <!-- Password -->
-            <mat-form-field appearance="fill" class="form-field">
-              <mat-label>Password</mat-label>
-              <mat-icon matPrefix>lock</mat-icon>
-              <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="password"
-                placeholder="Enter your password" autocomplete="current-password"
-                [attr.aria-describedby]="loginForm.get('password')?.invalid ? 'password-error' : null">
-              <button mat-icon-button matSuffix type="button" (click)="hidePassword = !hidePassword"
-                [attr.aria-label]="hidePassword ? 'Show password' : 'Hide password'"
-                [attr.aria-pressed]="!hidePassword">
-                <mat-icon>
-                  {{ hidePassword ? 'visibility_off' : 'visibility' }}
-                </mat-icon>
-              </button>
-
-              <mat-error *ngIf="loginForm.get('password')?.hasError('required')" id="password-error">
-                Password is required
-              </mat-error>
-              <mat-error *ngIf="loginForm.get('password')?.hasError('minlength')">
-                Password must be at least 6 characters
-              </mat-error>
-            </mat-form-field>
-
-            <!-- Submit Button -->
-            <button mat-flat-button class="submit-btn" type="submit" [disabled]="loginForm.invalid || isLoading"
-              [attr.aria-busy]="isLoading">
-              <mat-icon *ngIf="!isLoading">login</mat-icon>
-              <mat-spinner diameter="20" *ngIf="isLoading"></mat-spinner>
-              <span>{{ isLoading ? 'Signing in...' : 'Sign In' }}</span>
+          <!-- Password -->
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Password</mat-label>
+            <mat-icon matPrefix>lock</mat-icon>
+            <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="password"
+              placeholder="Enter your password" autocomplete="current-password"
+              [attr.aria-describedby]="loginForm.get('password')?.invalid ? 'password-error' : null">
+            <button mat-icon-button matSuffix type="button" (click)="hidePassword = !hidePassword"
+              [attr.aria-label]="hidePassword ? 'Show password' : 'Hide password'"
+              [attr.aria-pressed]="!hidePassword">
+              <mat-icon>
+                {{ hidePassword ? 'visibility_off' : 'visibility' }}
+              </mat-icon>
             </button>
 
-          </form>
+            <mat-error *ngIf="loginForm.get('password')?.hasError('required')" id="password-error">
+              Password is required
+            </mat-error>
+            <mat-error *ngIf="loginForm.get('password')?.hasError('minlength')">
+              Password must be at least 6 characters
+            </mat-error>
+          </mat-form-field>
 
-          <!-- ...existing code... -->
+          <!-- Submit Button -->
+          <button mat-flat-button class="submit-btn" type="submit" [disabled]="loginForm.invalid || isLoading"
+            [attr.aria-busy]="isLoading">
+            <div class="btn-content">
+              <mat-spinner diameter="20" *ngIf="isLoading"></mat-spinner>
+              <mat-icon *ngIf="!isLoading">login</mat-icon>
+              <span>{{ isLoading ? 'Signing in...' : 'Sign In' }}</span>
+            </div>
+          </button>
 
-        </div>
+        </form>
+      </mat-card-content>
+    </mat-card>
 
-      </mat-card>
-    </div>
+    <!-- Footer -->
+    <footer class="auth-footer">
+      <p class="footer-text">
+        &copy; 2026 Ethiopian Electric Power <span class="divider">|</span> Corporate Communication
+      </p>
+    </footer>
   </div>
 </div>
