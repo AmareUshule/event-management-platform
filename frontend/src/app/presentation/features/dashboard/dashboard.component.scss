@@ -1136,19 +1136,30 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
       background: transparent;
 
       .mat-header-row {
-        height: 48px;
-        background: transparent;
+        height: 56px;
+        background: $dark-50; // Light background for headers to anchor columns
+        border-radius: 12px;
       }
 
       .mat-header-cell {
-        color: $dark-500;
-        font-size: 11px;
-        font-weight: 700;
+        color: $dark-900; 
+        font-size: 13px;
+        font-weight: 800;
         text-transform: uppercase;
-        letter-spacing: 1px;
+        letter-spacing: 1.5px;
         padding: 0 20px;
-        border-bottom: none;
-        background: transparent;
+        border-bottom: 2px solid $dark-200;
+
+        &.mat-column-actions {
+          text-align: center;
+          background: rgba($primary-color, 0.05); // Highlight the action header
+          border-left: 1px solid $dark-200;
+          border-radius: 0 12px 0 0;
+        }
+
+        &.mat-column-id {
+          border-radius: 12px 0 0 0;
+        }
 
         &.mat-column-id {
           @media (max-width: 640px) {
@@ -1239,16 +1250,70 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
             border-bottom-right-radius: 16px;
           }
 
-          &.mat-column-id {
-            @media (max-width: 640px) {
-              display: none;
-            }
+          // Action Zone Styling - Create a vertical 'dock' for actions
+          &.mat-column-actions {
+            background: rgba($primary-color, 0.03); // Very subtle tint to group actions
+            border-left: 1.5px solid $dark-100; // Vertical separation
+            padding: 8px;
+            width: 160px; // Increased width for multiple icons
+            text-align: center;
+            border-radius: 0 16px 16px 0;
+            transition: all 0.3s ease;
           }
 
-          &.mat-column-location,
-          &.mat-column-date {
-            @media (max-width: 600px) {
-              display: none;
+          .action-icons-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+
+            .icon-btn {
+              width: 36px;
+              height: 36px;
+              border-radius: 10px;
+              border: 1.5px solid $dark-200;
+              background: $white;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              cursor: pointer;
+              transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+              color: $dark-600;
+
+              mat-icon {
+                font-size: 18px;
+                width: 18px;
+                height: 18px;
+              }
+
+              &:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+              }
+
+              &.view:hover {
+                background: $primary-bg;
+                border-color: $primary-color;
+                color: $primary-color;
+              }
+
+              &.edit:hover {
+                background: #e0f2fe; // Light blue
+                border-color: #0ea5e9;
+                color: #0ea5e9;
+              }
+
+              &.publish:hover {
+                background: #f0fdf4; // Light emerald
+                border-color: #10b981;
+                color: #10b981;
+              }
+
+              &.delete:hover {
+                background: #fef2f2; // Light red
+                border-color: $danger-color;
+                color: $danger-color;
+              }
             }
           }
 
@@ -1368,29 +1433,37 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
           }
 
           .action-menu-btn {
-            width: 40px;
-            height: 40px;
-            border-radius: 12px;
-            border: 1.5px solid $dark-200;
-            background: $white;
-            color: $dark-600;
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            border: 2px solid $dark-200;
+            background: $dark-50; // Slightly off-white to stand out from white row
+            color: $dark-800;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             z-index: 10;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 
             &:hover {
-              background: $primary-bg;
+              background: $white;
               border-color: $primary-color;
+              color: $primary-color;
+              box-shadow: 0 4px 12px rgba($primary-color, 0.15);
+              transform: translateY(-1px);
+            }
+
+            &:active {
+              transform: translateY(0);
             }
 
             mat-icon {
-              font-size: 22px;
-              width: 22px;
-              height: 22px;
+              font-size: 24px;
+              width: 24px;
+              height: 24px;
             }
           }
         }
@@ -1398,6 +1471,8 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
         // Ensure actions column doesn't trigger row click
         .mat-column-actions {
           cursor: default;
+          width: 80px;
+          text-align: center;
         }
       }
 
