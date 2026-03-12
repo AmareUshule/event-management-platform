@@ -13,6 +13,8 @@ export interface ReportSummary {
   archivedCount: number;
   cancelledCount: number;
   pendingApprovalsCount: number;
+  assignedEventsCount: number;
+  pendingAssignmentsCount: number;
 }
 
 @Injectable({

@@ -1,7 +1,7 @@
 // src/app/presentation/features/events/pages/event-detail-page.component.ts
 
-import { Component, OnInit, ChangeDetectorRef, OnDestroy, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy, inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Location } from '@angular/common';
 
@@ -61,11 +61,13 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
   public cdr = inject(ChangeDetectorRef);
   public dialog = inject(MatDialog);
   public authService = inject(AuthService);
+  private platformId = inject(PLATFORM_ID);
 
   event: Event | null = null;
   loading = true;
-  isLoading = false; // Add this for assignment loading state
-  private isSubscribed = true;
+  isLoading = false; 
+  mediaFiles: any[] = [];
+  isSubscribed = true;
 
   // Available roles for assignment - using the exported roles
   availableRoles: string[] = [
@@ -75,12 +77,14 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
 
   // Reference to EventStatus enum for template
   EventStatus = EventStatus;
-  ASSIGNMENT_ROLES = ASSIGNMENT_ROLES; // Make available in template
+  ASSIGNMENT_ROLES = ASSIGNMENT_ROLES; 
 
   constructor() { }
 
   ngOnInit(): void {
-    this.loadEventData();
+    if (isPlatformBrowser(this.platformId)) {
+      this.loadEventData();
+    }
   }
 
   ngOnDestroy(): void {
@@ -94,8 +98,10 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
 
     if (state?.event) {
       this.setEventFromState(state.event);
+      if (this.event?.id) this.loadMedia(this.event.id);
     } else if (eventId) {
       this.fetchEventDetails(eventId);
+      this.loadMedia(eventId);
     } else {
       this.handleNoEventFound();
     }
@@ -124,54 +130,137 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
     });
   }
 
+  loadMedia(id: string): void {
+    this.eventService.getEventMedia(id).subscribe({
+      next: (media) => {
+        this.mediaFiles = media;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
   goBack(): void {
     this.location.back();
   }
 
+  submitEvent(): void {
+    if (!this.event?.id) return;
+    this.isLoading = true;
+    this.eventService.submitEvent(this.event.id).subscribe({
+      next: (updatedEvent) => {
+        this.isLoading = false;
+        this.event = updatedEvent;
+        this.showSuccess('Event submitted for approval!');
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        this.isLoading = false;
+        this.showError(error.message || 'Failed to submit event');
+      }
+    });
+  }
 
   approveEvent(): void {
-  if (!this.event?.id) return;
+    if (!this.event?.id) return;
 
-  const dialogData: ConfirmationDialogData = {
-    title: 'Approve Event',
-    message: `Are you sure you want to approve "${this.event.title}"?`,
-    confirmText: 'Approve',
-    cancelText: 'Cancel',
-    icon: 'check_circle',
-    color: 'primary'
-  };
+    const dialogData: ConfirmationDialogData = {
+      title: 'Approve Event',
+      message: `Are you sure you want to approve "${this.event.title}"? This will move it to Scheduled status.`,
+      confirmText: 'Approve',
+      cancelText: 'Cancel',
+      icon: 'check_circle',
+      color: 'primary'
+    };
 
-  const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
-    width: '400px',
-    disableClose: true,
-    data: dialogData
-  });
+    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
+      width: '400px',
+      disableClose: true,
+      data: dialogData
+    });
 
-  dialogRef.afterClosed().subscribe(result => {
-    if (result) {
-      this.isLoading = true;
-      this.eventService.approveEvent(this.event!.id).subscribe({
-        next: (updatedEvent) => {
-          this.isLoading = false;
-          this.event = updatedEvent;
-          this.showSuccess('Event approved successfully!');
-          this.cdr.detectChanges();
-        },
-        error: (error) => {
-          this.isLoading = false;
-          this.showError(error.message || 'Failed to approve event');
-        }
-      });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.isLoading = true;
+        this.eventService.approveEvent(this.event!.id).subscribe({
+          next: (updatedEvent) => {
+            this.isLoading = false;
+            this.event = updatedEvent;
+            this.showSuccess('Event approved successfully!');
+            this.cdr.detectChanges();
+          },
+          error: (error) => {
+            this.isLoading = false;
+            this.showError(error.message || 'Failed to approve event');
+          }
+        });
+      }
+    });
+  }
+
+  archiveEvent(): void {
+    if (!this.event?.id) return;
+    this.isLoading = true;
+    this.eventService.archiveEvent(this.event.id).subscribe({
+      next: (updatedEvent) => {
+        this.isLoading = false;
+        this.event = updatedEvent;
+        this.showSuccess('Event archived successfully!');
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        this.isLoading = false;
+        this.showError(error.message || 'Failed to archive event');
+      }
+    });
+  }
+
+  onFileUpload(event: any, fileType: string): void {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      this.showError('File size exceeds 5MB limit');
+      return;
     }
-  });
-}
+
+    this.isLoading = true;
+    this.eventService.uploadMedia(this.event!.id!, fileType, file).subscribe({
+      next: () => {
+        this.isLoading = false;
+        this.showSuccess('Media uploaded successfully');
+        this.loadMedia(this.event!.id!);
+      },
+      error: (error) => {
+        this.isLoading = false;
+        this.showError(error.message || 'Failed to upload media');
+      }
+    });
+  }
+
+  addExternalLink(): void {
+    const url = prompt('Enter external link URL:');
+    if (!url) return;
+
+    this.isLoading = true;
+    this.eventService.uploadMedia(this.event!.id!, 'Link', undefined, url).subscribe({
+      next: () => {
+        this.isLoading = false;
+        this.showSuccess('Link added successfully');
+        this.loadMedia(this.event!.id!);
+      },
+      error: (error) => {
+        this.isLoading = false;
+        this.showError(error.message || 'Failed to add link');
+      }
+    });
+  }
   
   editEvent(): void {
     if (!this.event?.id) {
       return;
     }
 
-    // Only Admin or department manager of this event can edit
+    // Only Admin or department manager of this event can edit, and only in Draft/Submitted
     const canEdit =
       this.authService.isAdmin() ||
       (this.authService.isManager() &&
@@ -182,7 +271,43 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
       return;
     }
 
+    if (this.event.status !== EventStatus.DRAFT && this.event.status !== EventStatus.SUBMITTED) {
+      this.showError('Events can only be edited while in Draft or Submitted status');
+      return;
+    }
+
     this.router.navigate(['/events/edit', this.event.id]);
+  }
+
+  canSubmit(): boolean {
+    if (!this.event || this.event.status !== EventStatus.DRAFT) return false;
+    return this.authService.isAdmin() || this.event.createdBy.id === this.authService.getCurrentUser()?.adObjectId;
+  }
+
+  canApprove(): boolean {
+    if (!this.event || this.event.status !== EventStatus.SUBMITTED) return false;
+    return this.authService.isAdmin() || this.authService.isCommunicationManager();
+  }
+
+  canArchive(): boolean {
+    if (!this.event || this.event.status !== EventStatus.COMPLETED) return false;
+    return this.authService.isAdmin() || this.authService.isCommunicationManager();
+  }
+
+  canUploadMedia(): boolean {
+    if (!this.event || this.event.status !== EventStatus.COMPLETED) return false;
+    if (this.authService.isAdmin()) return true;
+    
+    // Check if current user is an assigned staff who accepted the assignment
+    const userId = this.authService.getCurrentUser()?.adObjectId;
+    if (!userId) return false;
+
+    const allAssignments = [
+      ...this.getAssignmentsByRole('cameraman'),
+      ...this.getAssignmentsByRole('expert')
+    ];
+
+    return allAssignments.some(a => a.employee?.id === userId && a.status === 'Accepted');
   }
   private refreshEventData(): void {
     if (this.event?.id) {

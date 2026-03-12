@@ -16,7 +16,7 @@ namespace EEP.EventManagement.Api.Domain.Entities
         public Guid AssignedBy { get; set; }
         public ApplicationUser? AssignedByUser { get; set; }
         
-        public AssignmentStatus Status { get; set; } = AssignmentStatus.Assigned;
+        public AssignmentStatus Status { get; set; } = AssignmentStatus.Pending;
         public AssignmentRole Role { get; set; }
         public string? DeclineReason { get; set; }
     }

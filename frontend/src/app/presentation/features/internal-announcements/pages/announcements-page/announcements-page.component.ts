@@ -1,5 +1,5 @@
-import { Component, OnInit, inject, OnDestroy, ChangeDetectorRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, inject, OnDestroy, ChangeDetectorRef, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -40,6 +40,7 @@ export class AnnouncementsPageComponent implements OnInit, OnDestroy {
   public router = inject(Router);
   private route = inject(ActivatedRoute);
   private cdr = inject(ChangeDetectorRef);
+  private platformId = inject(PLATFORM_ID);
 
   publishedAnnouncements: Announcement[] = [];
   draftAnnouncements: Announcement[] = [];
@@ -54,14 +55,16 @@ export class AnnouncementsPageComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   ngOnInit(): void {
-    this.loadAnnouncements();
-    this.route.queryParamMap
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(params => {
-        if (params.get('create') === 'true' && this.canCreate) {
-          this.openCreateForm();
-        }
-      });
+    if (isPlatformBrowser(this.platformId)) {
+      this.loadAnnouncements();
+      this.route.queryParamMap
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(params => {
+          if (params.get('create') === 'true' && this.canCreate) {
+            this.openCreateForm();
+          }
+        });
+    }
   }
 
   ngOnDestroy(): void {

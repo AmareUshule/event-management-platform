@@ -11,7 +11,7 @@ namespace EEP.EventManagement.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize(Roles = "Admin,Manager")] // All actions in this controller require authorization
+    [Authorize(Roles = "Admin,Manager,Expert,Cameraman")] // All actions in this controller require authorization
     public class ReportsController : ControllerBase
     {
         private readonly IMediator _mediator;

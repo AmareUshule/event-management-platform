@@ -35,9 +35,9 @@ namespace EEP.EventManagement.Api.Application.Features.Approval.Handlers
                 throw new NotFoundException(nameof(Event), request.EventId);
             }
 
-            if (eventToApprove.Status != EventStatus.Draft)
+            if (eventToApprove.Status != EventStatus.Draft && eventToApprove.Status != EventStatus.Submitted)
             {
-                throw new BadRequestException("Only draft events can be approved.");
+                throw new BadRequestException("Only draft or submitted events can be approved.");
             }
 
             eventToApprove.Status = EventStatus.Scheduled;

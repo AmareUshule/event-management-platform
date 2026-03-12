@@ -1,7 +1,7 @@
 // src/app/presentation/features/dashboard/dashboard.component.ts
 
-import { Component, OnInit, inject, OnDestroy, ChangeDetectorRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, inject, OnDestroy, ChangeDetectorRef, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil, finalize } from 'rxjs';
@@ -33,7 +33,7 @@ import { ReportService, ReportSummary } from '../../../core/services/report.serv
 import { AnnouncementService } from '../internal-announcements/services/announcement.service';
 
 // Models
-import { Event, EventFormData, EventStatus } from '../events/models/event.model';
+import { Event, EventFormData, EventStatus, AssignmentResponse } from '../events/models/event.model';
 import { AuthUser } from '../../../core/models/auth-user.model';
 import { Announcement } from '../internal-announcements/models/announcement.model';
 
@@ -89,7 +89,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private masterEvents: Event[] = [];           // Raw events from API - NEVER TOUCH AFTER SET
   private masterTableEvents: TableEvent[] = []; // Transformed events - NEVER MODIFY AFTER SET
   upcomingEvents: Event[] = [];                 // Upcoming events from API
-  todaysEvents: number = 0; // or string, or whatever type you need
+  myAssignments: AssignmentResponse[] = [];     // Assignments for Expert/Cameraman
   reportSummary: ReportSummary | null = null;   // Report summary from API
   latestAnnouncements: Announcement[] = [];     // Latest announcements (preview)
   isLoadingAnnouncements = false;
@@ -107,22 +107,28 @@ export class DashboardComponent implements OnInit, OnDestroy {
   // ===== UI STATE =======
   user: AuthUser | null = null;
   isLoadingEvents = true;
+  isLoadingAssignments = false;
   isLoadingReport = false;
   currentDate = new Date();
-  selectedTabIndex = 0;
+  activeTab: string = 'all';
   searchTerm: string = '';
   isMobileMenuOpen = false;
     
 
   // ======== TABLE CONFIGURATION ============
   displayedColumns: string[] = ['id', 'eventName', 'location', 'date', 'actions'];
+  assignmentColumns: string[] = ['id', 'eventTitle', 'date', 'role', 'status', 'actions'];
 
   // =========== STATISTICS (DERIVED FROM MASTER DATA) =============
   totalEvents = 0;
   scheduledEvents = 0;
-  draftEvents = 0;
-  completedEvents = 0;
+  draftEventsCount = 0;
+  submittedEvents = 0;
+  ongoingEvents = 0;
+  pastEventsCount = 0;
   eventsThisWeek = 0;
+  assignedEventsCount = 0;
+  pendingAssignmentsCount = 0;
   pendingApprovals = 0;
 
   // ============ INSIGHTS (DERIVED FROM MASTER DATA) ============
@@ -143,6 +149,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private snackBar = inject(MatSnackBar);
   private cdr = inject(ChangeDetectorRef);
+  private platformId = inject(PLATFORM_ID);
 
   // Department mapping
   private departmentMap: Record<number, string> = {
@@ -158,7 +165,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
   // ==================== LIFECYCLE HOOKS ====================
 
   ngOnInit(): void {
-    this.initializeComponent();
+    if (isPlatformBrowser(this.platformId)) {
+      this.initializeComponent();
+    }
   }
 
   ngOnDestroy(): void {
@@ -175,7 +184,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.loadEvents();
     this.loadUpcomingEvents();
     this.loadLatestAnnouncements();
-    if (this.authService.isAdmin() || this.authService.isManager()) {
+    if (this.isStaff()) {
+      this.loadMyAssignments();
+    }
+    
+    // Admins, Managers, Experts, and Cameramen should load report summary
+    if (this.authService.isAdmin() || this.authService.isManager() || this.isStaff()) {
       this.loadReportSummary();
     }
     this.setDefaultAgenda();
@@ -218,9 +232,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private loadEvents(): void {
     this.isLoadingEvents = true;
 
-    const filters = this.buildFilters();
-
-    this.eventService.getAllEvents(filters)
+    this.eventService.getAllEvents()
       .pipe(
         takeUntil(this.destroy$),
         finalize(() => {
@@ -247,6 +259,27 @@ export class DashboardComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           console.error('Failed to load upcoming events:', error);
+        }
+      });
+  }
+
+  private loadMyAssignments(): void {
+    this.isLoadingAssignments = true;
+    this.eventService.getMyAssignments()
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => {
+          this.isLoadingAssignments = false;
+          this.cdr.detectChanges();
+        })
+      )
+      .subscribe({
+        next: (assignments) => {
+          this.myAssignments = assignments;
+          this.calculateStatistics();
+        },
+        error: (error) => {
+          console.error('Failed to load my assignments:', error);
         }
       });
   }
@@ -290,15 +323,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private updateStatsFromSummary(summary: ReportSummary): void {
     this.totalEvents = summary.totalEvents;
     this.pendingApprovalsCount = summary.pendingApprovalsCount;
+    this.assignedEventsCount = summary.assignedEventsCount;
+    this.pendingAssignmentsCount = summary.pendingAssignmentsCount;
     
-    // If events are already loaded, we prefer our local calculation which handles
-    // the "automatic completion" logic for the dashboard display.
+    // If events are already loaded, we prefer our local calculation.
     if (this.masterEvents.length > 0) {
       this.calculateStatistics();
     } else {
       this.scheduledEvents = summary.scheduledCount;
-      this.draftEvents = summary.draftCount;
-      this.completedEvents = summary.completedCount;
+      this.pastEventsCount = summary.completedCount + summary.archivedCount;
     }
   }
 
@@ -310,8 +343,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.masterTableEvents = this.transformToTableEvents(events);
 
     // 3. Calculate all derived data from master
-    // We always calculate statistics locally to ensure our custom "automatic completion" 
-    // logic is applied consistently across the dashboard.
     this.calculateStatistics();
     this.updateInsights();
     
@@ -320,13 +351,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     // 4. Apply current filters to populate filteredEvents and paginatedEvents for display
     this.applyFilters();
-
-    console.log('📊 Master data updated:', {
-      total: this.masterEvents.length,
-      filtered: this.filteredEvents.length,
-      paginated: this.paginatedEvents.length,
-      stats: { total: this.totalEvents, scheduled: this.scheduledEvents, draft: this.draftEvents, completed: this.completedEvents }
-    });
   }
 
   /**
@@ -338,67 +362,43 @@ export class DashboardComponent implements OnInit, OnDestroy {
       name: event.title,
       location: event.eventPlace,
       date: new Date(event.startDate),
-      status: this.getEffectiveStatus(event.status, event.startDate),
+      status: event.status as string,
       departmentName: event.department?.name || 'Unknown',
       createdByName: this.getFullName(event.createdBy),
       raw: event
     }));
   }
 
-  /**
-   * Determines the effective status of an event based on the current date and time.
-   * If an event is 'Scheduled' but its start date/time has already passed, it is 
-   * automatically displayed as 'Completed' for better user experience.
-   * 
-   * @param status The original status from the database
-   * @param startDate The scheduled start date and time
-   * @returns The effective status ('Completed' if time has passed, otherwise original)
-   */
-  private getEffectiveStatus(status: string | EventStatus, startDate: string | Date): string {
-    // Only apply auto-completion logic to 'Scheduled' events
-    if (status !== 'Scheduled') return status as string;
-    
-    const now = new Date();
-    const eventDate = new Date(startDate);
-    
-    // Comparison handles edge cases like same-day events where only the time has passed.
-    // If current system date/time is greater than the event's start date/time, it is completed.
-    return now > eventDate ? 'Completed' : 'Scheduled';
-  }
-
-  private buildFilters(): { departmentId?: string; status?: string } {
-    const filters: { departmentId?: string; status?: string } = {};
-
-    if (!this.authService.isAdmin()) {
-      const deptGuid = this.authService.getDepartmentGuid();
-      if (deptGuid) {
-        filters.departmentId = deptGuid;
-      }
-    }
-
-    return filters;
-  }
-
-  // ==================== DERIVED DATA CALCULATIONS ====================
-  // All methods here read from master data and update display properties
-
-  /**
-   * Calculate statistics from master data
-   */
   private calculateStatistics(): void {
+    const currentUserId = this.user?.adObjectId;
     this.totalEvents = this.masterEvents.length;
     
-    // Recalculate counts based on effective status for accurate dashboard reporting.
-    // This ensures that events whose time has passed are counted as 'Completed' 
-    // even if their database status is still 'Scheduled'.
-    const effectiveEvents = this.masterEvents.map(e => ({
-      ...e,
-      effectiveStatus: this.getEffectiveStatus(e.status, e.startDate)
-    }));
+    // Drafts are specific to the current user
+    this.draftEventsCount = this.masterEvents.filter(e => 
+      e.status === "Draft" && e.createdBy.id === currentUserId).length;
+      
+    this.submittedEvents = this.masterEvents.filter(e => e.status === "Submitted").length;
+    this.scheduledEvents = this.masterEvents.filter(e => e.status === "Scheduled").length;
+    this.ongoingEvents = this.masterEvents.filter(e => e.status === "Ongoing").length;
+    
+    // Merged Past Events (Completed + Archived)
+    this.pastEventsCount = this.masterEvents.filter(e => 
+      e.status === "Completed" || e.status === "Archived").length;
 
-    this.scheduledEvents = effectiveEvents.filter(e => e.effectiveStatus === 'Scheduled').length;
-    this.draftEvents = effectiveEvents.filter(e => e.effectiveStatus === 'Draft').length;
-    this.completedEvents = effectiveEvents.filter(e => e.effectiveStatus === 'Completed').length;
+    if (this.isStaff()) {
+      this.assignedEventsCount = this.myAssignments.length;
+      this.pendingAssignmentsCount = this.myAssignments.filter(a => a.status === "Pending").length;
+      
+      // For staff, statistics should only consider events where they are assigned.
+      // We'll update the counts for Scheduled and Past based on their assignments.
+      const assignedEventIds = new Set(this.myAssignments.map(a => a.eventId));
+      
+      this.scheduledEvents = this.masterEvents.filter(e => 
+        e.status === "Scheduled" && assignedEventIds.has(e.id)).length;
+        
+      this.pastEventsCount = this.masterEvents.filter(e => 
+        (e.status === "Completed" || e.status === "Archived") && assignedEventIds.has(e.id)).length;
+    }
     
     this.updateEventsThisWeek();
   }
@@ -424,7 +424,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
    * Update insights from master data
    */
   private updateInsights(): void {
-    this.pendingApprovals = this.masterEvents.filter(e => e.status === 'Pending').length;
+    this.pendingApprovals = this.submittedEvents;
+    this.pendingApprovalsCount = this.pendingApprovals;
 
     if (this.upcomingEvents.length === 0) {
       const now = new Date();
@@ -436,8 +437,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
         return eventDate >= now && eventDate <= weekFromNow;
       }).length;
     }
-
-    this.pendingApprovalsCount = this.pendingApprovals;
   }
 
   /**
@@ -466,11 +465,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
   }
 
-  /**
-   * Activate a specific tab and scroll to the table section
-   */
-  onStatCardClick(index: number): void {
-    this.onTabChange(index);
+  onStatCardClick(tab: string): void {
+    this.onTabChange(tab);
     this.scrollToTable();
   }
 
@@ -482,52 +478,45 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   // ==================== FILTERING ====================
-  // CRITICAL: All filter methods MUST:
-  // 1. Start from masterTableEvents (never from filteredEvents)
-  // 2. Apply all active filters
-  // 3. Update filteredEvents
-  // 4. Reset pagination and update paginatedEvents
 
-  /**
-   * Apply search filter - triggered from input
-   */
   applySearch(event: any): void {
     const filterValue = event.target.value.toLowerCase().trim();
     this.searchTerm = filterValue;
     this.applyFilters();
   }
 
-  /**
-   * Handle tab change - updates tab filter
-   */
-  onTabChange(index: number): void {
-    this.selectedTabIndex = index;
+  onTabChange(tab: string): void {
+    this.activeTab = tab;
     this.applyFilters();
   }
 
-  /**
-   * CORE FILTERING METHOD: Applies all active filters to master data
-   * This is the ONLY place that should update filteredEvents
-   */
   private applyFilters(): void {
-    // CRITICAL: Always start with a fresh copy of master data
     let filtered = [...this.masterTableEvents];
 
-    console.log('🔍 Applying filters - Tab:', this.selectedTabIndex, 'Search:', this.searchTerm);
-    console.log('📊 Master count:', this.masterTableEvents.length);
+    if (this.activeTab === 'assignments') {
+       this.filteredEvents = [];
+       this.paginatedEvents = [];
+       this.cdr.detectChanges();
+       return;
+    }
 
-    // Apply tab filter based on HTML order (0: ALL, 1: Draft, 2: Scheduled, 3: Completed)
-    switch (this.selectedTabIndex) {
-      case 1: // Draft
-        filtered = filtered.filter(e => e.status === 'Draft');
+    switch (this.activeTab) {
+      case 'draft': 
+        filtered = filtered.filter(e => e.status === 'Draft' && e.raw.createdBy.id === this.user?.adObjectId);
         break;
-      case 2: // Scheduled
+      case 'submitted':
+        filtered = filtered.filter(e => e.status === 'Submitted');
+        break;
+      case 'scheduled':
         filtered = filtered.filter(e => e.status === 'Scheduled');
         break;
-      case 3: // Completed
-        filtered = filtered.filter(e => e.status === 'Completed');
+      case 'ongoing':
+        filtered = filtered.filter(e => e.status === 'Ongoing');
         break;
-      // case 0: ALL - no filter needed
+      case 'past':
+        filtered = filtered.filter(e => e.status === 'Completed' || e.status === 'Archived');
+        break;
+      // case 'all': default
     }
 
     // Apply search filter
@@ -541,52 +530,25 @@ export class DashboardComponent implements OnInit, OnDestroy {
       );
     }
 
-    console.log('📊 Filtered count:', filtered.length);
-
-    // Update filtered data
     this.filteredEvents = filtered;
-    
-    // Reset to first page and update paginated events
     this.currentPage = 0;
     this.updatePaginatedEvents();
-    
     this.cdr.detectChanges();
   }
 
   // ==================== PAGINATION METHODS ====================
 
-  /**
-   * Update paginated events based on current page and page size
-   */
   private updatePaginatedEvents(): void {
-    // Calculate total pages
     this.totalPages = Math.ceil(this.filteredEvents.length / this.pageSize);
-    
-    // Ensure current page is valid
     if (this.currentPage >= this.totalPages) {
       this.currentPage = Math.max(0, this.totalPages - 1);
     }
-    
-    // Calculate slice indices
     const startIndex = this.currentPage * this.pageSize;
     const endIndex = Math.min(startIndex + this.pageSize, this.filteredEvents.length);
-    
-    // Get current page events
     this.paginatedEvents = this.filteredEvents.slice(startIndex, endIndex);
-    
-    console.log(`📄 Page ${this.currentPage + 1} of ${this.totalPages}:`, {
-      total: this.filteredEvents.length,
-      startIndex,
-      endIndex,
-      events: this.paginatedEvents.map(e => e.name)
-    });
-    
     this.cdr.detectChanges();
   }
 
-  /**
-   * Go to next page
-   */
   nextPage(): void {
     if (this.currentPage < this.totalPages - 1) {
       this.currentPage++;
@@ -594,9 +556,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
   }
 
-  /**
-   * Go to previous page
-   */
   previousPage(): void {
     if (this.currentPage > 0) {
       this.currentPage--;
@@ -604,51 +563,33 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
   }
 
-  /**
-   * Go to first page
-   */
   goToFirstPage(): void {
     this.currentPage = 0;
     this.updatePaginatedEvents();
   }
 
-  /**
-   * Go to last page
-   */
   goToLastPage(): void {
     this.currentPage = this.totalPages - 1;
     this.updatePaginatedEvents();
   }
 
-  /**
-   * Handle page size change
-   */
   onPageSizeChange(event: any): void {
     const newSize = parseInt(event.target.value, 10);
     if (this.pageSize !== newSize) {
       this.pageSize = newSize;
-      this.currentPage = 0; // Reset to first page when page size changes
+      this.currentPage = 0;
       this.updatePaginatedEvents();
-      
-      console.log(`📏 Page size changed to: ${newSize}`);
     }
   }
 
-  /**
-   * Get the end index of current page (for display)
-   */
   getCurrentPageEndIndex(): number {
     return Math.min((this.currentPage + 1) * this.pageSize, this.filteredEvents.length);
   }
 
-  /**
-   * Special filter by date range - can be called from UI
-   */
   filterByDate(range: string): void {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    // CRITICAL: Filter from master, never from filtered
     const filtered = this.masterTableEvents.filter(e => {
       const eventDate = new Date(e.date);
       eventDate.setHours(0, 0, 0, 0);
@@ -658,7 +599,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.filteredEvents = filtered;
     this.currentPage = 0;
     this.updatePaginatedEvents();
-    
     this.cdr.detectChanges();
 
     this.snackBar.open(`Found ${filtered.length} event(s) for today`, 'Close', {
@@ -666,47 +606,61 @@ export class DashboardComponent implements OnInit, OnDestroy {
     });
   }
 
-  /**
-   * Clear search and reset to tab-filtered view
-   */
   clearSearch(): void {
     this.searchTerm = '';
-    this.applyFilters(); // This will reset to tab-filtered view
+    this.applyFilters();
   }
 
-  /**
-   * Reset all filters to show all events
-   */
   resetFilters(): void {
-    this.selectedTabIndex = 0;
+    this.activeTab = 'all';
     this.searchTerm = '';
-    this.filteredEvents = [...this.masterTableEvents];
-    this.currentPage = 0;
-    this.updatePaginatedEvents();
-    
-    this.cdr.detectChanges();
-    
-    console.log('🔄 Filters reset, showing all events:', this.masterTableEvents.length);
+    this.applyFilters();
   }
 
   // ==================== ACTIONS ====================
-  // All actions that modify data MUST reload from API to refresh master data
+
+  acceptAssignment(assignment: AssignmentResponse): void {
+    this.eventService.updateAssignmentStatus(assignment.eventId, assignment.id, 'Accepted')
+      .subscribe({
+        next: () => {
+          this.snackBar.open('Assignment accepted', 'Close', { duration: 3000 });
+          this.loadMyAssignments();
+          this.loadEvents();
+        },
+        error: (err) => this.showError('Failed to accept assignment')
+      });
+  }
+
+  declineAssignment(assignment: AssignmentResponse): void {
+    const reason = prompt('Please provide a reason for declining:');
+    if (reason === null) return; // Cancelled
+    if (!reason.trim()) {
+      this.showError('Decline reason is mandatory');
+      return;
+    }
+
+    this.eventService.updateAssignmentStatus(assignment.eventId, assignment.id, 'Declined', reason)
+      .subscribe({
+        next: () => {
+          this.snackBar.open('Assignment declined', 'Close', { duration: 3000 });
+          this.loadMyAssignments();
+          this.loadEvents();
+        },
+        error: (err) => this.showError('Failed to decline assignment')
+      });
+  }
 
   generateReport(): void {
     this.isLoadingReport = true;
     this.reportService.getReportSummary()
-      .pipe(
-        finalize(() => this.isLoadingReport = false)
-      )
+      .pipe(finalize(() => this.isLoadingReport = false))
       .subscribe({
         next: (summary) => {
           this.reportSummary = summary;
           this.updateStatsFromSummary(summary);
           this.snackBar.open('Report generated successfully', 'Close', { duration: 3000 });
         },
-        error: (error) => {
-          this.showError('Failed to generate report');
-        }
+        error: (error) => this.showError('Failed to generate report')
       });
   }
 
@@ -716,20 +670,16 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   navigateToUpcomingEvent(event: Event): void {
-    this.router.navigate(['/events', event.id], {
-      state: { event }
-    });
+    this.router.navigate(['/events', event.id]);
   }
 
   onRowClick(event: TableEvent): void {
-    console.log('Navigating to event:', event.id, event);
-    this.router.navigate(['/events', event.id], {
-      state: { event: event.raw || event }
-    });
+    this.router.navigate(['/events', event.id]);
   }
 
-  viewEvent(event: TableEvent): void {
-    this.router.navigate(['/events', event.id]);
+  viewEvent(event: any): void {
+    const id = event.id || event.eventId;
+    this.router.navigate(['/events', id]);
   }
 
   editEvent(event: TableEvent): void {
@@ -740,43 +690,22 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
   }
 
-  /**
-   * Publish event - after success, reload data to refresh master
-   */
-  publishEvent(event: TableEvent): void {
-    if (event.status === 'Draft') {
-      const formData: Partial<EventFormData> = {
-        title: event.raw.title,
-        description: event.raw.description
-      };
-
-      this.eventService.updateEvent(event.id, formData, EventStatus.DRAFT)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-          next: () => {
-            this.snackBar.open(`✅ Event submitted for approval: ${event.name}`, 'Close', {
-              duration: 3000,
-              panelClass: ['success-snackbar']
-            });
-            // CRITICAL: Reload to refresh master data
-            this.loadEvents();
-          },
-          error: () => this.showError('Failed to publish event')
-        });
-    }
+  submitEvent(event: TableEvent): void {
+    this.eventService.submitEvent(event.id).subscribe({
+      next: () => {
+        this.snackBar.open('Event submitted for approval', 'Close', { duration: 3000 });
+        this.loadEvents();
+      },
+      error: () => this.showError('Failed to submit event')
+    });
   }
 
-  /**
-   * Delete event - after success, reload data to refresh master
-   */
   deleteEvent(event: TableEvent): void {
     if (confirm(`Are you sure you want to delete "${event.name}"?`)) {
       this.eventService.deleteEvent(event.id)
-        .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: () => {
             this.snackBar.open(`🗑️ Deleted: ${event.name}`, 'Close', { duration: 3000 });
-            // CRITICAL: Reload to refresh master data
             this.loadEvents();
           },
           error: () => this.showError('Failed to delete event')
@@ -787,31 +716,19 @@ export class DashboardComponent implements OnInit, OnDestroy {
   // ========= NAVIGATION ==========
 
   navigateToCreateEvent(): void {
-    if (this.authService.canCreateEvents()) {
-      this.router.navigate(['/events/create']);
-    } else {
-      this.showError('You do not have permission to create events');
-    }
+    this.router.navigate(['/events/create']);
   }
 
   navigateToCreateAnnouncement(): void {
-    if (this.authService.isAdmin() || this.authService.isManager() || this.authService.isCommunicationManager()) {
-      this.router.navigate(['/internal-announcements'], { queryParams: { create: 'true' } });
-    } else {
-      this.showError('You do not have permission to create announcements');
-    }
+    this.router.navigate(['/internal-announcements'], { queryParams: { create: 'true' } });
   }
 
   navigateToAnnouncements(): void {
     this.router.navigate(['/internal-announcements']);
   }
-  toggleMobileMenu(): void {
-    this.isMobileMenuOpen = !this.isMobileMenuOpen;
-  }
 
-  logout(): void {
-    this.authService.logout();
-    this.router.navigate(['/login']);
+  isStaff(): boolean {
+    return this.authService.isStaff();
   }
 
   // ==================== UTILITY METHODS ====================
@@ -831,13 +748,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   getStatusClass(status: string): string {
     switch (status) {
-      case 'Approved':
+      case 'Scheduled':
+      case 'Ongoing':
       case 'Completed':
         return 'published';
       case 'Draft':
         return 'draft';
-      case 'Pending':
+      case 'Submitted':
         return 'pending';
+      case 'Archived':
+        return 'archived';
+      case 'Cancelled':
       case 'Rejected':
         return 'rejected';
       default:
@@ -857,25 +778,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return this.authService.canApproveEvents();
   }
 
-  /**
-   * Determine if the current user can manage (edit/delete) the given event.
-   * Admins can manage all events; managers can manage events in their own department.
-   */
   canManageEvent(event: TableEvent): boolean {
-    if (this.authService.isAdmin()) {
-      return true;
-    }
-
-    if (this.authService.isManager()) {
-      const userDept = this.authService.getDepartmentGuid();
-      const eventDept = event.raw.department?.id;
-      return !!userDept && !!eventDept && userDept === eventDept;
-    }
-
-    return false;
+    if (this.authService.isAdmin()) return true;
+    if (event.status !== 'Draft') return false;
+    return event.raw.createdBy.id === this.user?.adObjectId;
   }
-
-  // ==================== ERROR HANDLING ====================
 
   private showError(message: string): void {
     this.snackBar.open(message, 'Close', {

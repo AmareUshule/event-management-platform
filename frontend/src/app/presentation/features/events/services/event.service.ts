@@ -468,22 +468,99 @@ assignMultipleEmployees(eventId: string, assignments: AssignmentPayload[]): Obse
   }
 
   /**
-   * Bulk assign multiple employees with different roles
-   * Note: Check with backend if this endpoint exists
+   * Submit event for approval
    */
-  bulkAssignEmployees(eventId: string, assignmentsByRole: { [key: string]: string[] }): Observable<Event> {
-    const url = `${this.API_URL}/${eventId}/assignments/bulk`;
-    
+  submitEvent(eventId: string): Observable<Event> {
     return this.http.post<Event>(
-      url,
-      assignmentsByRole,
+      `${this.API_URL}/${eventId}/submit`,
+      {},
       {
         headers: this.getHeaders(),
         responseType: 'json'
       }
     ).pipe(
       timeout(this.REQUEST_TIMEOUT),
-      tap(updatedEvent => console.log('✅ Bulk assignment successful:', updatedEvent)),
+      retry(1),
+      catchError(this.handleError.bind(this))
+    );
+  }
+
+  /**
+   * Archive event
+   */
+  archiveEvent(eventId: string): Observable<Event> {
+    return this.http.post<Event>(
+      `${this.API_URL}/${eventId}/archive`,
+      {},
+      {
+        headers: this.getHeaders(),
+        responseType: 'json'
+      }
+    ).pipe(
+      timeout(this.REQUEST_TIMEOUT),
+      retry(1),
+      catchError(this.handleError.bind(this))
+    );
+  }
+
+  /**
+   * Upload media for an event
+   */
+  uploadMedia(eventId: string, fileType: string, file?: File, externalUrl?: string): Observable<any> {
+    const url = `${environment.apiUrl}/api/media/upload`;
+    const formData = new FormData();
+    formData.append('EventId', eventId);
+    formData.append('FileType', fileType);
+    if (file) {
+      formData.append('File', file);
+    }
+    if (externalUrl) {
+      formData.append('ExternalUrl', externalUrl);
+    }
+
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${this.authService.getToken()}`
+    });
+
+    return this.http.post<any>(url, formData, { headers }).pipe(
+      timeout(this.REQUEST_TIMEOUT),
+      catchError(this.handleError.bind(this))
+    );
+  }
+
+  /**
+   * Get media for an event
+   */
+  getEventMedia(eventId: string): Observable<any[]> {
+    const url = `${environment.apiUrl}/api/media/event/${eventId}`;
+    return this.http.get<any[]>(url, { headers: this.getHeaders() }).pipe(
+      timeout(this.REQUEST_TIMEOUT),
+      catchError(this.handleError.bind(this))
+    );
+  }
+
+  /**
+   * Get assignments for the current user
+   */
+  getMyAssignments(): Observable<AssignmentResponse[]> {
+    const url = `${environment.apiUrl}/api/my-assignments`;
+    return this.http.get<AssignmentResponse[]>(url, { headers: this.getHeaders() }).pipe(
+      timeout(this.REQUEST_TIMEOUT),
+      catchError(this.handleError.bind(this))
+    );
+  }
+
+  /**
+   * Update assignment status (Accept/Decline)
+   */
+  updateAssignmentStatus(eventId: string, assignmentId: string, status: string, declineReason?: string): Observable<any> {
+    const url = `${this.API_URL}/${eventId}/assignments/${assignmentId}/status`;
+    return this.http.put<any>(
+      url,
+      { id: assignmentId, status, declineReason },
+      { headers: this.getHeaders() }
+    ).pipe(
+      timeout(this.REQUEST_TIMEOUT),
       catchError(this.handleError.bind(this))
     );
   }

@@ -185,7 +185,15 @@ export class AuthService {
   }
 
   isStaff(): boolean {
-    return this.hasRole(ROLES.Staff);
+    return this.hasAnyRole([ROLES.Staff, ROLES.Expert, ROLES.Cameraman]);
+  }
+
+  isCameraman(): boolean {
+    return this.hasRole(ROLES.Cameraman);
+  }
+
+  isExpert(): boolean {
+    return this.hasRole(ROLES.Expert);
   }
 
   isEmployee(): boolean {

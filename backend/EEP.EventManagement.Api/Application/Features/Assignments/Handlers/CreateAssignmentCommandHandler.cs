@@ -83,7 +83,7 @@ namespace EEP.EventManagement.Api.Application.Features.Assignments.Handlers
                 EmployeeId = employee.Id,
                 Role = request.CreateAssignmentDto.Role,
                 AssignedBy = _userContext.GetUserId(),
-                Status = AssignmentStatus.Assigned,
+                Status = AssignmentStatus.Pending,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };

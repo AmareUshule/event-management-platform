@@ -2,6 +2,7 @@ using EEP.EventManagement.Api.Application.Features.Events.Commands;
 using EEP.EventManagement.Api.Application.Features.Events.Queries;
 using EEP.EventManagement.Api.Application.Features.Events.DTOs;
 using EEP.EventManagement.Api.Application.Features.Approval.Commands;
+using EEP.EventManagement.Api.Domain.Enums;
 using EEP.EventManagement.Api.Infrastructure.Security.Authorization.Requirements;
 using EEP.EventManagement.Api.Infrastructure.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
@@ -39,58 +40,49 @@ namespace EEP.EventManagement.Api.Controllers
         [HttpGet]
         public async Task<ActionResult<List<EventDto>>> GetAllEvents()
         {
-            // Enforce per-role visibility rules:
-            // - Admin, Communication Manager: all events
-            // - Department Manager: events for their department
-            // - Expert/Cameraman: events assigned to them
-            // - Employee: approved events only
-
             var roles = _userContext.GetRoles();
             var currentUserId = _userContext.GetUserId();
-            var departmentId = _userContext.GetDepartmentId();
-
-            // Admin can see all events
-            if (roles.Contains("Admin"))
-            {
-                var all = await _mediator.Send(new GetAllEventsQuery());
-                return Ok(all);
-            }
-
-            // Communication Manager (Manager in Communication dept) can also see all
             var isCommManager = (await _authorizationService.AuthorizeAsync(
                 User,
                 null,
                 Infrastructure.Security.Authorization.AuthorizationPolicies.IsCommunicationManager)).Succeeded;
 
-            if (isCommManager)
+            var allEvents = await _mediator.Send(new GetAllEventsQuery());
+
+            // Admin and Communication Manager can see everything
+            if (roles.Contains("Admin") || isCommManager)
             {
-                var all = await _mediator.Send(new GetAllEventsQuery());
-                return Ok(all);
+                return Ok(allEvents);
             }
 
-            // Department Manager (non-Communication) can see only their department's events
-            if (roles.Contains("Manager") && departmentId.HasValue)
+            // Filter for other roles
+            var visibleEvents = allEvents.Where(e =>
             {
-                var deptEvents = await _mediator.Send(new GetDepartmentEventsQuery
+                // Anyone can see Scheduled, Ongoing, Completed, Archived
+                if (e.Status == EventStatus.Scheduled.ToString() || e.Status == EventStatus.Ongoing.ToString() || 
+                    e.Status == EventStatus.Completed.ToString() || e.Status == EventStatus.Archived.ToString())
                 {
-                    DepartmentId = departmentId.Value
-                });
-                return Ok(deptEvents);
-            }
+                    return true;
+                }
 
-            // Operational staff: Experts and Cameramen see events assigned to them
-            if (roles.Contains("Expert") || roles.Contains("Cameraman"))
-            {
-                var assignedEvents = await _mediator.Send(new GetAssignedEventsQuery
+                // Creators can see their own Draft/Submitted events
+                if (e.CreatedBy != null && e.CreatedBy.Id == currentUserId)
                 {
-                    EmployeeId = currentUserId
-                });
-                return Ok(assignedEvents);
-            }
+                    return true;
+                }
 
-            // Employees and any other authenticated users: only approved events
-            var approved = await _mediator.Send(new GetApprovedEventsQuery());
-            return Ok(approved);
+                // Assigned staff can see events they are assigned to (even if not yet Scheduled)
+                if (e.Assignments != null && 
+                    (e.Assignments.Cameraman.Any(a => a.EmployeeId == currentUserId) || 
+                     e.Assignments.Expert.Any(a => a.EmployeeId == currentUserId)))
+                {
+                    return true;
+                }
+
+                return false;
+            }).ToList();
+
+            return Ok(visibleEvents);
         }
 
         [HttpGet("upcoming")]
@@ -172,11 +164,29 @@ namespace EEP.EventManagement.Api.Controllers
             return NoContent();
         }
 
+        [HttpPost("{id}/submit")]
+        [Authorize(Roles = "Admin,Manager")]
+        public async Task<ActionResult<EventDto>> SubmitEvent(Guid id)
+        {
+            var command = new SubmitEventCommand { EventId = id };
+            var result = await _mediator.Send(command);
+            return Ok(result);
+        }
+
         [HttpPost("{id}/approve")]
         [Authorize(Policy = EEP.EventManagement.Api.Infrastructure.Security.Authorization.AuthorizationPolicies.CanApproveAndAssign)]
         public async Task<ActionResult<EventDto>> ApproveEvent(Guid id)
         {
             var command = new ApproveEventCommand { EventId = id };
+            var result = await _mediator.Send(command);
+            return Ok(result);
+        }
+
+        [HttpPost("{id}/archive")]
+        [Authorize(Policy = EEP.EventManagement.Api.Infrastructure.Security.Authorization.AuthorizationPolicies.CanApproveAndAssign)]
+        public async Task<ActionResult<EventDto>> ArchiveEvent(Guid id)
+        {
+            var command = new ArchiveEventCommand { EventId = id };
             var result = await _mediator.Send(command);
             return Ok(result);
         }

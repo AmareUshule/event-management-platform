@@ -10,5 +10,7 @@ namespace EEP.EventManagement.Api.Application.Features.Reports.DTOs
         public int ArchivedCount { get; set; }
         public int CancelledCount { get; set; }
         public int PendingApprovalsCount { get; set; }
+        public int AssignedEventsCount { get; set; }
+        public int PendingAssignmentsCount { get; set; }
     }
 }

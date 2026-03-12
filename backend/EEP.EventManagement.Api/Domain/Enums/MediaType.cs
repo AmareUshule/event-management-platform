@@ -4,6 +4,6 @@ namespace EEP.EventManagement.Api.Domain.Enums
     {
         Image,
         Video,
-        Document
-    }
-}
+        Document,
+        Link
+    }}

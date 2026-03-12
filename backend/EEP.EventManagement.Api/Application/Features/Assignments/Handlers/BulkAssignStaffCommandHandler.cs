@@ -116,7 +116,7 @@ namespace EEP.EventManagement.Api.Application.Features.Assignments.Handlers
                 EmployeeId = employee.Id,
                 AssignedBy = assignedBy,
                 Role = role,
-                Status = AssignmentStatus.Assigned,
+                Status = AssignmentStatus.Pending,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             });

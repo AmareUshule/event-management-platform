@@ -10,20 +10,40 @@
         </div>
 
         <div class="header-actions" *ngIf="event">
-            <!-- Approve button - only for Admin or Communication Manager and only when status is Draft -->
+            <!-- Submit button - for Draft status -->
             <button
                 class="action-btn"
-                *ngIf="event.status === 'Draft' && (authService.isAdmin() || authService.isCommunicationManager())"
+                *ngIf="canSubmit()"
+                (click)="submitEvent()"
+                matTooltip="Submit for approval">
+                <mat-icon>send</mat-icon>
+                <span>Submit</span>
+            </button>
+
+            <!-- Approve button - for Submitted status -->
+            <button
+                class="action-btn"
+                *ngIf="canApprove()"
                 (click)="approveEvent()"
-                matTooltip="Approve this event">
+                matTooltip="Approve and schedule this event">
                 <mat-icon>check_circle</mat-icon>
                 <span>Approve</span>
+            </button>
+
+            <!-- Archive button - for Completed status -->
+            <button
+                class="action-btn"
+                *ngIf="canArchive()"
+                (click)="archiveEvent()"
+                matTooltip="Archive this event">
+                <mat-icon>archive</mat-icon>
+                <span>Archive</span>
             </button>
 
             <!-- Edit button - only for Admin or department manager of this event -->
             <button
                 class="action-btn"
-                *ngIf="authService.isAdmin() || (authService.isManager() && authService.getDepartmentGuid() === event.department?.id)"
+                *ngIf="(event.status === 'Draft' || event.status === 'Submitted') && (authService.isAdmin() || (authService.isManager() && authService.getDepartmentGuid() === event.department?.id))"
                 (click)="editEvent()"
                 matTooltip="Edit event">
                 <mat-icon>edit</mat-icon>
@@ -158,6 +178,51 @@
             <div class="description-section" *ngIf="event.description">
                 <h3>About this event</h3>
                 <p>{{ event.description }}</p>
+            </div>
+
+            <!-- Media Section -->
+            <div class="media-section" *ngIf="event.status === 'Completed' || event.status === 'Archived'">
+                <h3>Event Media & Documentation</h3>
+                
+                <div class="media-upload-controls" *ngIf="canUploadMedia()">
+                    <input type="file" #fileInput hidden (change)="onFileUpload($event, 'Image')" accept="image/*">
+                    <button class="upload-btn" (click)="fileInput.click()">
+                        <mat-icon>image</mat-icon> Upload Image
+                    </button>
+                    
+                    <input type="file" #videoInput hidden (change)="onFileUpload($event, 'Video')" accept="video/*">
+                    <button class="upload-btn" (click)="videoInput.click()">
+                        <mat-icon>videocam</mat-icon> Upload Video
+                    </button>
+                    
+                    <input type="file" #docInput hidden (change)="onFileUpload($event, 'Document')" accept=".pdf,.doc,.docx">
+                    <button class="upload-btn" (click)="docInput.click()">
+                        <mat-icon>description</mat-icon> Upload Document
+                    </button>
+                    
+                    <button class="upload-btn" (click)="addExternalLink()">
+                        <mat-icon>link</mat-icon> Add Link
+                    </button>
+                </div>
+
+                <div class="media-grid" *ngIf="mediaFiles.length > 0">
+                    <div class="media-card" *ngFor="let m of mediaFiles">
+                        <div class="media-icon">
+                            <mat-icon *ngIf="m.fileType === 'Image'">image</mat-icon>
+                            <mat-icon *ngIf="m.fileType === 'Video'">videocam</mat-icon>
+                            <mat-icon *ngIf="m.fileType === 'Document'">description</mat-icon>
+                            <mat-icon *ngIf="m.fileType === 'Link'">link</mat-icon>
+                        </div>
+                        <div class="media-details">
+                            <span class="media-name">{{ m.fileName }}</span>
+                            <a [href]="m.filePath" target="_blank" class="media-link">View / Download</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="no-media" *ngIf="mediaFiles.length === 0">
+                    <p>No media files uploaded yet.</p>
+                </div>
             </div>
         </div>
 

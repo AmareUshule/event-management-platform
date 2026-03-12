@@ -1,5 +1,5 @@
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, inject, ChangeDetectorRef, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -30,6 +30,7 @@ export class HeaderComponent implements OnInit {
   private notificationService = inject(NotificationService);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
+  private platformId = inject(PLATFORM_ID);
 
   user: AuthUser | null = null;
   isMobileMenuOpen = false;
@@ -38,8 +39,10 @@ export class HeaderComponent implements OnInit {
   notifications: Notification[] = [];
 
   ngOnInit(): void {
-    this.user = this.authService.getCurrentUser();
-    this.loadNotifications();
+    if (isPlatformBrowser(this.platformId)) {
+      this.user = this.authService.getCurrentUser();
+      this.loadNotifications();
+    }
   }
 
   loadNotifications(): void {

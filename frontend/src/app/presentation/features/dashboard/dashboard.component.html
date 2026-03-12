@@ -29,27 +29,50 @@
 
           <!-- Actual Stats -->
           <ng-container *ngIf="!isLoadingEvents">
-            <div class="stat-card" (click)="onStatCardClick(0)">
+            <div class="stat-card" (click)="onStatCardClick('all')">
               <div class="stat-icon total-events">
                 <mat-icon>event</mat-icon>
               </div>
               <div class="stat-details">
-                <h3 class="stat-value">{{ totalEvents }}</h3>
-                <p class="stat-label">Total Events</p>
+                <h3 class="stat-value">{{ isStaff() ? assignedEventsCount : totalEvents }}</h3>
+                <p class="stat-label">{{ isStaff() ? 'My Total Assignments' : 'Total Events' }}</p>
               </div>
             </div>
 
-            <div class="stat-card" (click)="onStatCardClick(1)">
+            <!-- Drafts for Admin/Manager -->
+            <div class="stat-card" *ngIf="authService.isAdmin() || authService.isManager()" (click)="onStatCardClick('draft')">
               <div class="stat-icon draft">
                 <mat-icon>edit_note</mat-icon>
               </div>
               <div class="stat-details">
-                <h3 class="stat-value">{{ draftEvents }}</h3>
-                <p class="stat-label">Draft</p>
+                <h3 class="stat-value">{{ draftEventsCount }}</h3>
+                <p class="stat-label">Drafts</p>
               </div>
             </div>
 
-            <div class="stat-card" (click)="onStatCardClick(2)">
+            <!-- Pending Invitations for Staff -->
+            <div class="stat-card" *ngIf="isStaff()" (click)="onStatCardClick('assignments')">
+              <div class="stat-icon pending">
+                <mat-icon>notification_important</mat-icon>
+              </div>
+              <div class="stat-details">
+                <h3 class="stat-value">{{ pendingAssignmentsCount }}</h3>
+                <p class="stat-label">Pending Invitations</p>
+              </div>
+            </div>
+
+            <!-- Ongoing for others (to maintain 4 cards) -->
+            <div class="stat-card" *ngIf="!isStaff() && !authService.isAdmin() && !authService.isManager()" (click)="onStatCardClick('ongoing')">
+              <div class="stat-icon draft" style="background: linear-gradient(135deg, #3b82f6, #2563eb);">
+                <mat-icon>play_circle_outline</mat-icon>
+              </div>
+              <div class="stat-details">
+                <h3 class="stat-value">{{ ongoingEvents }}</h3>
+                <p class="stat-label">Ongoing Events</p>
+              </div>
+            </div>
+
+            <div class="stat-card" (click)="onStatCardClick('scheduled')">
               <div class="stat-icon published">
                 <mat-icon>check_circle</mat-icon>
               </div>
@@ -59,17 +82,16 @@
               </div>
             </div>
 
-            <div class="stat-card" (click)="onStatCardClick(3)">
+            <div class="stat-card" (click)="onStatCardClick('past')">
               <div class="stat-icon total-events" style="background: linear-gradient(135deg, #10b981, #059669);">
-                <mat-icon>task_alt</mat-icon>
+                <mat-icon>history</mat-icon>
               </div>
               <div class="stat-details">
-                <h3 class="stat-value">{{ completedEvents }}</h3>
-                <p class="stat-label">Completed</p>
+                <h3 class="stat-value">{{ pastEventsCount }}</h3>
+                <p class="stat-label">Past Events</p>
               </div>
             </div>
-          </ng-container>
-        </div>
+          </ng-container>        </div>
       </div>
 
       <!-- Dashboard Content -->
@@ -85,17 +107,36 @@
             <div class="table-controls">
               <!-- Left side: Event Tabs -->
               <div class="event-tabs">
-                <button class="event-tab" [class.active]="selectedTabIndex === 0" (click)="onTabChange(0)">
+                <button class="event-tab" [class.active]="activeTab === 'all'" (click)="onTabChange('all')">
                   ALL <span class="tab-count">{{ totalEvents }}</span>
                 </button>
-                <button class="event-tab" [class.active]="selectedTabIndex === 1" (click)="onTabChange(1)">
-                  Draft <span class="tab-count">{{ draftEvents }}</span>
-                </button>
-                <button class="event-tab" [class.active]="selectedTabIndex === 2" (click)="onTabChange(2)">
+                
+                <!-- Admin & Manager Tabs -->
+                <ng-container *ngIf="authService.isAdmin() || authService.isManager()">
+                  <button class="event-tab" [class.active]="activeTab === 'draft'" (click)="onTabChange('draft')">
+                    Draft <span class="tab-count" *ngIf="draftEventsCount > 0">({{ draftEventsCount }})</span>
+                  </button>
+                  <button class="event-tab" [class.active]="activeTab === 'submitted'" (click)="onTabChange('submitted')">
+                    Submitted <span class="tab-count">{{ submittedEvents }}</span>
+                  </button>
+                </ng-container>
+
+                <!-- Cameraman & Expert Tabs -->
+                <ng-container *ngIf="isStaff()">
+                  <button class="event-tab" [class.active]="activeTab === 'assignments'" (click)="onTabChange('assignments')">
+                    My Assignments <span class="tab-count">{{ myAssignments.length }}</span>
+                  </button>
+                </ng-container>
+
+                <!-- Shared Tabs -->
+                <button class="event-tab" [class.active]="activeTab === 'scheduled'" (click)="onTabChange('scheduled')">
                   Scheduled <span class="tab-count">{{ scheduledEvents }}</span>
                 </button>
-                <button class="event-tab" [class.active]="selectedTabIndex === 3" (click)="onTabChange(3)">
-                  Completed <span class="tab-count">{{ completedEvents }}</span>
+                <button class="event-tab" [class.active]="activeTab === 'ongoing'" (click)="onTabChange('ongoing')">
+                  Ongoing <span class="tab-count">{{ ongoingEvents }}</span>
+                </button>
+                <button class="event-tab" [class.active]="activeTab === 'past'" (click)="onTabChange('past')">
+                  Past Events <span class="tab-count">{{ pastEventsCount }}</span>
                 </button>
               </div>
 
@@ -149,10 +190,10 @@
               </div>
             </div>
 
-            <!-- Actual Table -->
-            <table mat-table [dataSource]="paginatedEvents" class="modern-table" *ngIf="!isLoadingEvents">
+            <!-- Main Events Table -->
+            <table mat-table [dataSource]="paginatedEvents" class="modern-table" *ngIf="!isLoadingEvents && activeTab !== 'assignments'">
 
-              <!-- # Column - Fixed index calculation -->
+              <!-- # Column -->
               <ng-container matColumnDef="id">
                 <th mat-header-cell *matHeaderCellDef> # </th>
                 <td mat-cell *matCellDef="let element; let i = index">
@@ -168,8 +209,9 @@
                     <div class="event-info">
                       <span class="event-title">{{ element.name }}</span>
                       <div class="event-status-badge"
-                        [class.scheduled]="element.status === 'Scheduled' || element.status === 'Completed'"
-                        [class.draft]="element.status === 'Draft'" [class.pending]="element.status === 'Pending'">
+                        [class.scheduled]="element.status === 'Scheduled' || element.status === 'Ongoing' || element.status === 'Completed'"
+                        [class.archived]="element.status === 'Archived'"
+                        [class.draft]="element.status === 'Draft'" [class.pending]="element.status === 'Submitted'">
                         {{ element.status | titlecase }}
                       </div>
                     </div>
@@ -203,26 +245,31 @@
                 <th mat-header-cell *matHeaderCellDef> Actions </th>
                 <td mat-cell *matCellDef="let element" (click)="$event.stopPropagation()">
                   <div class="action-icons-container">
-                    <!-- View button - always visible -->
-                    <button class="action-btn view-action" (click)="viewEvent(element)" matTooltip="View Details">
+                    <button class="icon-btn view" (click)="viewEvent(element)" matTooltip="View Details">
                       <mat-icon>visibility</mat-icon>
                     </button>
 
-                    <!-- Edit button - if can manage -->
-                    <button class="action-btn edit-action" *ngIf="canManageEvent(element)" (click)="editEvent(element)"
+                    <button 
+                      class="icon-btn edit" 
+                      *ngIf="canManageEvent(element)" 
+                      (click)="editEvent(element)" 
                       matTooltip="Edit Event">
                       <mat-icon>edit</mat-icon>
                     </button>
 
-                    <!-- Publish button - if draft and can approve -->
-                    <button class="action-btn publish-action" *ngIf="element.status === 'Draft' && canApproveEvents()"
-                      (click)="publishEvent(element)" matTooltip="Publish Event">
-                      <mat-icon>publish</mat-icon>
+                    <button 
+                      class="icon-btn publish" 
+                      *ngIf="element.status === 'Draft' && element.raw.createdBy.id === user?.adObjectId" 
+                      (click)="submitEvent(element)" 
+                      matTooltip="Submit for Approval">
+                      <mat-icon>send</mat-icon>
                     </button>
 
-                    <!-- Delete button - if can manage -->
-                    <button class="action-btn delete-action" *ngIf="canManageEvent(element)"
-                      (click)="deleteEvent(element)" matTooltip="Delete Event">
+                    <button 
+                      class="icon-btn delete" 
+                      *ngIf="canManageEvent(element)" 
+                      (click)="deleteEvent(element)" 
+                      matTooltip="Delete Event">
                       <mat-icon>delete</mat-icon>
                     </button>
                   </div>
@@ -233,7 +280,6 @@
               <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="table-row clickable-row"
                 (click)="onRowClick(row)"></tr>
 
-              <!-- No Data Row -->
               <tr class="mat-row" *matNoDataRow>
                 <td class="mat-cell no-data-cell" [attr.colspan]="displayedColumns.length">
                   <div class="no-data-content">
@@ -241,17 +287,76 @@
                     <h4>No events found</h4>
                     <p *ngIf="searchTerm">No events match your search "{{ searchTerm }}"</p>
                     <p *ngIf="!searchTerm">No events available in this category</p>
-                    <button class="clear-filter-btn" *ngIf="searchTerm" (click)="clearSearch()">
-                      <mat-icon>clear</mat-icon>
-                      Clear Search
-                    </button>
                   </div>
                 </td>
               </tr>
             </table>
 
+            <!-- My Assignments Table -->
+            <div class="assignments-table-container" *ngIf="activeTab === 'assignments'">
+              <table mat-table [dataSource]="myAssignments" class="modern-table">
+                <ng-container matColumnDef="id">
+                  <th mat-header-cell *matHeaderCellDef> # </th>
+                  <td mat-cell *matCellDef="let element; let i = index">{{ i + 1 }}</td>
+                </ng-container>
+
+                <ng-container matColumnDef="eventTitle">
+                  <th mat-header-cell *matHeaderCellDef> Event Title </th>
+                  <td mat-cell *matCellDef="let element">{{ element.eventTitle }}</td>
+                </ng-container>
+
+                <ng-container matColumnDef="date">
+                  <th mat-header-cell *matHeaderCellDef> Date </th>
+                  <td mat-cell *matCellDef="let element">{{ element.createdAt | date:'medium' }}</td>
+                </ng-container>
+
+                <ng-container matColumnDef="role">
+                  <th mat-header-cell *matHeaderCellDef> Role </th>
+                  <td mat-cell *matCellDef="let element">
+                    <span class="badge">{{ element.role }}</span>
+                  </td>
+                </ng-container>
+
+                <ng-container matColumnDef="status">
+                  <th mat-header-cell *matHeaderCellDef> Status </th>
+                  <td mat-cell *matCellDef="let element">
+                    <span class="status-badge" [class]="element.status.toLowerCase()">{{ element.status }}</span>
+                  </td>
+                </ng-container>
+
+                <ng-container matColumnDef="actions">
+                  <th mat-header-cell *matHeaderCellDef> Actions </th>
+                  <td mat-cell *matCellDef="let element">
+                    <div class="assignment-actions" *ngIf="element.status === 'Pending'">
+                      <button mat-icon-button color="primary" (click)="acceptAssignment(element)" matTooltip="Accept">
+                        <mat-icon>check_circle</mat-icon>
+                      </button>
+                      <button mat-icon-button color="warn" (click)="declineAssignment(element)" matTooltip="Decline">
+                        <mat-icon>cancel</mat-icon>
+                      </button>
+                    </div>
+                    <button mat-icon-button (click)="viewEvent(element)" matTooltip="View Event">
+                      <mat-icon>visibility</mat-icon>
+                    </button>
+                  </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="assignmentColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: assignmentColumns;" class="table-row"></tr>
+
+                <tr class="mat-row" *matNoDataRow>
+                  <td class="mat-cell no-data-cell" [attr.colspan]="assignmentColumns.length">
+                    <div class="no-data-content">
+                      <mat-icon>assignment_ind</mat-icon>
+                      <h4>No assignments found</h4>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            </div>
+
             <!-- Custom Paginator Controls -->
-            <div class="custom-paginator" *ngIf="filteredEvents.length > 0">
+            <div class="custom-paginator" *ngIf="filteredEvents.length > 0 && activeTab !== 'assignments'">
               <div class="paginator-info">
                 Showing {{ (currentPage * pageSize) + 1 }} -
                 {{ getCurrentPageEndIndex() }}

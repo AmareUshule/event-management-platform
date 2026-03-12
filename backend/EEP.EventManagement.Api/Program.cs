@@ -43,7 +43,7 @@ builder.Services.AddCors(options =>
         policy.WithOrigins(
                 "http://localhost:4200",
                 "http://10.27.52.167:4200",
-                "http://10.27.52.182:4200"
+                "http://10.27.52.119:4200"
             )
             .AllowAnyHeader()
             .AllowAnyMethod()
@@ -73,9 +73,12 @@ builder.Services.AddDbContext<IdentityDbContext>(options =>
 // Application services
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IUserContext, EEP.EventManagement.Api.Infrastructure.Security.UserContext>();
+builder.Services.AddScoped<EEP.EventManagement.Api.Application.Services.IEventLifecycleService, EEP.EventManagement.Api.Application.Services.EventLifecycleService>();
+builder.Services.AddHostedService<EEP.EventManagement.Api.Infrastructure.Services.EventStatusUpdateWorker>();
 builder.Services.AddScoped<IEventRepository, EventRepository>();
 builder.Services.AddScoped<IDepartmentRepository, DepartmentRepository>();
 builder.Services.AddScoped<IAssignmentRepository, AssignmentRepository>();
+builder.Services.AddScoped<IMediaFileRepository, MediaFileRepository>();
 builder.Services.AddScoped<IAnnouncementRepository, AnnouncementRepository>();
 builder.Services.AddScoped<EEP.EventManagement.Api.Infrastructure.Storage.Interfaces.IStorageService, EEP.EventManagement.Api.Infrastructure.Storage.Implementations.LocalStorageService>();
 
