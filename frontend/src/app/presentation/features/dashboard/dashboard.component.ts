@@ -289,10 +289,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   private updateStatsFromSummary(summary: ReportSummary): void {
     this.totalEvents = summary.totalEvents;
-    this.scheduledEvents = summary.scheduledCount;
-    this.draftEvents = summary.draftCount;
-    this.completedEvents = summary.completedCount;
     this.pendingApprovalsCount = summary.pendingApprovalsCount;
+    
+    // If events are already loaded, we prefer our local calculation which handles
+    // the "automatic completion" logic for the dashboard display.
+    if (this.masterEvents.length > 0) {
+      this.calculateStatistics();
+    } else {
+      this.scheduledEvents = summary.scheduledCount;
+      this.draftEvents = summary.draftCount;
+      this.completedEvents = summary.completedCount;
+    }
   }
 
   private setMasterData(events: Event[]): void {
@@ -303,10 +310,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.masterTableEvents = this.transformToTableEvents(events);
 
     // 3. Calculate all derived data from master
-    if (!this.reportSummary) {
-      this.calculateStatistics();
-      this.updateInsights();
-    }
+    // We always calculate statistics locally to ensure our custom "automatic completion" 
+    // logic is applied consistently across the dashboard.
+    this.calculateStatistics();
+    this.updateInsights();
+    
     this.updateEventsThisWeek();
     this.updateAgendaFromMaster();
 
@@ -330,11 +338,32 @@ export class DashboardComponent implements OnInit, OnDestroy {
       name: event.title,
       location: event.eventPlace,
       date: new Date(event.startDate),
-      status: event.status,
+      status: this.getEffectiveStatus(event.status, event.startDate),
       departmentName: event.department?.name || 'Unknown',
       createdByName: this.getFullName(event.createdBy),
       raw: event
     }));
+  }
+
+  /**
+   * Determines the effective status of an event based on the current date and time.
+   * If an event is 'Scheduled' but its start date/time has already passed, it is 
+   * automatically displayed as 'Completed' for better user experience.
+   * 
+   * @param status The original status from the database
+   * @param startDate The scheduled start date and time
+   * @returns The effective status ('Completed' if time has passed, otherwise original)
+   */
+  private getEffectiveStatus(status: string | EventStatus, startDate: string | Date): string {
+    // Only apply auto-completion logic to 'Scheduled' events
+    if (status !== 'Scheduled') return status as string;
+    
+    const now = new Date();
+    const eventDate = new Date(startDate);
+    
+    // Comparison handles edge cases like same-day events where only the time has passed.
+    // If current system date/time is greater than the event's start date/time, it is completed.
+    return now > eventDate ? 'Completed' : 'Scheduled';
   }
 
   private buildFilters(): { departmentId?: string; status?: string } {
@@ -358,10 +387,19 @@ export class DashboardComponent implements OnInit, OnDestroy {
    */
   private calculateStatistics(): void {
     this.totalEvents = this.masterEvents.length;
-    this.scheduledEvents = this.masterEvents.filter(e =>
-      e.status === 'Scheduled' ).length;
-    this.draftEvents = this.masterEvents.filter(e => e.status === 'Draft').length;
-    this.completedEvents = this.masterEvents.filter(e => e.status === 'Completed').length;
+    
+    // Recalculate counts based on effective status for accurate dashboard reporting.
+    // This ensures that events whose time has passed are counted as 'Completed' 
+    // even if their database status is still 'Scheduled'.
+    const effectiveEvents = this.masterEvents.map(e => ({
+      ...e,
+      effectiveStatus: this.getEffectiveStatus(e.status, e.startDate)
+    }));
+
+    this.scheduledEvents = effectiveEvents.filter(e => e.effectiveStatus === 'Scheduled').length;
+    this.draftEvents = effectiveEvents.filter(e => e.effectiveStatus === 'Draft').length;
+    this.completedEvents = effectiveEvents.filter(e => e.effectiveStatus === 'Completed').length;
+    
     this.updateEventsThisWeek();
   }
 
