@@ -69,593 +69,6 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   }
 }
 
-// Modern Top Navigation
-.top-nav {
-  background: $glass-bg;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid $glass-border;
-  box-shadow: 0 1px 24px rgba(0, 0, 0, 0.08);
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 100;
-  width: 100%;
-
-  .nav-content {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 0 32px;
-    height: 72px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
-    .nav-left {
-      display: flex;
-      align-items: center;
-      gap: 20px;
-
-      .mobile-menu-btn {
-        display: none;
-        color: $dark-600;
-
-        @media (max-width: 992px) {
-          display: block;
-        }
-      }
-
-      .brand-logo {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        cursor: pointer;
-
-        .logo-icon {
-          width: 40px;
-          height: 40px;
-          background: linear-gradient(135deg, $primary-color 0%, $accent-color 100%);
-          border-radius: 12px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          position: relative;
-          overflow: hidden;
-
-          &::before {
-            content: '';
-            position: absolute;
-            inset: -2px;
-            background: linear-gradient(135deg, $primary-color, $accent-color);
-            border-radius: 14px;
-            filter: blur(8px);
-            opacity: 0.5;
-          }
-
-          mat-icon {
-            color: $white;
-            font-size: 22px;
-            width: 22px;
-            height: 22px;
-            position: relative;
-            z-index: 1;
-          }
-
-          .eep-logo {
-            width: 40px;
-            height: 40px;
-            object-fit: contain;
-          }
-        }
-
-        .brand-name {
-          font-size: 22px;
-          font-weight: 700;
-          background: linear-gradient(135deg, $primary-color 0%, $accent-color 100%);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-          margin: 0;
-          letter-spacing: -0.5px;
-
-          @media (max-width: 480px) {
-            display: none;
-          }
-        }
-      }
-
-      .nav-tabs {
-        display: flex;
-        gap: 4px;
-        background: $dark-100;
-        padding: 4px;
-        border-radius: 12px;
-        border: 1px solid $dark-200;
-
-        @media (max-width: 992px) {
-          display: none;
-        }
-
-        .nav-tab {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          padding: 8px 20px;
-          background: transparent;
-          border: none;
-          border-radius: 8px;
-          color: $dark-600;
-          font-weight: 500;
-          font-size: 14px;
-          cursor: pointer;
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          position: relative;
-
-          &:hover {
-            background: $white;
-            color: $primary-color;
-            transform: translateY(-1px);
-
-            mat-icon {
-              transform: translateY(-1px);
-            }
-          }
-
-          &.active {
-            background: $white;
-            color: $primary-color;
-            box-shadow: 0 2px 8px rgba($primary-color, 0.15);
-
-            &::after {
-              content: '';
-              position: absolute;
-              bottom: -4px;
-              left: 50%;
-              transform: translateX(-50%);
-              width: 24px;
-              height: 3px;
-              background: linear-gradient(90deg, $primary-color, $accent-color);
-              border-radius: 2px;
-              animation: slideIn 0.3s ease-out;
-            }
-
-            mat-icon {
-              color: $primary-color;
-            }
-          }
-
-          mat-icon {
-            font-size: 18px;
-            width: 18px;
-            height: 18px;
-            transition: all 0.3s ease;
-          }
-        }
-      }
-    }
-
-    .nav-right {
-      display: flex;
-      align-items: center;
-      gap: 20px;
-
-      .notification-wrapper {
-        position: relative;
-
-        .notification-badge {
-          position: absolute;
-          top: 4px;
-          right: 4px;
-          width: 8px;
-          height: 8px;
-          background: $danger-color;
-          border-radius: 50%;
-          border: 2px solid $white;
-          animation: pulse 2s infinite;
-        }
-      }
-
-      .nav-icon-btn {
-        width: 40px;
-        height: 40px;
-        border-radius: 10px;
-        background: $dark-100;
-        color: $dark-600;
-        transition: all 0.3s ease;
-
-        &:hover {
-          background: $white;
-          color: $primary-color;
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba($primary-color, 0.15);
-        }
-      }
-
-      // Updated User Profile with enhanced styling
-      .user-profile {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 6px 12px 6px 6px;
-        border-radius: 40px;
-        transition: all 0.3s ease;
-        cursor: pointer;
-        background: $white;
-        border: 1px solid $dark-200;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-
-        &:hover {
-          background: $primary-bg;
-          border-color: $primary-color;
-          box-shadow: 0 4px 12px rgba($primary-color, 0.15);
-          transform: translateY(-2px);
-
-          .user-avatar {
-            transform: scale(1.05);
-          }
-
-          .dropdown-icon {
-            color: $primary-color;
-          }
-        }
-
-        &:active {
-          transform: translateY(0);
-        }
-
-        .user-avatar {
-          width: 36px;
-          height: 36px;
-          background: linear-gradient(135deg, $primary-color 0%, $accent-color 100%);
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          transition: all 0.3s ease;
-          position: relative;
-          overflow: hidden;
-          box-shadow: 0 2px 8px rgba($primary-color, 0.2);
-
-          &::before {
-            content: '';
-            position: absolute;
-            inset: -2px;
-            background: linear-gradient(135deg, $primary-color, $accent-color);
-            border-radius: 50%;
-            filter: blur(4px);
-            opacity: 0.3;
-          }
-
-          mat-icon {
-            color: $white;
-            font-size: 20px;
-            width: 20px;
-            height: 20px;
-            position: relative;
-            z-index: 1;
-          }
-        }
-
-        .user-info {
-          display: flex;
-          flex-direction: column;
-          align-items: flex-start;
-
-          @media (max-width: 600px) {
-            display: none;
-          }
-
-          .user-name {
-            font-size: 14px;
-            font-weight: 600;
-            color: $dark-900;
-            line-height: 1.3;
-            max-width: 140px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-          }
-
-          .user-role {
-            font-size: 11px;
-            font-weight: 500;
-            color: $primary-color;
-            background: rgba($primary-color, 0.1);
-            padding: 2px 8px;
-            border-radius: 20px;
-            margin-top: 2px;
-            max-width: 140px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-          }
-        }
-
-        .dropdown-icon {
-          color: $dark-400;
-          transition: all 0.3s ease;
-          font-size: 20px;
-          width: 20px;
-          height: 20px;
-          margin-left: 4px;
-        }
-      }
-    }
-  }
-}
-
-// Enhanced User Menu Styling
-::ng-deep .enhanced-user-menu {
-  min-width: 280px !important;
-  max-width: 320px !important;
-  margin-top: 8px !important;
-  border-radius: 16px !important;
-  background: $white !important;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2) !important;
-  border: 1px solid rgba($primary-color, 0.1) !important;
-  overflow: hidden !important;
-  z-index: 1000 !important;
-
-  // Remove fixed positioning - let Angular Material handle it
-  // but ensure it's anchored to the trigger element
-
-  @media (max-width: 768px) {
-    max-width: calc(100vw - 32px) !important;
-    min-width: 260px !important;
-
-    // Ensure menu doesn't go off-screen on mobile
-    &.mat-mdc-menu-panel {
-      max-width: calc(100vw - 32px) !important;
-    }
-  }
-
-  @media (max-width: 480px) {
-    max-width: calc(100vw - 24px) !important;
-    min-width: 240px !important;
-
-    &.mat-mdc-menu-panel {
-      max-width: calc(100vw - 24px) !important;
-    }
-  }
-
-  .menu-user-header {
-    padding: 20px 16px;
-    background: linear-gradient(135deg, rgba($primary-color, 0.05) 0%, rgba($accent-color, 0.05) 100%);
-    display: flex;
-    align-items: center;
-    gap: 16px;
-
-    .menu-user-avatar {
-      width: 56px;
-      height: 56px;
-      background: linear-gradient(135deg, $primary-color 0%, $accent-color 100%);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-      font-weight: 600;
-      color: $white;
-      box-shadow: 0 4px 12px rgba($primary-color, 0.3);
-      flex-shrink: 0;
-    }
-
-    .menu-user-info {
-      flex: 1;
-      min-width: 0;
-
-      .menu-user-name {
-        font-size: 16px;
-        font-weight: 600;
-        color: $dark-900;
-        margin-bottom: 4px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
-      .menu-user-email {
-        font-size: 12px;
-        color: $dark-500;
-        margin-bottom: 6px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
-      .menu-user-role-badge {
-        display: inline-block;
-        padding: 4px 10px;
-        background: rgba($primary-color, 0.1);
-        border-radius: 20px;
-        font-size: 11px;
-        font-weight: 600;
-        color: $primary-color;
-        text-transform: uppercase;
-        letter-spacing: 0.3px;
-      }
-    }
-  }
-
-  .mat-mdc-menu-item {
-    min-height: 48px;
-    padding: 0 16px;
-    font-size: 14px;
-    color: $dark-700;
-    transition: all 0.2s ease;
-
-    &:hover {
-      background: rgba($primary-color, 0.08);
-
-      .mat-icon {
-        color: $primary-color;
-        transform: scale(1.1);
-      }
-    }
-
-    .mat-icon {
-      margin-right: 16px;
-      color: $dark-500;
-      transition: all 0.2s ease;
-    }
-
-    .menu-shortcut {
-      margin-left: auto;
-      font-size: 11px;
-      color: $dark-400;
-      font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', monospace;
-    }
-  }
-
-  .logout-menu-item {
-    color: $danger-color !important;
-
-    &:hover {
-      background: rgba($danger-color, 0.08) !important;
-
-      .mat-icon {
-        color: $danger-color !important;
-      }
-    }
-
-    .mat-icon {
-      color: $danger-color !important;
-    }
-  }
-
-  .mat-divider {
-    margin: 8px 0;
-    border-top-color: $dark-200;
-  }
-}
-
-// Also ensure the overlay panel is positioned correctly
-::ng-deep .cdk-overlay-pane {
-  &.enhanced-user-menu-panel {
-    margin-top: 8px !important;
-
-    @media (max-width: 768px) {
-      // Center on mobile if needed
-      transform: translateX(-50%) !important;
-      left: 50% !important;
-    }
-  }
-}
-
-// Mobile Menu Overlay
-.mobile-menu-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba($dark-900, 0.4);
-  backdrop-filter: blur(4px);
-  z-index: 1000;
-  opacity: 0;
-  visibility: hidden;
-  transition: all 0.3s ease;
-
-  &.open {
-    opacity: 1;
-    visibility: visible;
-
-    .mobile-menu-content {
-      transform: translateX(0);
-    }
-  }
-
-  .mobile-menu-content {
-    position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    width: 280px;
-    background: $white;
-    box-shadow: 20px 0 40px rgba(0, 0, 0, 0.1);
-    transform: translateX(-100%);
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    display: flex;
-    flex-direction: column;
-
-    .mobile-menu-header {
-      padding: 20px;
-      border-bottom: 1px solid $dark-200;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-
-      .brand-logo {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-
-        .logo-icon {
-          width: 32px;
-          height: 32px;
-
-          .eep-logo {
-            width: 32px;
-            height: 32px;
-            object-fit: contain;
-          }
-        }
-
-        .brand-name {
-          font-size: 18px;
-          font-weight: 700;
-          background: linear-gradient(135deg, $primary-color 0%, $accent-color 100%);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-          margin: 0;
-        }
-      }
-    }
-
-    .mobile-nav-items {
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-
-      .mobile-nav-item {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 12px 16px;
-        background: transparent;
-        border: none;
-        border-radius: 10px;
-        color: $dark-600;
-        font-weight: 500;
-        font-size: 15px;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        text-align: left;
-
-        &:hover {
-          background: $dark-50;
-          color: $primary-color;
-        }
-
-        &.active {
-          background: $primary-bg;
-          color: $primary-color;
-
-          mat-icon {
-            color: $primary-color;
-          }
-        }
-
-        mat-icon {
-          font-size: 20px;
-          width: 20px;
-          height: 20px;
-        }
-      }
-    }
-  }
-}
-
 // Modern Dashboard Main
 .dashboard-main {
   max-width: 1400px;
@@ -745,7 +158,6 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
       position: relative;
       overflow: hidden;
 
-      // Top accent line
       &::before {
         content: '';
         position: absolute;
@@ -758,20 +170,14 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
         z-index: 1;
       }
 
-      // Removed the green-red gradient overlay on hover
-
       &:hover {
         transform: translateY(-8px);
         box-shadow: 0 22px 45px rgba(0, 0, 0, 0.18);
-
-        // Removed the gradient overlay activation
-        // Removed the accent bar expansion with green-red gradient
 
         .stat-icon {
           transform: scale(1.1) rotate(5deg);
           box-shadow: 0 10px 20px rgba($primary-color, 0.3);
 
-          // Keep the icon color variations on hover
           &.total-events {
             background: linear-gradient(135deg, $primary-color 0%, $primary-dark 100%);
           }
@@ -1137,25 +543,18 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 
       .mat-header-row {
         height: 56px;
-        background: $dark-50; // Light background for headers to anchor columns
+        background: $dark-50;
         border-radius: 12px;
       }
 
       .mat-header-cell {
-        color: $dark-900; 
+        color: $dark-900;
         font-size: 13px;
         font-weight: 800;
         text-transform: uppercase;
         letter-spacing: 1.5px;
         padding: 0 20px;
         border-bottom: 2px solid $dark-200;
-
-        &.mat-column-actions {
-          text-align: center;
-          background: rgba($primary-color, 0.05); // Highlight the action header
-          border-left: 1px solid $dark-200;
-          border-radius: 0 12px 0 0;
-        }
 
         &.mat-column-id {
           border-radius: 12px 0 0 0;
@@ -1183,24 +582,20 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
         border: 1.5px solid $dark-100;
 
-        // REMOVED all hover color changes - only keeping bold text
         &:hover {
           transform: translateY(-2px);
           box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
           background: $white;
           border-color: $dark-200;
 
-          // Make title bolder on hover
           .event-title {
             font-weight: 900;
           }
 
-          // Make the entire row text slightly bolder
           .mat-cell {
             font-weight: 600;
           }
 
-          // Make index badge slightly more prominent
           .index-badge {
             font-weight: 900;
             background: $dark-100;
@@ -1250,69 +645,98 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
             border-bottom-right-radius: 16px;
           }
 
-          // Action Zone Styling - Create a vertical 'dock' for actions
+          // ACTION COLUMN STYLES
           &.mat-column-actions {
-            background: rgba($primary-color, 0.03); // Very subtle tint to group actions
-            border-left: 1.5px solid $dark-100; // Vertical separation
-            padding: 8px;
-            width: 160px; // Increased width for multiple icons
-            text-align: center;
+            background: rgba($primary-color, 0.03);
+            border-left: 1.5px solid $dark-100;
+            padding: 8px 12px;
+            width: 200px;
+            text-align: left;
             border-radius: 0 16px 16px 0;
             transition: all 0.3s ease;
           }
 
           .action-icons-container {
-            display: flex;
+            display: flex !important;
+            flex-direction: row !important;
+            align-items: center !important;
+            justify-content: flex-start !important;
+            gap: 8px !important;
+            width: 100% !important;
+            flex-wrap: nowrap !important;
+          }
+
+          .action-btn {
+            display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin: 0;
+            padding: 0;
+            flex-shrink: 0;
 
-            .icon-btn {
-              width: 36px;
-              height: 36px;
-              border-radius: 10px;
-              border: 1.5px solid $dark-200;
-              background: $white;
+            mat-icon {
+              font-size: 20px;
+              width: 20px;
+              height: 20px;
+              color: currentColor;
+              margin: 0;
               display: flex;
               align-items: center;
               justify-content: center;
-              cursor: pointer;
-              transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-              color: $dark-600;
+            }
 
-              mat-icon {
-                font-size: 18px;
-                width: 18px;
-                height: 18px;
-              }
+            &:hover {
+              transform: translateY(-2px);
+              box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+            }
+
+            /* VIEW */
+            &.view-action {
+              color: $primary-color;
+              background: rgba($primary-color, 0.1);
 
               &:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+                background: $primary-color;
+                color: $white;
               }
+            }
 
-              &.view:hover {
-                background: $primary-bg;
-                border-color: $primary-color;
-                color: $primary-color;
+            /* EDIT */
+            &.edit-action {
+              color: #0284c7;
+              background: rgba(#0284c7, 0.1);
+
+              &:hover {
+                background: #0284c7;
+                color: $white;
               }
+            }
 
-              &.edit:hover {
-                background: #e0f2fe; // Light blue
-                border-color: #0ea5e9;
-                color: #0ea5e9;
+            /* PUBLISH */
+            &.publish-action {
+              color: #059669;
+              background: rgba(#059669, 0.1);
+
+              &:hover {
+                background: #059669;
+                color: $white;
               }
+            }
 
-              &.publish:hover {
-                background: #f0fdf4; // Light emerald
-                border-color: #10b981;
-                color: #10b981;
-              }
+            /* DELETE */
+            &.delete-action {
+              color: $danger-color;
+              background: rgba($danger-color, 0.1);
 
-              &.delete:hover {
-                background: #fef2f2; // Light red
-                border-color: $danger-color;
-                color: $danger-color;
+              &:hover {
+                background: $danger-color;
+                color: $white;
               }
             }
           }
@@ -1346,29 +770,6 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
                 color: $dark-900;
                 transition: font-weight 0.2s ease;
                 letter-spacing: -0.02em;
-              }
-
-              .event-meta {
-                display: flex;
-                align-items: center;
-                gap: 12px;
-                flex-wrap: wrap;
-
-                .event-meta-item {
-                  display: flex;
-                  align-items: center;
-                  gap: 4px;
-                  font-size: 12px;
-                  color: $dark-600;
-                  font-weight: 500;
-
-                  mat-icon {
-                    font-size: 14px;
-                    width: 14px;
-                    height: 14px;
-                    color: $primary-color;
-                  }
-                }
               }
 
               .event-status-badge {
@@ -1431,48 +832,11 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
               opacity: 0.8;
             }
           }
-
-          .action-menu-btn {
-            width: 44px;
-            height: 44px;
-            border-radius: 14px;
-            border: 2px solid $dark-200;
-            background: $dark-50; // Slightly off-white to stand out from white row
-            color: $dark-800;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            z-index: 10;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-
-            &:hover {
-              background: $white;
-              border-color: $primary-color;
-              color: $primary-color;
-              box-shadow: 0 4px 12px rgba($primary-color, 0.15);
-              transform: translateY(-1px);
-            }
-
-            &:active {
-              transform: translateY(0);
-            }
-
-            mat-icon {
-              font-size: 24px;
-              width: 24px;
-              height: 24px;
-            }
-          }
         }
 
         // Ensure actions column doesn't trigger row click
         .mat-column-actions {
           cursor: default;
-          width: 80px;
-          text-align: center;
         }
       }
 
@@ -1539,46 +903,6 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   }
 }
 
-// Action Menu Styling
-::ng-deep .action-menu {
-  min-width: 200px !important;
-  border-radius: 16px !important;
-  overflow: hidden;
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.18) !important;
-  border: 1px solid rgba($primary-color, 0.1) !important;
-
-  .mat-mdc-menu-item {
-    min-height: 44px;
-    font-size: 14px;
-    font-weight: 500;
-    padding: 0 16px;
-
-    .mat-icon {
-      margin-right: 12px;
-      font-size: 20px;
-      width: 20px;
-      height: 20px;
-    }
-
-    &:hover {
-      background: $primary-bg;
-
-      .mat-icon {
-        color: $primary-color;
-      }
-    }
-  }
-
-  .delete-menu-item {
-    color: $danger-color;
-    font-weight: 600;
-
-    &:hover {
-      background: rgba($danger-color, 0.1);
-    }
-  }
-}
-
 // Modern Sidebar
 .sidebar {
   display: flex;
@@ -1587,7 +911,7 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 
   .sidebar-card {
     background: $white;
-    border-radius: 24px; // Larger radius for more modern feel
+    border-radius: 24px;
     overflow: hidden;
     border: 1px solid $border-color;
     box-shadow: 0 10px 25px rgba($dark-900, 0.05);
@@ -1643,8 +967,8 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 
       h4 {
         font-size: 16px;
-        font-weight: 800; // Extra bold for brand identity
-        color: $primary-dark; // Green[900]
+        font-weight: 800;
+        color: $primary-dark;
         margin: 0;
         letter-spacing: 0.5px;
         text-transform: uppercase;
@@ -1853,10 +1177,11 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
         .insight-value {
           font-size: 22px;
           font-weight: 900;
-          color: $primary-color; // Green[900] via variable
+          color: $primary-color;
           background: linear-gradient(135deg, $primary-color, $primary-light);
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
+          background-clip: text;
         }
       }
 
@@ -1911,7 +1236,7 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 
         &:hover {
           background: $white;
-          border-color: $accent-color; // Red[900] accent
+          border-color: $accent-color;
           box-shadow: 0 8px 20px rgba($accent-color, 0.05);
 
           mat-icon {
@@ -1946,301 +1271,7 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   }
 }
 
-// Paginator Styles
-::ng-deep .mat-mdc-paginator {
-  background: transparent !important;
-  margin-top: 16px;
-  border-top: 1.5px solid $dark-200;
-  padding: 12px 0;
-
-  .mat-mdc-paginator-container {
-    min-height: 56px;
-    padding: 0 16px;
-  }
-
-  .mat-mdc-paginator-range-label {
-    color: $dark-600;
-    font-size: 14px;
-    font-weight: 600;
-    margin: 0 24px;
-  }
-
-  .mat-mdc-paginator-navigation-button {
-    background: $white !important;
-    border: 1.5px solid $dark-200 !important;
-    border-radius: 10px !important;
-    width: 42px !important;
-    height: 42px !important;
-    transition: all 0.3s ease;
-
-    &:hover {
-      background: $primary-bg !important;
-      border-color: $primary-color !important;
-      transform: translateY(-2px);
-
-      .mat-mdc-paginator-icon {
-        fill: $primary-color !important;
-      }
-    }
-
-    &:disabled {
-      opacity: 0.5;
-      pointer-events: none;
-    }
-  }
-
-  .mat-mdc-paginator-page-size {
-    .mat-mdc-paginator-page-size-label {
-      color: $dark-600;
-      font-size: 14px;
-      font-weight: 600;
-      margin-right: 8px;
-    }
-
-    .mat-mdc-select {
-      background: $white !important;
-      border: 1.5px solid $dark-200 !important;
-      border-radius: 10px !important;
-      padding: 8px 28px 8px 12px !important;
-      font-size: 14px !important;
-      font-weight: 600 !important;
-      color: $dark-700 !important;
-      transition: all 0.3s ease;
-
-      &:hover {
-        border-color: $primary-color !important;
-      }
-
-      .mat-mdc-select-value {
-        color: $dark-700;
-      }
-
-      .mat-mdc-select-arrow {
-        color: $dark-500;
-      }
-    }
-  }
-}
-
-// Menu Backdrop Overlay
-::ng-deep .cdk-overlay-container {
-  .cdk-overlay-backdrop {
-    &.cdk-overlay-transparent-backdrop {
-      background: rgba(0, 0, 0, 0.2);
-      backdrop-filter: blur(2px);
-      transition: all 0.3s ease;
-    }
-  }
-
-  .cdk-overlay-pane {
-    margin-top: 8px !important;
-  }
-}
-
-// Skeleton Loader Animations
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-
-  100% {
-    background-position: 200% 0;
-  }
-}
-
-.skeleton {
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite linear;
-  border-radius: 4px;
-}
-
-.skeleton-text {
-  height: 12px;
-  width: 100%;
-  @extend .skeleton;
-}
-
-.skeleton-title {
-  height: 20px;
-  width: 60%;
-  margin-bottom: 12px;
-  @extend .skeleton;
-}
-
-.skeleton-circle {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  @extend .skeleton;
-}
-
-.skeleton-table {
-  width: 100%;
-  padding: 16px 0;
-
-  .skeleton-row {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 16px;
-    background: $white;
-    border-radius: 12px;
-    margin-bottom: 8px;
-    border: 1.5px solid $dark-100;
-
-    .skeleton-cell {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-    }
-  }
-}
-
-// Animations
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes slideIn {
-  from {
-    width: 0;
-  }
-
-  to {
-    width: 24px;
-  }
-}
-
-@keyframes pulse {
-
-  0%,
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-
-  50% {
-    opacity: 0.8;
-    transform: scale(1.1);
-  }
-}
-
-@keyframes shimmer {
-  0% {
-    background-position: 200% 0;
-  }
-
-  100% {
-    background-position: -200% 0;
-  }
-}
-
-// Responsive Design
-@media (max-width: 1200px) {
-  .dashboard-content {
-    grid-template-columns: 1fr;
-    gap: 24px;
-  }
-
-  .sidebar {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 24px;
-  }
-}
-
-@media (max-width: 992px) {
-  .dashboard-header {
-    .stats-cards {
-      grid-template-columns: repeat(2, 1fr);
-    }
-  }
-}
-
-@media (max-width: 768px) {
-  .dashboard-main {
-    padding: 20px;
-  }
-
-  .dashboard-header {
-    .header-content {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 16px;
-
-      .create-event-btn {
-        width: 100%;
-        justify-content: center;
-      }
-    }
-
-    .stats-cards {
-      grid-template-columns: 1fr;
-    }
-  }
-
-  .table-section {
-    .section-header {
-      .table-controls {
-        flex-direction: column;
-        align-items: stretch;
-
-        .search-filter-section {
-          .search-box {
-            min-width: auto;
-            width: 100%;
-          }
-        }
-      }
-    }
-  }
-
-  .sidebar {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 480px) {
-  .dashboard-main {
-    padding: 16px;
-  }
-}
-
-.table-container {
-  padding: 0 24px 24px;
-
-  .page-indicator {
-    margin-top: 16px;
-    padding: 8px 16px;
-    background: $primary-bg;
-    border-radius: 30px;
-    color: $primary-color;
-    font-size: 13px;
-    font-weight: 600;
-    text-align: center;
-  }
-}
-
-// Custom Paginator Styles
+// Custom Paginator Styles 
 .custom-paginator {
   display: flex;
   justify-content: space-between;
@@ -2344,6 +1375,205 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
         outline: none;
         border-color: $primary-color;
         box-shadow: 0 0 0 2px rgba($primary-color, 0.1);
+      }
+    }
+  }
+}
+
+// Skeleton Loader Animations
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite linear;
+  border-radius: 4px;
+}
+
+.skeleton-text {
+  height: 12px;
+  width: 100%;
+  @extend .skeleton;
+}
+
+.skeleton-title {
+  height: 20px;
+  width: 60%;
+  margin-bottom: 12px;
+  @extend .skeleton;
+}
+
+.skeleton-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  @extend .skeleton;
+}
+
+.skeleton-table {
+  width: 100%;
+  padding: 16px 0;
+
+  .skeleton-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    background: $white;
+    border-radius: 12px;
+    margin-bottom: 8px;
+    border: 1.5px solid $dark-100;
+
+    .skeleton-cell {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+  }
+}
+
+// Responsive Design
+@media (max-width: 1200px) {
+  .dashboard-content {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .sidebar {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+}
+
+@media (max-width: 992px) {
+  .dashboard-header {
+    .stats-cards {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-main {
+    padding: 20px;
+  }
+
+  .dashboard-header {
+    .header-content {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 16px;
+
+      .create-event-btn {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+
+    .stats-cards {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .table-section {
+    .section-header {
+      .table-controls {
+        flex-direction: column;
+        align-items: stretch;
+
+        .search-filter-section {
+          .search-box {
+            min-width: auto;
+            width: 100%;
+          }
+        }
+      }
+    }
+  }
+
+  .sidebar {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-main {
+    padding: 16px;
+  }
+}
+
+.table-container {
+  padding: 0 24px 24px;
+
+  .page-indicator {
+    margin-top: 16px;
+    padding: 8px 16px;
+    background: $primary-bg;
+    border-radius: 30px;
+    color: $primary-color;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+  }
+}
+
+::ng-deep {
+  .dashboard-container {
+    .action-btn {
+      &.view-action {
+        .mat-icon {
+          color: $primary-color !important;
+        }
+        
+        &:hover {
+          .mat-icon {
+            color: $white !important;
+          }
+        }
+      }
+
+      &.edit-action {
+        .mat-icon {
+          color: #0284c7 !important;
+        }
+        
+        &:hover {
+          .mat-icon {
+            color: $white !important;
+          }
+        }
+      }
+
+      &.publish-action {
+        .mat-icon {
+          color: #059669 !important;
+        }
+        
+        &:hover {
+          .mat-icon {
+            color: $white !important;
+          }
+        }
+      }
+
+      &.delete-action {
+        .mat-icon {
+          color: $danger-color !important;
+        }
+        
+        &:hover {
+          .mat-icon {
+            color: $white !important;
+          }
+        }
       }
     }
   }

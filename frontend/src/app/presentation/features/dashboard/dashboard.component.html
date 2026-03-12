@@ -8,10 +8,7 @@
       <!-- Dashboard Header -->
       <div class="dashboard-header">
         <div class="header-content">
-          <button
-            class="create-event-btn"
-            *ngIf="authService.canCreateEvents()"
-            (click)="navigateToCreateEvent()">
+          <button class="create-event-btn" *ngIf="authService.canCreateEvents()" (click)="navigateToCreateEvent()">
             <mat-icon>add</mat-icon>
             CREATE EVENT
           </button>
@@ -42,7 +39,7 @@
               </div>
             </div>
 
-             <div class="stat-card" (click)="onStatCardClick(1)">
+            <div class="stat-card" (click)="onStatCardClick(1)">
               <div class="stat-icon draft">
                 <mat-icon>edit_note</mat-icon>
               </div>
@@ -137,10 +134,18 @@
             <div *ngIf="isLoadingEvents" class="skeleton-table">
               <div class="skeleton-row" *ngFor="let i of [1,2,3,4,5]">
                 <div class="skeleton-cell skeleton-circle" style="width: 32px; height: 32px;"></div>
-                <div class="skeleton-cell" style="flex: 2;"><div class="skeleton-title" style="margin-bottom: 0;"></div></div>
-                <div class="skeleton-cell" style="flex: 1;"><div class="skeleton-text"></div></div>
-                <div class="skeleton-cell" style="flex: 1;"><div class="skeleton-text"></div></div>
-                <div class="skeleton-cell" style="width: 40px;"><div class="skeleton-circle" style="width: 24px; height: 24px;"></div></div>
+                <div class="skeleton-cell" style="flex: 2;">
+                  <div class="skeleton-title" style="margin-bottom: 0;"></div>
+                </div>
+                <div class="skeleton-cell" style="flex: 1;">
+                  <div class="skeleton-text"></div>
+                </div>
+                <div class="skeleton-cell" style="flex: 1;">
+                  <div class="skeleton-text"></div>
+                </div>
+                <div class="skeleton-cell" style="width: 40px;">
+                  <div class="skeleton-circle" style="width: 24px; height: 24px;"></div>
+                </div>
               </div>
             </div>
 
@@ -198,35 +203,26 @@
                 <th mat-header-cell *matHeaderCellDef> Actions </th>
                 <td mat-cell *matCellDef="let element" (click)="$event.stopPropagation()">
                   <div class="action-icons-container">
-                    <!-- View Icon -->
-                    <button class="icon-btn view" (click)="viewEvent(element)" matTooltip="View Details">
+                    <!-- View button - always visible -->
+                    <button class="action-btn view-action" (click)="viewEvent(element)" matTooltip="View Details">
                       <mat-icon>visibility</mat-icon>
                     </button>
 
-                    <!-- Edit Icon -->
-                    <button 
-                      class="icon-btn edit" 
-                      *ngIf="canManageEvent(element)" 
-                      (click)="editEvent(element)" 
+                    <!-- Edit button - if can manage -->
+                    <button class="action-btn edit-action" *ngIf="canManageEvent(element)" (click)="editEvent(element)"
                       matTooltip="Edit Event">
                       <mat-icon>edit</mat-icon>
                     </button>
 
-                    <!-- Publish Icon (Conditional) -->
-                    <button 
-                      class="icon-btn publish" 
-                      *ngIf="element.status === 'Draft' && canApproveEvents()" 
-                      (click)="publishEvent(element)" 
-                      matTooltip="Publish Event">
+                    <!-- Publish button - if draft and can approve -->
+                    <button class="action-btn publish-action" *ngIf="element.status === 'Draft' && canApproveEvents()"
+                      (click)="publishEvent(element)" matTooltip="Publish Event">
                       <mat-icon>publish</mat-icon>
                     </button>
 
-                    <!-- Delete Icon -->
-                    <button 
-                      class="icon-btn delete" 
-                      *ngIf="canManageEvent(element)" 
-                      (click)="deleteEvent(element)" 
-                      matTooltip="Delete Event">
+                    <!-- Delete button - if can manage -->
+                    <button class="action-btn delete-action" *ngIf="canManageEvent(element)"
+                      (click)="deleteEvent(element)" matTooltip="Delete Event">
                       <mat-icon>delete</mat-icon>
                     </button>
                   </div>
@@ -314,7 +310,8 @@
               </div>
 
               <div class="list" *ngIf="upcomingEvents.length > 0">
-                <button class="list-item" *ngFor="let event of upcomingEvents | slice:0:5" (click)="navigateToUpcomingEvent(event)">
+                <button class="list-item" *ngFor="let event of upcomingEvents | slice:0:5"
+                  (click)="navigateToUpcomingEvent(event)">
                   <div class="list-item-main">
                     <div class="list-item-title">{{ event.title }}</div>
                     <div class="list-item-meta">
@@ -352,7 +349,8 @@
               </div>
 
               <div class="list" *ngIf="!isLoadingAnnouncements && latestAnnouncements.length > 0">
-                <button class="list-item" *ngFor="let a of latestAnnouncements" [routerLink]="['/internal-announcements', a.id]">
+                <button class="list-item" *ngFor="let a of latestAnnouncements"
+                  [routerLink]="['/internal-announcements', a.id]">
                   <div class="list-item-main">
                     <div class="list-item-title">{{ a.title }}</div>
                     <div class="list-item-preview">{{ a.content }}</div>
@@ -395,23 +393,16 @@
               <h4>Quick Actions</h4>
             </div>
             <div class="sidebar-content">
-              <button
-                class="quick-action-btn"
-                *ngIf="authService.canCreateEvents()"
-                (click)="navigateToCreateEvent()">
+              <button class="quick-action-btn" *ngIf="authService.canCreateEvents()" (click)="navigateToCreateEvent()">
                 <mat-icon>add</mat-icon>
                 Create Event
               </button>
-              <button
-                class="quick-action-btn"
-                *ngIf="authService.isAdmin() || authService.isManager()"
+              <button class="quick-action-btn" *ngIf="authService.isAdmin() || authService.isManager()"
                 (click)="navigateToCreateAnnouncement()">
                 <mat-icon>campaign</mat-icon>
                 Post Announcement
               </button>
-              <button
-                class="quick-action-btn"
-                *ngIf="authService.isAdmin() || authService.isManager()"
+              <button class="quick-action-btn" *ngIf="authService.isAdmin() || authService.isManager()"
                 (click)="exportData()">
                 <mat-icon>download</mat-icon>
                 Export Data
