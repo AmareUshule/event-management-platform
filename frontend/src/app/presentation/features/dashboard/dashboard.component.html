@@ -8,6 +8,10 @@
       <!-- Dashboard Header -->
       <div class="dashboard-header">
         <div class="header-content">
+          <div class="section-title">
+            <h3>Event Management</h3>
+          </div>
+
           <button class="create-event-btn" *ngIf="authService.canCreateEvents()" (click)="navigateToCreateEvent()">
             <mat-icon>add</mat-icon>
             CREATE EVENT
@@ -40,7 +44,8 @@
             </div>
 
             <!-- Drafts for Admin/Manager -->
-            <div class="stat-card" *ngIf="authService.isAdmin() || authService.isManager()" (click)="onStatCardClick('draft')">
+            <div class="stat-card" *ngIf="authService.isAdmin() || authService.isManager()"
+              (click)="onStatCardClick('draft')">
               <div class="stat-icon draft">
                 <mat-icon>edit_note</mat-icon>
               </div>
@@ -62,7 +67,8 @@
             </div>
 
             <!-- Ongoing for others (to maintain 4 cards) -->
-            <div class="stat-card" *ngIf="!isStaff() && !authService.isAdmin() && !authService.isManager()" (click)="onStatCardClick('ongoing')">
+            <div class="stat-card" *ngIf="!isStaff() && !authService.isAdmin() && !authService.isManager()"
+              (click)="onStatCardClick('ongoing')">
               <div class="stat-icon draft" style="background: linear-gradient(135deg, #3b82f6, #2563eb);">
                 <mat-icon>play_circle_outline</mat-icon>
               </div>
@@ -91,7 +97,8 @@
                 <p class="stat-label">Past Events</p>
               </div>
             </div>
-          </ng-container>        </div>
+          </ng-container>
+        </div>
       </div>
 
       <!-- Dashboard Content -->
@@ -99,10 +106,7 @@
         <!-- Events Table Section -->
         <div class="table-section">
           <div class="section-header">
-            <div class="section-title">
-              <mat-icon>table_chart</mat-icon>
-              <h3>Event Management</h3>
-            </div>
+
 
             <div class="table-controls">
               <!-- Left side: Event Tabs -->
@@ -110,20 +114,22 @@
                 <button class="event-tab" [class.active]="activeTab === 'all'" (click)="onTabChange('all')">
                   ALL <span class="tab-count">{{ totalEvents }}</span>
                 </button>
-                
+
                 <!-- Admin & Manager Tabs -->
                 <ng-container *ngIf="authService.isAdmin() || authService.isManager()">
                   <button class="event-tab" [class.active]="activeTab === 'draft'" (click)="onTabChange('draft')">
                     Draft <span class="tab-count" *ngIf="draftEventsCount > 0">({{ draftEventsCount }})</span>
                   </button>
-                  <button class="event-tab" [class.active]="activeTab === 'submitted'" (click)="onTabChange('submitted')">
+                  <button class="event-tab" [class.active]="activeTab === 'submitted'"
+                    (click)="onTabChange('submitted')">
                     Submitted <span class="tab-count">{{ submittedEvents }}</span>
                   </button>
                 </ng-container>
 
                 <!-- Cameraman & Expert Tabs -->
                 <ng-container *ngIf="isStaff()">
-                  <button class="event-tab" [class.active]="activeTab === 'assignments'" (click)="onTabChange('assignments')">
+                  <button class="event-tab" [class.active]="activeTab === 'assignments'"
+                    (click)="onTabChange('assignments')">
                     My Assignments <span class="tab-count">{{ myAssignments.length }}</span>
                   </button>
                 </ng-container>
@@ -191,7 +197,8 @@
             </div>
 
             <!-- Main Events Table -->
-            <table mat-table [dataSource]="paginatedEvents" class="modern-table" *ngIf="!isLoadingEvents && activeTab !== 'assignments'">
+            <table mat-table [dataSource]="paginatedEvents" class="modern-table"
+              *ngIf="!isLoadingEvents && activeTab !== 'assignments'">
 
               <!-- # Column -->
               <ng-container matColumnDef="id">
@@ -210,8 +217,8 @@
                       <span class="event-title">{{ element.name }}</span>
                       <div class="event-status-badge"
                         [class.scheduled]="element.status === 'Scheduled' || element.status === 'Ongoing' || element.status === 'Completed'"
-                        [class.archived]="element.status === 'Archived'"
-                        [class.draft]="element.status === 'Draft'" [class.pending]="element.status === 'Submitted'">
+                        [class.archived]="element.status === 'Archived'" [class.draft]="element.status === 'Draft'"
+                        [class.pending]="element.status === 'Submitted'">
                         {{ element.status | titlecase }}
                       </div>
                     </div>
@@ -246,36 +253,22 @@
                 <td mat-cell *matCellDef="let element" (click)="$event.stopPropagation()">
                   <div class="action-icons-container">
                     <!-- View Button -->
-      <button 
-        class="icon-btn view" 
-        mat-icon-button
-        matTooltip="View Details"
-        (click)="viewEvent(element)">
-        <mat-icon>visibility</mat-icon>
-      </button>
- 
-
-
-                    <button 
-                      class="icon-btn edit" 
-                      *ngIf="canManageEvent(element)" 
-                      (click)="editEvent(element)" 
+                    <button class="icon-btn view" mat-icon-button matTooltip="View Details"
+                      (click)="viewEvent(element)">
+                      <mat-icon>visibility</mat-icon>
+                    </button>
+                    <button class="icon-btn edit" *ngIf="canManageEvent(element)" (click)="editEvent(element)"
                       matTooltip="Edit Event">
                       <mat-icon>edit</mat-icon>
                     </button>
 
-                    <button 
-                      class="icon-btn publish" 
-                      *ngIf="element.status === 'Draft' && element.raw.createdBy.id === user?.adObjectId" 
-                      (click)="submitEvent(element)" 
-                      matTooltip="Submit for Approval">
+                    <button class="icon-btn publish"
+                      *ngIf="element.status === 'Draft' && element.raw.createdBy.id === user?.adObjectId"
+                      (click)="submitEvent(element)" matTooltip="Submit for Approval">
                       <mat-icon>send</mat-icon>
                     </button>
 
-                    <button 
-                      class="icon-btn delete" 
-                      *ngIf="canManageEvent(element)" 
-                      (click)="deleteEvent(element)" 
+                    <button class="icon-btn delete" *ngIf="canManageEvent(element)" (click)="deleteEvent(element)"
                       matTooltip="Delete Event">
                       <mat-icon>delete</mat-icon>
                     </button>

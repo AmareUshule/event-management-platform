@@ -50,7 +50,7 @@
                 <span>Edit</span>
             </button>
 
-            <button class="action-btn" (click)="downloadICS()" matTooltip="Add to calendar">
+            <button class="action-btn" *ngIf="!isCompleted()" (click)="downloadICS()" matTooltip="Add to calendar">
                 <mat-icon>calendar_month</mat-icon>
                 <span>Add to Calendar</span>
             </button>
@@ -234,7 +234,7 @@
                 <mat-icon>share</mat-icon>
                 <span>Share</span>
             </button>
-            <button class="quick-action-btn" (click)="downloadICS()">
+            <button class="quick-action-btn" *ngIf="!isCompleted()" (click)="downloadICS()">
                 <mat-icon>download</mat-icon>
                 <span>Save to calendar</span>
             </button>
