@@ -104,4 +104,34 @@ body {
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
+// Force icon colors for action buttons
+ .action-icons-container {
+  .icon-btn {
+
+    &.view mat-icon {
+      color: #1E590C !important;
+    }
+
+    &.edit mat-icon {
+      color: #0284c7 !important;
+    }
+
+    &.publish mat-icon {
+      color: #059669 !important;
+    }
+
+    &.delete mat-icon {
+      color: #ef4444 !important;
+    }
+
+    &:hover {
+      background: var(--eep-brand-gradient) !important;
+      border-radius: 8px;
+
+      mat-icon {
+        color: white !important;
+      }
+    }
+  }
+}
 

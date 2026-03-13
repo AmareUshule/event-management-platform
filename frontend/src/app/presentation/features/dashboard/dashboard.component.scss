@@ -645,7 +645,7 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
             border-bottom-right-radius: 16px;
           }
 
-          // ACTION COLUMN STYLES
+          // ACTION COLUMN STYLES - FIXED TO MATCH HTML
           &.mat-column-actions {
             background: rgba($primary-color, 0.03);
             border-left: 1.5px solid $dark-100;
@@ -655,92 +655,6 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
             border-radius: 0 16px 16px 0;
             transition: all 0.3s ease;
           }
-
-          .action-icons-container {
-            display: flex !important;
-            flex-direction: row !important;
-            align-items: center !important;
-            justify-content: flex-start !important;
-            gap: 8px !important;
-            width: 100% !important;
-            flex-wrap: nowrap !important;
-          }
-
-          .action-btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 36px;
-            height: 36px;
-            border-radius: 8px;
-            border: none;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            margin: 0;
-            padding: 0;
-            flex-shrink: 0;
-
-            mat-icon {
-              font-size: 20px;
-              width: 20px;
-              height: 20px;
-              color: currentColor;
-              margin: 0;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-            }
-
-            &:hover {
-              transform: translateY(-2px);
-              box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-            }
-
-            /* VIEW */
-            &.view-action {
-              color: $primary-color;
-              background: rgba($primary-color, 0.1);
-
-              &:hover {
-                background: $primary-color;
-                color: $white;
-              }
-            }
-
-            /* EDIT */
-            &.edit-action {
-              color: #0284c7;
-              background: rgba(#0284c7, 0.1);
-
-              &:hover {
-                background: #0284c7;
-                color: $white;
-              }
-            }
-
-            /* PUBLISH */
-            &.publish-action {
-              color: #059669;
-              background: rgba(#059669, 0.1);
-
-              &:hover {
-                background: #059669;
-                color: $white;
-              }
-            }
-
-            /* DELETE */
-            &.delete-action {
-              color: $danger-color;
-              background: rgba($danger-color, 0.1);
-
-              &:hover {
-                background: $danger-color;
-                color: $white;
-              }
-            }
-          }
-
           .index-badge {
             width: 36px;
             height: 36px;
@@ -1055,6 +969,7 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
           line-height: 1.4;
           transition: color 0.3s ease;
           display: -webkit-box;
+          line-clamp: 2;
           -webkit-line-clamp: 2;
           -webkit-box-orient: vertical;
           overflow: hidden;
@@ -1067,6 +982,7 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
           color: $dark-500;
           line-height: 1.5;
           display: -webkit-box;
+          line-clamp: 2;
           -webkit-line-clamp: 2;
           -webkit-box-orient: vertical;
           overflow: hidden;
@@ -1522,59 +1438,5 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
     font-size: 13px;
     font-weight: 600;
     text-align: center;
-  }
-}
-
-::ng-deep {
-  .dashboard-container {
-    .action-btn {
-      &.view-action {
-        .mat-icon {
-          color: $primary-color !important;
-        }
-        
-        &:hover {
-          .mat-icon {
-            color: $white !important;
-          }
-        }
-      }
-
-      &.edit-action {
-        .mat-icon {
-          color: #0284c7 !important;
-        }
-        
-        &:hover {
-          .mat-icon {
-            color: $white !important;
-          }
-        }
-      }
-
-      &.publish-action {
-        .mat-icon {
-          color: #059669 !important;
-        }
-        
-        &:hover {
-          .mat-icon {
-            color: $white !important;
-          }
-        }
-      }
-
-      &.delete-action {
-        .mat-icon {
-          color: $danger-color !important;
-        }
-        
-        &:hover {
-          .mat-icon {
-            color: $white !important;
-          }
-        }
-      }
-    }
   }
 }
