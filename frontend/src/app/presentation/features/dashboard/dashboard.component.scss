@@ -979,6 +979,7 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
           line-height: 1.4;
           transition: color 0.3s ease;
           display: -webkit-box;
+           line-clamp: 2;
           -webkit-line-clamp: 2;
           -webkit-box-orient: vertical;
           overflow: hidden;
@@ -991,6 +992,7 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
           color: $dark-500;
           line-height: 1.5;
           display: -webkit-box;
+          line-clamp: 2;
           -webkit-line-clamp: 2;
           -webkit-box-orient: vertical;
           overflow: hidden;
@@ -1465,5 +1467,65 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
     font-size: 13px;
     font-weight: 600;
     text-align: center;
+  }
+}
+// Container for action buttons
+.action-icons-container {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+// Base icon button styles - removes all square boxes
+.icon-btn {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 4px;
+  min-width: auto;
+  width: auto;
+  height: auto;
+  
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+  
+  &:hover {
+    transform: scale(1.15);
+  }
+}
+
+// Specific color classes (separated for cleaner code)
+.icon-btn.view { color: $primary-color; }
+.icon-btn.edit { color: $secondary-color; }
+.icon-btn.publish { color: $warning-color; }
+.icon-btn.delete { color: $accent-color; }
+
+// CRITICAL OVERRIDE: Force remove Angular Material's default button styling
+button.mat-icon-button.icon-btn {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  width: auto !important;
+  height: auto !important;
+  padding: 4px !important;
+  line-height: 1 !important;
+  
+  // Override Material's hover state
+  &:hover {
+    background: transparent !important;
+  }
+  
+  // Override Material's ripple effect
+  .mat-ripple-element {
+    display: none !important;
   }
 }
