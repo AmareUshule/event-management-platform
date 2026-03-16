@@ -70,12 +70,15 @@ namespace EEP.EventManagement.Api.Controllers
         }
 
         [HttpGet("pending")]
-        [Authorize(Policy = AuthorizationPolicies.IsCommunicationManager)]
         public async Task<ActionResult<object>> GetPending([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
+            var isCommManager = (await _authorizationService.AuthorizeAsync(User, AuthorizationPolicies.IsCommunicationManager)).Succeeded;
+            var currentUserId = _userContext.GetUserId();
+
             var query = new GetAnnouncementsPagedQuery
             {
                 Status = AnnouncementStatus.PendingApproval,
+                CreatedById = isCommManager ? null : currentUserId,
                 Page = page,
                 PageSize = pageSize
             };
