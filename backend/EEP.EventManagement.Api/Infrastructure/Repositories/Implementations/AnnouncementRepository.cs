@@ -19,14 +19,21 @@ namespace EEP.EventManagement.Api.Infrastructure.Repositories.Implementations
             _context = context;
         }
 
-        public async Task<Announcement?> GetByIdAsync(Guid id)
+        public async Task<Announcement?> GetByIdAsync(Guid id, bool includeMediaAndJobs = false)
         {
-            return await _context.Announcements
+            var query = _context.Announcements
                 .Include(a => a.CreatedByUser)
                 .Include(a => a.ApprovedByUser)
                 .Include(a => a.Department)
-                .Include(a => a.Images)
-                .FirstOrDefaultAsync(a => a.Id == id);
+                .AsQueryable();
+
+            if (includeMediaAndJobs)
+            {
+                query = query.Include(a => a.Media)
+                             .Include(a => a.JobVacancies);
+            }
+
+            return await query.FirstOrDefaultAsync(a => a.Id == id);
         }
 
         public async Task<(List<Announcement> Items, int TotalCount)> GetPagedAsync(AnnouncementStatus? status, Guid? createdById, int page, int pageSize)
@@ -48,7 +55,8 @@ namespace EEP.EventManagement.Api.Infrastructure.Repositories.Implementations
                 .Include(a => a.CreatedByUser)
                 .Include(a => a.ApprovedByUser)
                 .Include(a => a.Department)
-                .Include(a => a.Images)
+                .Include(a => a.Media) // Include Media
+                .Include(a => a.JobVacancies) // Include JobVacancies
                 .OrderByDescending(a => a.CreatedAt)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
@@ -81,9 +89,9 @@ namespace EEP.EventManagement.Api.Infrastructure.Repositories.Implementations
             return await _context.Announcements.AnyAsync(a => a.Id == id);
         }
 
-        public async Task AddImageAsync(AnnouncementImage image)
+        public async Task AddMediaAsync(AnnouncementMedia media)
         {
-            _context.AnnouncementImages.Add(image);
+            _context.AnnouncementMedia.Add(media);
             await _context.SaveChangesAsync();
         }
     }

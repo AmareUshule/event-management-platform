@@ -31,6 +31,10 @@ namespace EEP.EventManagement.Api.Infrastructure.Persistence.Configurations
                 .HasConversion<string>()
                 .HasDefaultValue(EEP.EventManagement.Api.Domain.Enums.AnnouncementType.General);
 
+            builder.Property(a => a.CoverImageUrl)
+                .HasMaxLength(2000)
+                .IsRequired(false);
+
             builder.Property(a => a.Deadline)
                 .IsRequired(false);
 
@@ -58,11 +62,6 @@ namespace EEP.EventManagement.Api.Infrastructure.Persistence.Configurations
                 .HasForeignKey(a => a.DepartmentId)
                 .IsRequired(false)
                 .OnDelete(DeleteBehavior.SetNull);
-
-            builder.HasMany(a => a.Images)
-                .WithOne(i => i.Announcement)
-                .HasForeignKey(i => i.AnnouncementId)
-                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

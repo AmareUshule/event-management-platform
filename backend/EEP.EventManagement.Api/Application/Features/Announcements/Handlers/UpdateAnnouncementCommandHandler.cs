@@ -2,11 +2,14 @@ using AutoMapper;
 using EEP.EventManagement.Api.Application.Exceptions;
 using EEP.EventManagement.Api.Application.Features.Announcements.Commands;
 using EEP.EventManagement.Api.Application.Features.Announcements.DTOs;
+using EEP.EventManagement.Api.Domain.Entities;
 using EEP.EventManagement.Api.Domain.Enums;
 using EEP.EventManagement.Api.Infrastructure.Repositories.Interfaces;
 using EEP.EventManagement.Api.Infrastructure.Security.Claims;
 using MediatR;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -28,7 +31,7 @@ namespace EEP.EventManagement.Api.Application.Features.Announcements.Handlers
         public async Task<AnnouncementDto> Handle(UpdateAnnouncementCommand request, CancellationToken cancellationToken)
         {
             var userId = _userContext.GetUserId();
-            var announcement = await _announcementRepository.GetByIdAsync(request.Id);
+            var announcement = await _announcementRepository.GetByIdAsync(request.Id, includeMediaAndJobs: true);
 
             if (announcement == null)
                 throw new NotFoundException($"Announcement with ID {request.Id} not found.");
@@ -57,10 +60,23 @@ namespace EEP.EventManagement.Api.Application.Features.Announcements.Handlers
                 announcement.Deadline = DateTime.SpecifyKind(announcement.Deadline.Value, DateTimeKind.Utc);
             }
 
+            // Handle JobVacancies update if present in DTO
+            if (request.UpdateAnnouncementDto.JobVacancies != null)
+            {
+                // Clear existing and add new
+                announcement.JobVacancies.Clear();
+                foreach (var jobDto in request.UpdateAnnouncementDto.JobVacancies)
+                {
+                    var job = _mapper.Map<JobVacancy>(jobDto);
+                    job.AnnouncementId = announcement.Id;
+                    announcement.JobVacancies.Add(job);
+                }
+            }
+
             await _announcementRepository.UpdateAsync(announcement);
 
             // Re-fetch to get navigation properties
-            var updatedAnnouncement = await _announcementRepository.GetByIdAsync(announcement.Id);
+            var updatedAnnouncement = await _announcementRepository.GetByIdAsync(announcement.Id, includeMediaAndJobs: true);
 
             return _mapper.Map<AnnouncementDto>(updatedAnnouncement);
         }

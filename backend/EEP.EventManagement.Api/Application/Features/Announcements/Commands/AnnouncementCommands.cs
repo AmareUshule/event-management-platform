@@ -34,11 +34,17 @@ namespace EEP.EventManagement.Api.Application.Features.Announcements.Commands
         public Guid Id { get; set; }
     }
 
-    public class UploadAnnouncementImageCommand : IRequest<AnnouncementImageDto>
+    public class UploadAnnouncementMediaCommand : IRequest<AnnouncementMediaDto>
     {
         public Guid AnnouncementId { get; set; }
         public Stream FileStream { get; set; } = null!;
         public string FileName { get; set; } = string.Empty;
         public string ContentType { get; set; } = string.Empty;
+    }
+
+    public class CreateJobVacancyCommand : IRequest<JobVacancyDto>
+    {
+        public Guid AnnouncementId { get; set; }
+        public CreateJobVacancyDto CreateJobVacancyDto { get; set; } = null!;
     }
 }

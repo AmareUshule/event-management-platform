@@ -17,5 +17,11 @@ namespace EEP.EventManagement.Api.Application.Features.Announcements.Queries
     public class GetAnnouncementByIdQuery : IRequest<AnnouncementDto?>
     {
         public Guid Id { get; set; }
+        public bool IncludeDetails { get; set; } = false;
+    }
+
+    public class GetJobVacanciesQuery : IRequest<List<JobVacancyDto>>
+    {
+        public Guid AnnouncementId { get; set; }
     }
 }

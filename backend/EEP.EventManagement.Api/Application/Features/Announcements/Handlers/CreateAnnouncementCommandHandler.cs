@@ -1,3 +1,4 @@
+using System.Linq;
 using AutoMapper;
 using EEP.EventManagement.Api.Application.Features.Announcements.Commands;
 using EEP.EventManagement.Api.Application.Features.Announcements.DTOs;
@@ -42,8 +43,19 @@ namespace EEP.EventManagement.Api.Application.Features.Announcements.Handlers
 
             announcement = await _announcementRepository.AddAsync(announcement);
 
-            // Reload to include navigation properties if needed, but for create, we might just map it back
-            var result = await _announcementRepository.GetByIdAsync(announcement.Id);
+            if (request.CreateAnnouncementDto.JobVacancies != null && request.CreateAnnouncementDto.JobVacancies.Any())
+            {
+                foreach (var jobVacancyDto in request.CreateAnnouncementDto.JobVacancies)
+                {
+                    var jobVacancy = _mapper.Map<JobVacancy>(jobVacancyDto);
+                    jobVacancy.AnnouncementId = announcement.Id;
+                    announcement.JobVacancies.Add(jobVacancy);
+                }
+                await _announcementRepository.UpdateAsync(announcement); // To save the newly added job vacancies
+            }
+
+            // Reload to include navigation properties
+            var result = await _announcementRepository.GetByIdAsync(announcement.Id, includeMediaAndJobs: true);
             return _mapper.Map<AnnouncementDto>(result);
         }
     }

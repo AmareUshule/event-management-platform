@@ -33,91 +33,133 @@
     <mat-form-field appearance="outline" class="full-width">
       <mat-label>Content</mat-label>
       <textarea matInput formControlName="content" rows="10" placeholder="Write announcement content here..."></textarea>
-      <mat-error *ngIf="form.get('content')?.hasError('required')">Content is required</mat-error>
+      <mat-error *ngIf="form.get('content')?.hasError('required') && !isDocumentPostType">Content is required for General or Job Opening announcements</mat-error>
     </mat-form-field>
   </div>
 
-  <div class="form-section" *ngIf="isJobOpening">
-    <h3>Job Information</h3>
-    <div class="form-row">
-      <mat-form-field appearance="outline" class="flex-1">
-        <mat-label>Job Code</mat-label>
-        <input matInput formControlName="jobCode" placeholder="e.g. ENG-2026-02">
-      </mat-form-field>
-      <mat-form-field appearance="outline" class="flex-1">
-        <mat-label>Grade</mat-label>
-        <input matInput formControlName="grade" placeholder="e.g. PR2">
-      </mat-form-field>
+  <div class="form-section" *ngIf="isJobOpeningType">
+    <h3>Job Vacancies</h3>
+    <p class="section-hint">Define one or more job vacancies for this announcement.</p>
+
+    <div formArrayName="jobVacancies" class="job-vacancies-list">
+      <div *ngFor="let jobControl of jobVacancies.controls; let i = index" [formGroupName]="i" class="job-vacancy-item mat-elevation-z1">
+        <div class="job-header">
+          <h4>Job #{{ i + 1 }}</h4>
+          <button mat-icon-button type="button" color="warn" (click)="removeJobVacancy(i)" matTooltip="Remove Job Vacancy">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </div>
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="flex-1">
+            <mat-label>Job Title</mat-label>
+            <input matInput formControlName="jobTitle" placeholder="e.g. Senior Backend Developer">
+            <mat-error *ngIf="jobControl.get('jobTitle')?.hasError('required')">Job Title is required</mat-error>
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="flex-1">
+            <mat-label>Job Code</mat-label>
+            <input matInput formControlName="jobCode" placeholder="e.g. ENG-2026-02">
+            <mat-error *ngIf="jobControl.get('jobCode')?.hasError('required')">Job Code is required</mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="flex-1">
+            <mat-label>Grade</mat-label>
+            <input matInput formControlName="grade" placeholder="e.g. PR2">
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="flex-1">
+            <mat-label>Required Number</mat-label>
+            <input matInput type="number" formControlName="requiredNumber" placeholder="e.g. 3">
+            <mat-error *ngIf="jobControl.get('requiredNumber')?.hasError('min')">Must be at least 1</mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="flex-1">
+            <mat-label>Work Place</mat-label>
+            <input matInput formControlName="workPlace" placeholder="e.g. Addis Ababa">
+            <mat-error *ngIf="jobControl.get('workPlace')?.hasError('required')">Work Place is required</mat-error>
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="flex-1">
+            <mat-label>Work Unit</mat-label>
+            <input matInput formControlName="workUnit" placeholder="e.g. IT Department">
+          </mat-form-field>
+        </div>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Requirements</mat-label>
+          <textarea matInput formControlName="requirements" rows="3" placeholder="List the job requirements..."></textarea>
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Experience</mat-label>
+          <textarea matInput formControlName="experience" rows="3" placeholder="Describe required experience..."></textarea>
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Training</mat-label>
+          <textarea matInput formControlName="training" rows="3" placeholder="Describe required training..."></textarea>
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Certificate</mat-label>
+          <textarea matInput formControlName="certificate" rows="3" placeholder="Describe required certificates..."></textarea>
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Other Optional Requirements</mat-label>
+          <textarea matInput formControlName="otherOptionalRequirements" rows="3" placeholder="List any other optional requirements..."></textarea>
+        </mat-form-field>
+      </div>
     </div>
-    <div class="form-row">
-      <mat-form-field appearance="outline" class="flex-1">
-        <mat-label>Work Place</mat-label>
-        <input matInput formControlName="workPlace" placeholder="e.g. Addis Ababa">
-      </mat-form-field>
-      <mat-form-field appearance="outline" class="flex-1">
-        <mat-label>Required Number</mat-label>
-        <input matInput type="number" formControlName="requiredNumber" placeholder="e.g. 3">
-      </mat-form-field>
-    </div>
-    <mat-form-field appearance="outline" class="full-width">
+    <button mat-flat-button color="accent" type="button" (click)="addJobVacancy()" class="add-job-btn">
+      <mat-icon>add</mat-icon> Add Job Vacancy
+    </button>
+    <mat-error *ngIf="jobVacancies.invalid && jobVacancies.touched && isJobOpeningType">
+      At least one job vacancy is required for a Job Opening announcement.
+    </mat-error>
+
+    <mat-form-field appearance="outline" class="full-width mt-4">
       <mat-label>Application Deadline</mat-label>
       <input matInput [matDatepicker]="picker" formControlName="deadline">
       <mat-hint>MM/DD/YYYY</mat-hint>
       <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
       <mat-datepicker #picker></mat-datepicker>
+      <mat-error *ngIf="form.get('deadline')?.hasError('required')">Deadline is required for Job Opening</mat-error>
     </mat-form-field>
   </div>
 
-  <div class="form-section" *ngIf="isJobOpening">
-    <h3>Requirements</h3>
-    <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Requirements</mat-label>
-      <textarea matInput formControlName="requirements" rows="4" placeholder="List the job requirements..."></textarea>
-    </mat-form-field>
-    <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Experience</mat-label>
-      <textarea matInput formControlName="experience" rows="3" placeholder="Describe required experience..."></textarea>
-    </mat-form-field>
-    <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Training</mat-label>
-      <textarea matInput formControlName="training" rows="3" placeholder="Describe required training..."></textarea>
-    </mat-form-field>
-    <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Certificate</mat-label>
-      <textarea matInput formControlName="certificate" rows="3" placeholder="Describe required certificates..."></textarea>
-    </mat-form-field>
-    <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Other Optional Requirements</mat-label>
-      <textarea matInput formControlName="otherOptionalRequirements" rows="3" placeholder="List any other optional requirements..."></textarea>
-    </mat-form-field>
-  </div>
-
-  <div class="image-upload-section">
-    <h3>Announcement Cover Image</h3>
+  <div class="form-section">
+    <h3>Cover Image (Optional)</h3>
+    <p class="section-hint">Upload a single image to be used as the announcement's cover.</p>
     <div class="upload-controls">
-      <input type="file" #fileInput (change)="onImageSelected($event)" accept="image/*" style="display: none">
-      <button mat-stroked-button type="button" (click)="fileInput.click()">
+      <input type="file" #coverFileInput (change)="onCoverImageSelected($event)" accept="image/*" style="display: none">
+      <button mat-stroked-button type="button" (click)="coverFileInput.click()">
         <mat-icon>image</mat-icon>
-        {{ selectedImage ? 'CHANGE IMAGE' : 'CHOOSE IMAGE' }}
+        {{ selectedCoverImage || coverImagePreview ? 'CHANGE COVER' : 'CHOOSE COVER' }}
       </button>
-      <span class="file-name" *ngIf="selectedImage">{{ selectedImage.name }}</span>
-    </div>
-    
-    <div class="image-preview-container" *ngIf="imagePreview">
-      <img [src]="imagePreview" alt="Preview">
-      <button mat-icon-button class="remove-btn" (click)="selectedImage = null; imagePreview = null">
+      <span class="file-name" *ngIf="selectedCoverImage">{{ selectedCoverImage.name }}</span>
+      <span class="file-name" *ngIf="!selectedCoverImage && coverImagePreview">Existing Cover</span>
+      <button mat-icon-button color="warn" *ngIf="selectedCoverImage || coverImagePreview" (click)="removeCoverImage()">
         <mat-icon>close</mat-icon>
       </button>
     </div>
+    
+    <div class="image-preview-container" *ngIf="coverImagePreview">
+      <img [src]="coverImagePreview" alt="Cover Preview">
+    </div>
   </div>
 
-  <div class="image-section" *ngIf="announcement">
-    <h3>Attachments (Images & PDFs)</h3>
-    <p class="section-hint">Upload any supporting documents, requirements, or informative images.</p>
-    <app-announcement-image-upload 
-      [announcementId]="announcement.id" 
-      [existingImages]="announcement.images">
-    </app-announcement-image-upload>
+  <div class="form-section">
+    <h3>Additional Files (Images & PDFs)</h3>
+    <p class="section-hint">Upload any supporting documents, requirements, or informative images. Multiple files are allowed.</p>
+    <div class="upload-controls">
+      <input type="file" #additionalFileInput (change)="onFileChange($event)" accept="image/*,application/pdf" multiple style="display: none">
+      <button mat-stroked-button type="button" (click)="additionalFileInput.click()">
+        <mat-icon>attach_file</mat-icon>
+        CHOOSE FILES
+      </button>
+      <div class="selected-files" *ngIf="selectedFiles.length > 0">
+        <span *ngFor="let file of selectedFiles" class="file-chip">
+          {{ file.name }}
+          <mat-icon>check_circle</mat-icon>
+        </span>
+      </div>
+      <p *ngIf="selectedFiles.length === 0">No files selected.</p>
+    </div>
   </div>
 
   <div class="form-actions">

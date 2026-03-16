@@ -34,7 +34,7 @@ namespace EEP.EventManagement.Api.Application.Features.Announcements.Handlers
 
         public async Task<AnnouncementDto?> Handle(GetAnnouncementByIdQuery request, CancellationToken cancellationToken)
         {
-            var announcement = await _announcementRepository.GetByIdAsync(request.Id);
+            var announcement = await _announcementRepository.GetByIdAsync(request.Id, request.IncludeDetails);
 
             if (announcement == null)
                 return null;

@@ -4,6 +4,7 @@ using EEP.EventManagement.Api.Application.Features.Announcements.Queries;
 using EEP.EventManagement.Api.Domain.Enums;
 using EEP.EventManagement.Api.Infrastructure.Security.Authorization;
 using EEP.EventManagement.Api.Infrastructure.Security.Claims;
+using System.Linq;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -102,7 +103,7 @@ namespace EEP.EventManagement.Api.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<AnnouncementDto>> GetById(Guid id)
         {
-            var result = await _mediator.Send(new GetAnnouncementByIdQuery { Id = id });
+            var result = await _mediator.Send(new GetAnnouncementByIdQuery { Id = id, IncludeDetails = true });
             if (result == null)
                 return NotFound();
 
@@ -188,18 +189,18 @@ namespace EEP.EventManagement.Api.Controllers
             return Ok(result);
         }
 
-        [HttpPost("{id}/images")]
+        [HttpPost("{id}/media")] // Changed from /images
         [Authorize(Roles = "Admin,Manager")]
-        public async Task<ActionResult<AnnouncementImageDto>> UploadImage(Guid id, IFormFile file)
+        public async Task<ActionResult<AnnouncementMediaDto>> UploadMedia(Guid id, IFormFile file) // Changed method name and DTO
         {
             if (file == null || file.Length == 0)
                 return BadRequest("File is required.");
 
             // Validation: Image files and PDF documents allowed
-            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".pdf" };
-            var extension = System.IO.Path.GetExtension(file.FileName).ToLower();
-            if (!System.Linq.Enumerable.Contains(allowedExtensions, extension))
-                return BadRequest("Only images (.jpg, .jpeg, .png) and PDF files (.pdf) are allowed.");
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp", ".pdf" }; // Added .webp
+            var extension = System.IO.Path.GetExtension(file.FileName)?.ToLowerInvariant(); // Use ToLowerInvariant for consistency
+            if (string.IsNullOrEmpty(extension) || !allowedExtensions.Contains(extension)) // Use .Contains extension method
+                return BadRequest("Only images (.jpg, .jpeg, .png, .webp) and PDF files (.pdf) are allowed.");
 
             // Max file size limit (10MB for documents)
             if (file.Length > 10 * 1024 * 1024)
@@ -221,7 +222,7 @@ namespace EEP.EventManagement.Api.Controllers
                 return Forbid();
 
             using var stream = file.OpenReadStream();
-            var command = new UploadAnnouncementImageCommand 
+            var command = new UploadAnnouncementMediaCommand // Changed command type
             { 
                 AnnouncementId = id, 
                 FileStream = stream, 
@@ -229,6 +230,23 @@ namespace EEP.EventManagement.Api.Controllers
                 ContentType = file.ContentType
             };
             var result = await _mediator.Send(command);
+            return Ok(result);
+        }
+
+        [HttpPost("{id}/jobs")]
+        [Authorize(Roles = "Admin,Manager")]
+        public async Task<ActionResult<JobVacancyDto>> CreateJobVacancy(Guid id, [FromBody] CreateJobVacancyDto createJobVacancyDto)
+        {
+            var command = new CreateJobVacancyCommand { AnnouncementId = id, CreateJobVacancyDto = createJobVacancyDto };
+            var result = await _mediator.Send(command);
+            return CreatedAtAction(nameof(GetJobVacancies), new { id = id }, result);
+        }
+
+        [HttpGet("{id}/jobs")]
+        public async Task<ActionResult<List<JobVacancyDto>>> GetJobVacancies(Guid id)
+        {
+            var query = new GetJobVacanciesQuery { AnnouncementId = id };
+            var result = await _mediator.Send(query);
             return Ok(result);
         }
     }

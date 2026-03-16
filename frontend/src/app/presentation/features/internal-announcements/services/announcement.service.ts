@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, retry, timeout, map } from 'rxjs/operators';
-import { Announcement, CreateAnnouncementDto, UpdateAnnouncementDto, AnnouncementImage } from '../models/announcement.model';
+import { Announcement, CreateAnnouncementDto, UpdateAnnouncementDto, AnnouncementMedia, JobVacancy, CreateJobVacancyDto } from '../models/announcement.model';
 import { environment } from '../../../../../environments/environment';
 import { AuthService } from '../../../../core/auth/auth.service';
 
@@ -27,6 +27,13 @@ export class AnnouncementService {
     const token = this.authService.getToken();
     return new HttpHeaders({
       'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    });
+  }
+
+  private getMultipartHeaders(): HttpHeaders {
+    const token = this.authService.getToken();
+    return new HttpHeaders({
       'Authorization': `Bearer ${token}`
     });
   }
@@ -140,17 +147,30 @@ export class AnnouncementService {
     );
   }
 
-  uploadImage(id: string, file: File): Observable<AnnouncementImage> {
+  uploadMedia(id: string, file: File): Observable<AnnouncementMedia> {
     const formData = new FormData();
     formData.append('file', file);
     
-    const token = this.authService.getToken();
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`
-    });
+    return this.http.post<AnnouncementMedia>(`${this.API_URL}/${id}/media`, formData, {
+      headers: this.getMultipartHeaders()
+    }).pipe(
+      timeout(this.REQUEST_TIMEOUT),
+      catchError(this.handleError.bind(this))
+    );
+  }
 
-    return this.http.post<AnnouncementImage>(`${this.API_URL}/${id}/images`, formData, {
-      headers: headers
+  createJobVacancy(announcementId: string, data: CreateJobVacancyDto): Observable<JobVacancy> {
+    return this.http.post<JobVacancy>(`${this.API_URL}/${announcementId}/jobs`, data, {
+      headers: this.getHeaders()
+    }).pipe(
+      timeout(this.REQUEST_TIMEOUT),
+      catchError(this.handleError.bind(this))
+    );
+  }
+
+  getJobVacancies(announcementId: string): Observable<JobVacancy[]> {
+    return this.http.get<JobVacancy[]>(`${this.API_URL}/${announcementId}/jobs`, {
+      headers: this.getHeaders()
     }).pipe(
       timeout(this.REQUEST_TIMEOUT),
       catchError(this.handleError.bind(this))

@@ -7,11 +7,14 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { AnnouncementService } from '../../services/announcement.service';
-import { Announcement, AnnouncementImage } from '../../models/announcement.model';
+import { Announcement, AnnouncementMedia, JobVacancy } from '../../models/announcement.model';
 import { HeaderComponent } from '../../../../layouts/header/header.component';
 import { ImageLightboxComponent } from '../../components/image-lightbox/image-lightbox.component';
 import { finalize } from 'rxjs/operators';
 import { environment } from '../../../../../../environments/environment';
+import { MatTableModule } from '@angular/material/table'; // Import MatTableModule
+import { MatCardModule } from '@angular/material/card'; // Import MatCardModule
+import { SafeUrlPipe } from '../../../../../shared/pipes/safe-url.pipe';
 
 @Component({
   selector: 'app-announcement-detail-page',
@@ -24,7 +27,10 @@ import { environment } from '../../../../../../environments/environment';
     MatDialogModule,
     MatTooltipModule,
     RouterModule,
-    HeaderComponent
+    HeaderComponent,
+    MatTableModule, // Add MatTableModule
+    MatCardModule, // Add MatCardModule
+    SafeUrlPipe
   ],
   templateUrl: './announcement-detail-page.component.html',
   styleUrls: ['./announcement-detail-page.component.scss']
@@ -39,8 +45,12 @@ export class AnnouncementDetailPageComponent implements OnInit {
   announcement: Announcement | null = null;
   isLoading = false;
 
-  images: AnnouncementImage[] = [];
-  pdfs: AnnouncementImage[] = [];
+  images: AnnouncementMedia[] = [];
+  pdfs: AnnouncementMedia[] = [];
+  jobVacancies: JobVacancy[] = [];
+  selectedJobVacancy: JobVacancy | null = null;
+
+  displayedColumns: string[] = ['jobTitle', 'jobCode', 'grade', 'workPlace', 'requiredNumber', 'action'];
 
   ngOnInit(): void {
     this.route.paramMap.subscribe(params => {
@@ -70,7 +80,8 @@ export class AnnouncementDetailPageComponent implements OnInit {
           next: (announcement) => {
             console.log('Announcement detail received:', announcement);
             this.announcement = announcement;
-            this.groupAttachments();
+            this.groupMedia();
+            this.jobVacancies = announcement.jobVacancies || [];
             this.cdr.detectChanges();
           },
           error: (error) => {
@@ -81,18 +92,18 @@ export class AnnouncementDetailPageComponent implements OnInit {
     });
   }
 
-  groupAttachments(): void {
-    if (this.announcement?.images) {
-      this.images = this.announcement.images.filter(img => 
-        !img.contentType || img.contentType.startsWith('image/')
+  groupMedia(): void {
+    if (this.announcement?.media) {
+      this.images = this.announcement.media.filter(media => 
+        media.fileType === 'Image'
       );
-      this.pdfs = this.announcement.images.filter(img => 
-        img.contentType === 'application/pdf' || img.imageUrl.toLowerCase().endsWith('.pdf')
+      this.pdfs = this.announcement.media.filter(media => 
+        media.fileType === 'Pdf'
       );
     }
   }
 
-  getFullImageUrl(url: string): string {
+  getFileUrl(url: string): string {
     if (!url) return '';
     if (url.startsWith('http')) return url;
     
@@ -101,12 +112,12 @@ export class AnnouncementDetailPageComponent implements OnInit {
     return `${environment.apiUrl}/${cleanUrl}`;
   }
 
-  openLightbox(image: AnnouncementImage): void {
+  openLightbox(media: AnnouncementMedia): void {
     this.dialog.open(ImageLightboxComponent, {
       data: {
-        imageUrl: this.getFullImageUrl(image.imageUrl),
+        imageUrl: this.getFileUrl(media.fileUrl),
         title: this.announcement?.title || 'Image',
-        fileName: image.fileName
+        fileName: media.fileName
       },
       panelClass: 'full-screen-dialog',
       maxWidth: '100vw',
@@ -116,13 +127,21 @@ export class AnnouncementDetailPageComponent implements OnInit {
     });
   }
 
-  downloadFile(file: AnnouncementImage): void {
+  downloadFile(media: AnnouncementMedia): void {
     const link = document.createElement('a');
-    link.href = this.getFullImageUrl(file.imageUrl);
-    link.download = file.fileName || 'document.pdf';
+    link.href = this.getFileUrl(media.fileUrl);
+    link.download = media.fileName || 'document';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  }
+
+  showJobDetails(job: JobVacancy): void {
+    this.selectedJobVacancy = job;
+  }
+
+  hideJobDetails(): void {
+    this.selectedJobVacancy = null;
   }
 
   goBack(): void {

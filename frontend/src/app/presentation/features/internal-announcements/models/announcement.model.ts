@@ -3,17 +3,9 @@ export interface Announcement {
   title: string;
   content: string;
   status: string; // 'Draft' | 'PendingApproval' | 'Rejected' | 'Published'
-  type: string; // 'General' | 'JobOpening'
+  type: string; // 'General' | 'JobOpening' | 'DocumentPost'
   deadline?: string;
-  requirements?: string;
-  experience?: string;
-  training?: string;
-  certificate?: string;
-  requiredNumber?: number;
-  otherOptionalRequirements?: string;
-  grade?: string;
-  workPlace?: string;
-  jobCode?: string;
+  coverImageUrl?: string;
   department?: {
     id: string;
     name: string;
@@ -30,15 +22,34 @@ export interface Announcement {
   };
   createdAt: string;
   updatedAt: string;
-  images: AnnouncementImage[];
+  media: AnnouncementMedia[];
+  jobVacancies: JobVacancy[];
 }
 
-export interface AnnouncementImage {
+export interface AnnouncementMedia {
   id: string;
-  imageUrl: string;
+  fileUrl: string;
   fileName: string;
+  fileType: string; // 'Image' | 'Pdf'
   contentType: string;
   uploadedAt: string;
+  uploadedBy: string;
+}
+
+export interface JobVacancy {
+  id: string;
+  announcementId: string;
+  jobTitle: string;
+  jobCode: string;
+  grade: string;
+  requiredNumber: number;
+  workPlace: string;
+  requirements: string;
+  experience: string;
+  training: string;
+  certificate: string;
+  otherOptionalRequirements: string;
+  workUnit: string;
 }
 
 export interface CreateAnnouncementDto {
@@ -47,16 +58,8 @@ export interface CreateAnnouncementDto {
   type: string;
   deadline?: string;
   departmentId?: string;
-  requirements?: string;
-  experience?: string;
-  training?: string;
-  certificate?: string;
-  requiredNumber?: number;
-  otherOptionalRequirements?: string;
-  grade?: string;
-  workPlace?: string;
-  jobCode?: string;
-  image?: File;
+  coverImageUrl?: string;
+  jobVacancies?: CreateJobVacancyDto[];
 }
 
 export interface UpdateAnnouncementDto {
@@ -65,14 +68,20 @@ export interface UpdateAnnouncementDto {
   type: string;
   deadline?: string;
   departmentId?: string;
-  requirements?: string;
-  experience?: string;
-  training?: string;
-  certificate?: string;
-  requiredNumber?: number;
-  otherOptionalRequirements?: string;
-  grade?: string;
-  workPlace?: string;
-  jobCode?: string;
-  image?: File;
+  coverImageUrl?: string;
+  jobVacancies?: CreateJobVacancyDto[];
+}
+
+export interface CreateJobVacancyDto {
+  jobTitle: string;
+  jobCode: string;
+  grade: string;
+  requiredNumber: number;
+  workPlace: string;
+  requirements: string;
+  experience: string;
+  training: string;
+  certificate: string;
+  otherOptionalRequirements: string;
+  workUnit: string;
 }

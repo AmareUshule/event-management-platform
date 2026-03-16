@@ -42,17 +42,27 @@ export class AnnouncementCardComponent {
   @Output() reject = new EventEmitter<Announcement>();
 
   get bannerImage(): string | null {
-    if (this.announcement.images && this.announcement.images.length > 0) {
-      return this.getFullImageUrl(this.announcement.images[0].imageUrl);
+    if (this.announcement.coverImageUrl) {
+      return this.getFullImageUrl(this.announcement.coverImageUrl);
+    }
+    if (this.announcement.media && this.announcement.media.length > 0) {
+      const firstImage = this.announcement.media.find(m => m.fileType === 'Image');
+      if (firstImage) {
+        return this.getFullImageUrl(firstImage.fileUrl);
+      }
     }
     return null;
   }
 
   get isBannerAnImage(): boolean {
-    if (this.announcement.images && this.announcement.images.length > 0) {
-      const first = this.announcement.images[0];
-      return !first.contentType || first.contentType.startsWith('image/') || 
-             first.imageUrl.toLowerCase().match(/\.(jpg|jpeg|png|gif)$/) !== null;
+    // If there's a cover image, it's an image
+    if (this.announcement.coverImageUrl) {
+      return true;
+    }
+    // Otherwise, check if the first media is an image
+    if (this.announcement.media && this.announcement.media.length > 0) {
+      const firstImage = this.announcement.media.find(m => m.fileType === 'Image');
+      return firstImage !== undefined;
     }
     return false;
   }

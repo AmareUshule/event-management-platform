@@ -17,8 +17,11 @@
       <button mat-icon-button (click)="goBack()"><mat-icon>arrow_back</mat-icon></button>
       <div class="header-info">
         <div class="header-badges">
-          <span class="type-badge" [class.job]="announcement.type === 'JobOpening'">
-            {{ announcement.type === 'JobOpening' ? 'INTERNAL JOB OPENING' : 'GENERAL ANNOUNCEMENT' }}
+          <span class="type-badge" 
+                [class.job]="announcement.type === 'JobOpening'"
+                [class.document]="announcement.type === 'DocumentPost'">
+            {{ announcement.type === 'JobOpening' ? 'INTERNAL JOB OPENING' : 
+               (announcement.type === 'DocumentPost' ? 'DOCUMENT POST' : 'GENERAL ANNOUNCEMENT') }}
           </span>
           <span class="status" *ngIf="announcement.status === 'Draft'">DRAFT</span>
         </div>
@@ -44,103 +47,127 @@
       </div>
     </div>
 
-    <div class="job-banner" *ngIf="announcement.type === 'JobOpening' && announcement.deadline">
-      <mat-icon>info</mat-icon>
-      <p>This internal opportunity is open until <strong>{{ announcement.deadline | date:'MMMM d, y' }}</strong>. Please review the details and images below carefully.</p>
-    </div>
-
-    <div class="job-details-grid" *ngIf="announcement.type === 'JobOpening' && (announcement.jobCode || announcement.grade || announcement.workPlace || announcement.requiredNumber)">
-      <div class="detail-item" *ngIf="announcement.jobCode">
-        <span class="label">Job Code</span>
-        <span class="value">{{ announcement.jobCode }}</span>
-      </div>
-      <div class="detail-item" *ngIf="announcement.grade">
-        <span class="label">Grade</span>
-        <span class="value">{{ announcement.grade }}</span>
-      </div>
-      <div class="detail-item" *ngIf="announcement.workPlace">
-        <span class="label">Work Place</span>
-        <span class="value">{{ announcement.workPlace }}</span>
-      </div>
-      <div class="detail-item" *ngIf="announcement.requiredNumber">
-        <span class="label">Required Number</span>
-        <span class="value">{{ announcement.requiredNumber }}</span>
-      </div>
-    </div>
-
     <div class="detail-body">
+      <div class="cover-image" *ngIf="announcement.coverImageUrl">
+        <img [src]="getFileUrl(announcement.coverImageUrl)" alt="Cover Image">
+      </div>
+
+      <div class="job-opening-section" *ngIf="announcement.type === 'JobOpening' && jobVacancies.length > 0">
+        <h2>Job Vacancies</h2>
+        <table mat-table [dataSource]="jobVacancies" class="mat-elevation-z1 full-width-table">
+          <ng-container matColumnDef="jobTitle">
+            <th mat-header-cell *matHeaderCellDef> Job Title </th>
+            <td mat-cell *matCellDef="let job"> {{job.jobTitle}} </td>
+          </ng-container>
+
+          <ng-container matColumnDef="jobCode">
+            <th mat-header-cell *matHeaderCellDef> Job Code </th>
+            <td mat-cell *matCellDef="let job"> {{job.jobCode}} </td>
+          </ng-container>
+
+          <ng-container matColumnDef="grade">
+            <th mat-header-cell *matHeaderCellDef> Grade </th>
+            <td mat-cell *matCellDef="let job"> {{job.grade}} </td>
+          </ng-container>
+
+          <ng-container matColumnDef="workPlace">
+            <th mat-header-cell *matHeaderCellDef> Work Place </th>
+            <td mat-cell *matCellDef="let job"> {{job.workPlace}} </td>
+          </ng-container>
+
+          <ng-container matColumnDef="requiredNumber">
+            <th mat-header-cell *matHeaderCellDef> Required </th>
+            <td mat-cell *matCellDef="let job"> {{job.requiredNumber}} </td>
+          </ng-container>
+
+          <ng-container matColumnDef="action">
+            <th mat-header-cell *matHeaderCellDef> Action </th>
+            <td mat-cell *matCellDef="let job">
+              <button mat-button color="primary" (click)="showJobDetails(job)">View Details</button>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+
+        <mat-card *ngIf="selectedJobVacancy" class="job-details-card mat-elevation-z2 mt-4">
+          <mat-card-header>
+            <mat-card-title>{{ selectedJobVacancy.jobTitle }} ({{ selectedJobVacancy.jobCode }})</mat-card-title>
+            <button mat-icon-button class="close-job-details" (click)="hideJobDetails()">
+              <mat-icon>close</mat-icon>
+            </button>
+          </mat-card-header>
+          <mat-card-content class="job-details-content">
+            <p><strong>Grade:</strong> {{ selectedJobVacancy.grade }}</p>
+            <p><strong>Work Place:</strong> {{ selectedJobVacancy.workPlace }}</p>
+            <p><strong>Work Unit:</strong> {{ selectedJobVacancy.workUnit }}</p>
+            <p><strong>Required Number:</strong> {{ selectedJobVacancy.requiredNumber }}</p>
+            <p *ngIf="selectedJobVacancy.requirements"><strong>Requirements:</strong> {{ selectedJobVacancy.requirements }}</p>
+            <p *ngIf="selectedJobVacancy.experience"><strong>Experience:</strong> {{ selectedJobVacancy.experience }}</p>
+            <p *ngIf="selectedJobVacancy.training"><strong>Training:</strong> {{ selectedJobVacancy.training }}</p>
+            <p *ngIf="selectedJobVacancy.certificate"><strong>Certificate:</strong> {{ selectedJobVacancy.certificate }}</p>
+            <p *ngIf="selectedJobVacancy.otherOptionalRequirements"><strong>Other:</strong> {{ selectedJobVacancy.otherOptionalRequirements }}</p>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
       <div class="image-gallery" *ngIf="images.length > 0">
-        <div class="image-tip">
-          <mat-icon>zoom_in</mat-icon>
-          <span>Tip: Click on images to zoom and download</span>
+        <div class="section-title">
+          <mat-icon>collections</mat-icon>
+          <h3>Image Gallery</h3>
         </div>
-        <div class="main-image" (click)="openLightbox(images[0])">
-          <img [src]="getFullImageUrl(images[0].imageUrl)" alt="Announcement main image">
-          <div class="zoom-overlay">
-            <mat-icon>zoom_in</mat-icon>
-          </div>
-        </div>
-        <div class="thumbnail-grid" *ngIf="images.length > 1">
-          <div *ngFor="let img of images.slice(1)" class="thumbnail" (click)="openLightbox(img)">
-            <img [src]="getFullImageUrl(img.imageUrl)" alt="Announcement thumbnail">
+        <div class="gallery-container">
+          <div class="main-image" (click)="openLightbox(images[0])">
+            <img [src]="getFileUrl(images[0].fileUrl)" alt="Announcement main image">
             <div class="zoom-overlay">
               <mat-icon>zoom_in</mat-icon>
             </div>
           </div>
+          <div class="thumbnail-grid" *ngIf="images.length > 1">
+            <div *ngFor="let img of images.slice(1)" class="thumbnail" (click)="openLightbox(img)">
+              <img [src]="getFileUrl(img.fileUrl)" alt="Announcement thumbnail">
+              <div class="zoom-overlay">
+                <mat-icon>zoom_in</mat-icon>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="image-tip">
+          <mat-icon>info</mat-icon>
+          <span>Tip: Click on images to view full screen.</span>
         </div>
       </div>
 
       <div class="documents-section" *ngIf="pdfs.length > 0">
-        <h3><mat-icon>attachment</mat-icon> Documents</h3>
-        <div class="pdf-list">
-          <div class="pdf-item" *ngFor="let pdf of pdfs">
-            <div class="pdf-info">
-              <mat-icon class="pdf-icon">picture_as_pdf</mat-icon>
-              <span class="file-name">{{ pdf.fileName || 'Document.pdf' }}</span>
-            </div>
+        <div class="section-title">
+          <mat-icon>attachment</mat-icon>
+          <h3>Documents & PDFs</h3>
+        </div>
+        <div class="pdf-viewer-container" *ngFor="let pdf of pdfs">
+          <div class="pdf-header">
+            <span class="file-name">{{ pdf.fileName || 'Document.pdf' }}</span>
             <div class="pdf-actions">
-              <a [href]="getFullImageUrl(pdf.imageUrl)" target="_blank" mat-button color="primary">
-                <mat-icon>visibility</mat-icon> VIEW
+              <a [href]="getFileUrl(pdf.fileUrl)" target="_blank" mat-icon-button color="primary" matTooltip="Open in new tab">
+                <mat-icon>open_in_new</mat-icon>
               </a>
-              <button mat-button color="accent" (click)="downloadFile(pdf)">
-                <mat-icon>download</mat-icon> DOWNLOAD
+              <button mat-icon-button color="accent" (click)="downloadFile(pdf)" matTooltip="Download PDF">
+                <mat-icon>download</mat-icon>
               </button>
             </div>
+          </div>
+          <div class="embedded-pdf">
+            <iframe [src]="getFileUrl(pdf.fileUrl) + '#toolbar=0' | safeUrl" width="100%" height="600px" style="border: none;"></iframe>
           </div>
         </div>
       </div>
 
-      <div class="requirements-section" *ngIf="announcement.type === 'JobOpening' && (announcement.requirements || announcement.experience || announcement.training || announcement.certificate || announcement.otherOptionalRequirements)">
-        <h3>Job Details & Requirements</h3>
-        
-        <div class="requirement-block" *ngIf="announcement.requirements">
-          <h4>Key Requirements</h4>
-          <p>{{ announcement.requirements }}</p>
+      <div class="content-text" *ngIf="announcement.content">
+        <div class="section-title">
+          <mat-icon>description</mat-icon>
+          <h3>Details</h3>
         </div>
-        
-        <div class="requirement-block" *ngIf="announcement.experience">
-          <h4>Required Experience</h4>
-          <p>{{ announcement.experience }}</p>
-        </div>
-        
-        <div class="requirement-block" *ngIf="announcement.training">
-          <h4>Mandatory Training</h4>
-          <p>{{ announcement.training }}</p>
-        </div>
-        
-        <div class="requirement-block" *ngIf="announcement.certificate">
-          <h4>Professional Certifications</h4>
-          <p>{{ announcement.certificate }}</p>
-        </div>
-        
-        <div class="requirement-block" *ngIf="announcement.otherOptionalRequirements">
-          <h4>Other Information</h4>
-          <p>{{ announcement.otherOptionalRequirements }}</p>
-        </div>
-      </div>
-
-      <div class="content-text">
-        <p>{{ announcement.content }}</p>
+        <div class="content-body" [innerHTML]="announcement.content"></div>
       </div>
     </div>
   </div>

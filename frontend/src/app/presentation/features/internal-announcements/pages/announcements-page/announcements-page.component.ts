@@ -7,12 +7,12 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { AnnouncementService, PagedResponse } from '../../services/announcement.service';
-import { Announcement, CreateAnnouncementDto } from '../../models/announcement.model';
+import { Announcement, CreateAnnouncementDto, UpdateAnnouncementDto } from '../../models/announcement.model';
 import { AuthService } from '../../../../../core/auth/auth.service';
 import { AnnouncementCardComponent } from '../../components/announcement-card/announcement-card.component';
 import { AnnouncementFormComponent } from '../../components/announcement-form/announcement-form.component';
 import { HeaderComponent } from '../../../../layouts/header/header.component';
-import { Subject, takeUntil, finalize, switchMap, of } from 'rxjs';
+import { Observable, Subject, takeUntil, finalize, switchMap, of, from, mergeMap } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
@@ -233,20 +233,25 @@ export class AnnouncementsPageComponent implements OnInit, OnDestroy {
       });
   }
 
-  onFormSubmit(data: any): void {
+  onFormSubmit(data: { dto: CreateAnnouncementDto | UpdateAnnouncementDto, files: File[] }): void {
     this.isSaving = true;
-    const { image, ...payload } = data;
+    const { dto, files } = data;
+
+    const uploadFiles = (announcementId: string, uploadedFiles: File[]): Observable<any> => {
+      if (uploadedFiles.length === 0) {
+        return of(null);
+      }
+      // Upload files one by one (or in parallel if desired)
+      return from(uploadedFiles).pipe(
+        mergeMap(file => this.announcementService.uploadMedia(announcementId, file))
+      );
+    };
 
     if (this.selectedAnnouncement) {
       // Update existing
-      this.announcementService.updateAnnouncement(this.selectedAnnouncement.id, payload)
+      this.announcementService.updateAnnouncement(this.selectedAnnouncement.id, dto as UpdateAnnouncementDto)
         .pipe(
-          switchMap(announcement => {
-            if (image) {
-              return this.announcementService.uploadImage(announcement.id, image);
-            }
-            return of(announcement);
-          }),
+          switchMap(announcement => uploadFiles(announcement.id, files)),
           finalize(() => this.isSaving = false)
         )
         .subscribe({
@@ -262,14 +267,9 @@ export class AnnouncementsPageComponent implements OnInit, OnDestroy {
         });
     } else {
       // Create new
-      this.announcementService.createAnnouncement(payload)
+      this.announcementService.createAnnouncement(dto as CreateAnnouncementDto)
         .pipe(
-          switchMap(announcement => {
-            if (image) {
-              return this.announcementService.uploadImage(announcement.id, image);
-            }
-            return of(announcement);
-          }),
+          switchMap(announcement => uploadFiles(announcement.id, files)),
           finalize(() => this.isSaving = false)
         )
         .subscribe({

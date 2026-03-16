@@ -6,6 +6,7 @@ using EEP.EventManagement.Api.Domain.Entities;
 using EEP.EventManagement.Api.Domain.Enums;
 using EEP.EventManagement.Api.Infrastructure.Repositories.Interfaces;
 using EEP.EventManagement.Api.Infrastructure.Storage.Interfaces;
+using EEP.EventManagement.Api.Infrastructure.Security.Claims;
 using MediatR;
 using System;
 using System.Threading;
@@ -13,20 +14,22 @@ using System.Threading.Tasks;
 
 namespace EEP.EventManagement.Api.Application.Features.Announcements.Handlers
 {
-    public class UploadAnnouncementImageCommandHandler : IRequestHandler<UploadAnnouncementImageCommand, AnnouncementImageDto>
+    public class UploadAnnouncementMediaCommandHandler : IRequestHandler<UploadAnnouncementMediaCommand, AnnouncementMediaDto>
     {
         private readonly IAnnouncementRepository _announcementRepository;
         private readonly IStorageService _storageService;
         private readonly IMapper _mapper;
+        private readonly IUserContext _userContext;
 
-        public UploadAnnouncementImageCommandHandler(IAnnouncementRepository announcementRepository, IStorageService storageService, IMapper mapper)
+        public UploadAnnouncementMediaCommandHandler(IAnnouncementRepository announcementRepository, IStorageService storageService, IMapper mapper, IUserContext userContext)
         {
             _announcementRepository = announcementRepository;
             _storageService = storageService;
             _mapper = mapper;
+            _userContext = userContext;
         }
 
-        public async Task<AnnouncementImageDto> Handle(UploadAnnouncementImageCommand request, CancellationToken cancellationToken)
+        public async Task<AnnouncementMediaDto> Handle(UploadAnnouncementMediaCommand request, CancellationToken cancellationToken)
         {
             var announcement = await _announcementRepository.GetByIdAsync(request.AnnouncementId);
 
@@ -37,23 +40,35 @@ namespace EEP.EventManagement.Api.Application.Features.Announcements.Handlers
                 throw new BadRequestException("Files can only be uploaded when status = Draft or Rejected.");
 
             var folderPath = $"/uploads/announcements/{announcement.Id}/";
-            var imageUrl = await _storageService.SaveFileAsync(request.FileStream, request.FileName, folderPath);
+            var fileUrl = await _storageService.SaveFileAsync(request.FileStream, request.FileName, folderPath);
 
-            var image = new AnnouncementImage
+            string fileType = "Unknown";
+            if (request.ContentType.StartsWith("image/"))
+            {
+                fileType = "Image";
+            }
+            else if (request.ContentType == "application/pdf")
+            {
+                fileType = "Pdf";
+            }
+
+            var media = new AnnouncementMedia
             {
                 Id = Guid.NewGuid(),
                 AnnouncementId = announcement.Id,
-                ImageUrl = imageUrl,
+                FileUrl = fileUrl,
                 FileName = request.FileName,
                 ContentType = request.ContentType,
+                FileType = fileType,
                 UploadedAt = DateTime.UtcNow,
+                UploadedBy = _userContext.GetUserId(),
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
 
-            await _announcementRepository.AddImageAsync(image);
+            await _announcementRepository.AddMediaAsync(media);
 
-            return _mapper.Map<AnnouncementImageDto>(image);
+            return _mapper.Map<AnnouncementMediaDto>(media);
         }
     }
 }

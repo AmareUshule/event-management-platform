@@ -18,7 +18,8 @@ namespace EEP.EventManagement.Api.Infrastructure.Persistence
         public DbSet<MediaFile> MediaFiles { get; set; }
         public DbSet<Department> Departments { get; set; }
         public DbSet<Announcement> Announcements { get; set; }
-        public DbSet<AnnouncementImage> AnnouncementImages { get; set; }
+        public DbSet<AnnouncementMedia> AnnouncementMedia { get; set; }
+        public DbSet<JobVacancy> JobVacancies { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
