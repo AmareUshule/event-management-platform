@@ -175,16 +175,19 @@ export class AnnouncementsPageComponent implements OnInit, OnDestroy {
   openCreateForm(): void {
     this.selectedAnnouncement = null;
     this.showForm = true;
+    this.cdr.detectChanges();
   }
 
   closeForm(): void {
     this.showForm = false;
     this.selectedAnnouncement = null;
+    this.cdr.detectChanges();
   }
 
   onEdit(announcement: Announcement): void {
     this.selectedAnnouncement = announcement;
     this.showForm = true;
+    this.cdr.detectChanges();
   }
 
   onDelete(announcement: Announcement): void {

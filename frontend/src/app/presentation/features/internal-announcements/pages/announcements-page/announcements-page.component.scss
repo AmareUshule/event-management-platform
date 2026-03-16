@@ -159,7 +159,15 @@ $border-color: #E5E7EB;
         h2 { font-size: 20px; font-weight: 700; color: $dark-900; margin: 0; }
       }
 
-      .p-6 { padding: 32px; }
+      .p-6 { 
+        padding: 32px;
+        width: 100%;
+        
+        app-announcement-form {
+          width: 100%;
+          display: block;
+        }
+      }
     }
   }
 

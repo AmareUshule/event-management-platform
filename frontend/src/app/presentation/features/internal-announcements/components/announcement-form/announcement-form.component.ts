@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, AfterViewInit, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, AfterViewInit, inject, ChangeDetectorRef, NgZone, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -40,12 +40,15 @@ export class AnnouncementFormComponent implements OnInit, AfterViewInit {
   private authService = inject(AuthService);
   private departmentService = inject(DepartmentService);
   private cdr = inject(ChangeDetectorRef);
+  private ngZone = inject(NgZone);
 
   @Input() announcement: Announcement | null = null;
   @Input() isLoading = false;
   
   @Output() submitForm = new EventEmitter<{ dto: CreateAnnouncementDto | UpdateAnnouncementDto, files: File[] }>();
   @Output() cancel = new EventEmitter<void>();
+
+  @ViewChild('titleInput') titleInput!: ElementRef<HTMLInputElement>;
 
   selectedCoverImage: File | null = null;
   coverImagePreview: string | null = null;
@@ -106,17 +109,24 @@ export class AnnouncementFormComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    // Force change detection and layout recalculation on open
+    // Immediate CD cycle for first paint
     this.cdr.detectChanges();
     
-    // Sometimes Material components inside an *ngIf or absolute/fixed container
-    // don't calculate their width/layout correctly on the first frame.
-    // Triggering a resize event or a small timeout with another detectChanges
-    // usually fixes the "compressed layout" issue.
-    setTimeout(() => {
-      window.dispatchEvent(new Event('resize'));
-      this.cdr.detectChanges();
-    }, 100);
+    // Robust layout fix for Material components inside hidden/shown containers
+    this.ngZone.runOutsideAngular(() => {
+      setTimeout(() => {
+        // Dispatch resize to fix Material outline/layout
+        window.dispatchEvent(new Event('resize'));
+        
+        this.ngZone.run(() => {
+          // Manually focus the first input to force layout refresh
+          if (this.titleInput) {
+            this.titleInput.nativeElement.focus();
+          }
+          this.cdr.detectChanges();
+        });
+      }, 100);
+    });
   }
 
   fetchDepartments(): void {
