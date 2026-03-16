@@ -147,7 +147,7 @@ export class AuthService {
 
   hasRole(role: string): boolean {
     if (!this.isBrowser()) {
-      return true;
+      return false;
     }
     const user = this.getCurrentUser();
     return user?.roles.includes(role) ?? false;
@@ -155,7 +155,7 @@ export class AuthService {
 
   hasAnyRole(roles: string[]): boolean {
     if (!this.isBrowser()) {
-      return true;
+      return false;
     }
     const user = this.getCurrentUser();
     return user ? roles.some(role => user.roles.includes(role)) : false;
