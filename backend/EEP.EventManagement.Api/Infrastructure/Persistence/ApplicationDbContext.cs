@@ -20,6 +20,7 @@ namespace EEP.EventManagement.Api.Infrastructure.Persistence
         public DbSet<Announcement> Announcements { get; set; }
         public DbSet<AnnouncementMedia> AnnouncementMedia { get; set; }
         public DbSet<JobVacancy> JobVacancies { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

@@ -2,6 +2,7 @@ using AutoMapper;
 using EEP.EventManagement.Api.Application.Exceptions;
 using EEP.EventManagement.Api.Application.Features.Assignments.Commands;
 using EEP.EventManagement.Api.Application.Features.Assignments.DTOs;
+using EEP.EventManagement.Api.Application.Services;
 using EEP.EventManagement.Api.Domain.Entities;
 using EEP.EventManagement.Api.Domain.Enums;
 using EEP.EventManagement.Api.Infrastructure.Repositories.Interfaces;
@@ -10,6 +11,10 @@ using EEP.EventManagement.Api.Infrastructure.Security.Identity;
 using Microsoft.EntityFrameworkCore;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
+using System;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace EEP.EventManagement.Api.Application.Features.Assignments.Handlers
 {
@@ -20,19 +25,22 @@ namespace EEP.EventManagement.Api.Application.Features.Assignments.Handlers
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IMapper _mapper;
         private readonly IUserContext _userContext;
+        private readonly INotificationService _notificationService;
 
         public CreateAssignmentCommandHandler(
             IAssignmentRepository assignmentRepository,
             IEventRepository eventRepository,
             UserManager<ApplicationUser> userManager,
             IMapper mapper,
-            IUserContext userContext)
+            IUserContext userContext,
+            INotificationService notificationService)
         {
             _assignmentRepository = assignmentRepository;
             _eventRepository = eventRepository;
             _userManager = userManager;
             _mapper = mapper;
             _userContext = userContext;
+            _notificationService = notificationService;
         }
 
         public async Task<AssignmentDto> Handle(CreateAssignmentCommand request, CancellationToken cancellationToken)
@@ -89,6 +97,15 @@ namespace EEP.EventManagement.Api.Application.Features.Assignments.Handlers
             };
 
             await _assignmentRepository.AddAsync(assignment);
+
+            // Notify the assigned user
+            await _notificationService.SendNotificationAsync(
+                employee.Id,
+                "New Event Assignment",
+                $"You have been assigned as a {assignment.Role} for the event: {eventEntity.Title}",
+                NotificationType.Assignment,
+                eventEntity.Id
+            );
 
             // Fetch with navigation properties
             var createdAssignment = await _assignmentRepository.GetByIdAsync(assignment.Id);

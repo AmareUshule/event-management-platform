@@ -2,6 +2,7 @@ using AutoMapper;
 using EEP.EventManagement.Api.Application.Exceptions;
 using EEP.EventManagement.Api.Application.Features.Approval.Commands;
 using EEP.EventManagement.Api.Application.Features.Events.DTOs;
+using EEP.EventManagement.Api.Application.Services;
 using EEP.EventManagement.Api.Domain.Entities;
 using EEP.EventManagement.Api.Domain.Enums;
 using EEP.EventManagement.Api.Infrastructure.Repositories.Interfaces;
@@ -18,12 +19,18 @@ namespace EEP.EventManagement.Api.Application.Features.Approval.Handlers
         private readonly IEventRepository _eventRepository;
         private readonly IMapper _mapper;
         private readonly IUserContext _userContext;
+        private readonly INotificationService _notificationService;
 
-        public ApproveEventCommandHandler(IEventRepository eventRepository, IMapper mapper, IUserContext userContext)
+        public ApproveEventCommandHandler(
+            IEventRepository eventRepository, 
+            IMapper mapper, 
+            IUserContext userContext,
+            INotificationService notificationService)
         {
             _eventRepository = eventRepository;
             _mapper = mapper;
             _userContext = userContext;
+            _notificationService = notificationService;
         }
 
         public async Task<EventDto> Handle(ApproveEventCommand request, CancellationToken cancellationToken)
@@ -45,6 +52,14 @@ namespace EEP.EventManagement.Api.Application.Features.Approval.Handlers
             eventToApprove.UpdatedAt = DateTime.UtcNow;
 
             await _eventRepository.UpdateAsync(eventToApprove);
+
+            // Notify all users
+            await _notificationService.SendToAllAsync(
+                "New Event Scheduled",
+                $"A new event has been scheduled: {eventToApprove.Title}",
+                NotificationType.Event,
+                eventToApprove.Id
+            );
 
             // Re-fetch to include navigation properties (like ApprovedByUser)
             var updatedEvent = await _eventRepository.GetByIdAsync(eventToApprove.Id);

@@ -110,6 +110,62 @@
 
 ---
 
+---
+
+### 8. **Announcements**
+
+| Field | Data Type | Constraints |
+| :--- | :--- | :--- |
+| id | UUID | PK |
+| title | VARCHAR(200) | NOT NULL |
+| content | TEXT | NOT NULL |
+| type | VARCHAR(50) | NOT NULL (`General`, `JobOpening`, `DocumentPost`) |
+| status | VARCHAR(50) | NOT NULL (`Draft`, `PendingApproval`, `Rejected`, `Published`) |
+| department_id | UUID | FK → Departments(id), NULL |
+| deadline | TIMESTAMP | NULL |
+| cover_image_url| TEXT | NULL |
+| created_by | UUID | FK → Users(id), NOT NULL |
+| approved_by | UUID | FK → Users(id), NULL |
+| created_at | TIMESTAMP | DEFAULT now() |
+| updated_at | TIMESTAMP | DEFAULT now() |
+
+---
+
+### 9. **AnnouncementMedia**
+
+| Field | Data Type | Constraints |
+| :--- | :--- | :--- |
+| id | UUID | PK |
+| announcement_id| UUID | FK → Announcements(id), NOT NULL (Cascade Delete) |
+| file_url | TEXT | NOT NULL |
+| file_name | VARCHAR(250) | NOT NULL |
+| file_type | VARCHAR(50) | NOT NULL (`Image`, `Pdf`) |
+| content_type | VARCHAR(100) | NOT NULL |
+| uploaded_by | UUID | FK → Users(id), NOT NULL |
+| uploaded_at | TIMESTAMP | DEFAULT now() |
+
+---
+
+### 10. **JobVacancies**
+
+| Field | Data Type | Constraints |
+| :--- | :--- | :--- |
+| id | UUID | PK |
+| announcement_id| UUID | FK → Announcements(id), NOT NULL (Cascade Delete) |
+| job_title | VARCHAR(250) | NOT NULL |
+| job_code | VARCHAR(50) | NOT NULL |
+| grade | VARCHAR(50) | NOT NULL |
+| required_number| INT | NOT NULL |
+| work_place | VARCHAR(250) | NOT NULL |
+| requirements | TEXT | NOT NULL |
+| experience | TEXT | NOT NULL |
+| training | TEXT | NOT NULL |
+| certificate | TEXT | NOT NULL |
+| other_optional_requirements | TEXT | NOT NULL |
+| work_unit | VARCHAR(250) | NOT NULL |
+
+---
+
 ### **Relationships Summary**
 
 - **Users ↔ Departments:** Many-to-One
@@ -122,3 +178,7 @@
 - **AuditLogs ↔ Users:** Many-to-One (`performed_by`)
 - **Notifications ↔ Users:** Many-to-One (`user_id`)
 - **Notifications ↔ Events:** Many-to-One (`event_id`, nullable)
+- **Announcements ↔ Departments:** Many-to-One
+- **Announcements ↔ Users:** Many-to-One (`created_by`, `approved_by`)
+- **AnnouncementMedia ↔ Announcements:** Many-to-One
+- **JobVacancies ↔ Announcements:** Many-to-One

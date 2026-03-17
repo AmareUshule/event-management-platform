@@ -3,6 +3,7 @@ using System;
 using EEP.EventManagement.Api.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EEP.EventManagement.Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260316113146_AddNotificationsTable")]
+    partial class AddNotificationsTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -131,7 +134,7 @@ namespace EEP.EventManagement.Api.Migrations
 
                     b.HasIndex("AnnouncementId");
 
-                    b.ToTable("AnnouncementMedia", (string)null);
+                    b.ToTable("AnnouncementMedia");
                 });
 
             modelBuilder.Entity("EEP.EventManagement.Api.Domain.Entities.Assignment", b =>
@@ -210,7 +213,7 @@ namespace EEP.EventManagement.Api.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("AuditLogs", (string)null);
+                    b.ToTable("AuditLogs");
                 });
 
             modelBuilder.Entity("EEP.EventManagement.Api.Domain.Entities.Department", b =>
@@ -238,7 +241,7 @@ namespace EEP.EventManagement.Api.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("Departments", (string)null);
+                    b.ToTable("Departments");
                 });
 
             modelBuilder.Entity("EEP.EventManagement.Api.Domain.Entities.Event", b =>
@@ -373,7 +376,7 @@ namespace EEP.EventManagement.Api.Migrations
 
                     b.HasIndex("AnnouncementId");
 
-                    b.ToTable("JobVacancies", (string)null);
+                    b.ToTable("JobVacancies");
                 });
 
             modelBuilder.Entity("EEP.EventManagement.Api.Domain.Entities.MediaFile", b =>
@@ -404,7 +407,7 @@ namespace EEP.EventManagement.Api.Migrations
 
                     b.HasIndex("EventId");
 
-                    b.ToTable("MediaFiles", (string)null);
+                    b.ToTable("MediaFiles");
                 });
 
             modelBuilder.Entity("EEP.EventManagement.Api.Domain.Entities.Notification", b =>
@@ -443,7 +446,7 @@ namespace EEP.EventManagement.Api.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Notifications", (string)null);
+                    b.ToTable("Notifications");
                 });
 
             modelBuilder.Entity("EEP.EventManagement.Api.Infrastructure.Security.Identity.ApplicationUser", b =>

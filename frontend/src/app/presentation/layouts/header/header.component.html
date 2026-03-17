@@ -35,9 +35,8 @@
 
     <div class="nav-right">
       <div class="notification-wrapper">
-        <button mat-icon-button class="nav-icon-btn" matTooltip="Notifications" [matMenuTriggerFor]="notificationMenu">
-          <mat-icon>notifications</mat-icon>
-          <div class="notification-badge" *ngIf="unreadCount > 0"></div>
+        <button mat-icon-button class="nav-icon-btn" matTooltip="Notifications" [matMenuTriggerFor]="notificationMenu" (click)="loadNotifications()">
+          <mat-icon [matBadge]="unreadCount > 0 ? unreadCount : null" matBadgeColor="warn">notifications</mat-icon>
         </button>
       </div>
 
@@ -54,7 +53,11 @@
         <mat-divider></mat-divider>
 
         <div class="notification-list" (click)="$event.stopPropagation()">
-          <div *ngIf="notifications.length === 0" class="empty-notifications">
+          <div *ngIf="isLoadingNotifications" class="loading-notifications">
+            <mat-spinner diameter="30"></mat-spinner>
+          </div>
+
+          <div *ngIf="!isLoadingNotifications && notifications.length === 0" class="empty-notifications">
             <mat-icon>notifications_off</mat-icon>
             <p>No new notifications</p>
           </div>
@@ -63,12 +66,12 @@
             *ngFor="let n of notifications" 
             class="notification-item" 
             [class.unread]="!n.isRead"
-            (click)="markAsRead(n.id)">
+            (click)="onNotificationClick(n)">
             <div class="status-indicator" [class]="n.type"></div>
             <div class="notification-content">
               <div class="notification-title">{{ n.title }}</div>
               <div class="notification-message">{{ n.message }}</div>
-              <div class="notification-time">{{ n.time }}</div>
+              <div class="notification-time">{{ n.createdAt | date:'short' }}</div>
             </div>
             <div class="unread-dot" *ngIf="!n.isRead"></div>
           </div>
@@ -77,7 +80,7 @@
         <mat-divider></mat-divider>
 
         <div class="notification-footer" (click)="$event.stopPropagation()">
-          <button mat-button color="primary">View All Notifications</button>
+          <button mat-button color="primary">Latest Notifications</button>
         </div>
       </mat-menu>
 

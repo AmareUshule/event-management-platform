@@ -1,68 +1,118 @@
-import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
-import { catchError, retry, timeout, tap } from 'rxjs/operators';
+import { Injectable, inject, OnDestroy, Injector } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, BehaviorSubject, Subject } from 'rxjs';
+import { tap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { AuthService } from '../auth/auth.service';
+import * as signalR from '@microsoft/signalr';
+import { ToastrService } from 'ngx-toastr';
 
 export interface Notification {
-  id: number;
+  id: string;
   title: string;
   message: string;
-  time: string;
+  type: string;
+  referenceId?: string;
   isRead: boolean;
-  type: 'info' | 'success' | 'warning' | 'error';
-  createdAt?: string;
+  createdAt: string;
 }
 
 @Injectable({
   providedIn: 'root'
 })
-export class NotificationService {
+export class NotificationService implements OnDestroy {
   private http = inject(HttpClient);
-  private authService = inject(AuthService);
+  private toastr = inject(ToastrService);
+  private injector = inject(Injector);
   
   private readonly API_URL = `${environment.apiUrl}/api/notifications`;
-  private readonly REQUEST_TIMEOUT = 15000;
+  private readonly HUB_URL = `${environment.apiUrl}/notificationHub`;
+  
+  private hubConnection?: signalR.HubConnection;
+  
+  private unreadCountSubject = new BehaviorSubject<number>(0);
+  unreadCount$ = this.unreadCountSubject.asObservable();
+  
+  private newNotificationSubject = new Subject<Notification>();
+  newNotification$ = this.newNotificationSubject.asObservable();
 
-  private getHeaders(): HttpHeaders {
-    const token = this.authService.getToken();
-    return new HttpHeaders({
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
+  constructor() {
+    // Break circular dependency by using Injector to get AuthService later
+    setTimeout(() => {
+      const authService = this.injector.get(AuthService);
+      authService.currentUser$.subscribe(user => {
+        if (user) {
+          this.startConnection();
+          this.refreshUnreadCount();
+        } else {
+          this.stopConnection();
+          this.unreadCountSubject.next(0);
+        }
+      });
+    }, 0);
+  }
+
+  private get authService(): AuthService {
+    return this.injector.get(AuthService);
+  }
+
+  private startConnection() {
+    if (this.hubConnection?.state === signalR.HubConnectionState.Connected) return;
+
+    this.hubConnection = new signalR.HubConnectionBuilder()
+      .withUrl(this.HUB_URL, {
+        accessTokenFactory: () => this.authService.getToken() || ''
+      })
+      .withAutomaticReconnect()
+      .build();
+
+    this.hubConnection.start()
+      .then(() => console.log('SignalR Connected'))
+      .catch(err => console.error('SignalR Connection Error: ', err));
+
+    this.hubConnection.on('ReceiveNotification', (notification: Notification) => {
+      this.toastr.info(notification.message, notification.title, {
+        positionClass: 'toast-bottom-right',
+        progressBar: true,
+        timeOut: 5000
+      });
+      this.newNotificationSubject.next(notification);
+      this.refreshUnreadCount();
     });
   }
 
+  private stopConnection() {
+    this.hubConnection?.stop();
+  }
+
   getNotifications(): Observable<Notification[]> {
-    return this.http.get<Notification[]>(this.API_URL, {
-      headers: this.getHeaders()
-    }).pipe(
-      timeout(this.REQUEST_TIMEOUT),
-      retry(1),
-      catchError(this.handleError)
+    return this.http.get<Notification[]>(this.API_URL);
+  }
+
+  getUnreadNotifications(): Observable<Notification[]> {
+    return this.http.get<Notification[]>(`${this.API_URL}/unread`);
+  }
+
+  getUnreadCount(): Observable<number> {
+    return this.http.get<number>(`${this.API_URL}/unread-count`);
+  }
+
+  markAsRead(id: string): Observable<void> {
+    return this.http.post<void>(`${this.API_URL}/mark-read/${id}`, {}).pipe(
+      tap(() => this.refreshUnreadCount())
     );
   }
 
-  markAsRead(id: number): Observable<void> {
-    return this.http.patch<void>(`${this.API_URL}/${id}/read`, {}, {
-      headers: this.getHeaders()
-    }).pipe(
-      timeout(this.REQUEST_TIMEOUT),
-      catchError(this.handleError)
-    );
+  refreshUnreadCount() {
+    if (this.authService.isAuthenticated()) {
+      this.getUnreadCount().subscribe({
+        next: (count) => this.unreadCountSubject.next(count),
+        error: (err) => console.error('Error fetching unread count', err)
+      });
+    }
   }
 
-  markAllAsRead(): Observable<void> {
-    return this.http.patch<void>(`${this.API_URL}/read-all`, {}, {
-      headers: this.getHeaders()
-    }).pipe(
-      timeout(this.REQUEST_TIMEOUT),
-      catchError(this.handleError)
-    );
-  }
-
-  private handleError(error: any): Observable<never> {
-    console.error('NotificationService Error:', error);
-    return throwError(() => new Error(error.message || 'Server error'));
+  ngOnDestroy() {
+    this.stopConnection();
   }
 }

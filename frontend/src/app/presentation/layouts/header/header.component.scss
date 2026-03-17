@@ -501,6 +501,13 @@ $danger-color: #ef4444;
     max-height: 400px;
     overflow-y: auto;
 
+    .loading-notifications {
+      padding: 40px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
     .empty-notifications {
       padding: 40px 20px;
       text-align: center;

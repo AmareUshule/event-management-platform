@@ -2,6 +2,7 @@ using AutoMapper;
 using EEP.EventManagement.Api.Application.Exceptions;
 using EEP.EventManagement.Api.Application.Features.Media.Commands;
 using EEP.EventManagement.Api.Application.Features.Media.DTOs;
+using EEP.EventManagement.Api.Application.Services;
 using EEP.EventManagement.Api.Domain.Entities;
 using EEP.EventManagement.Api.Domain.Enums;
 using EEP.EventManagement.Api.Infrastructure.Repositories.Interfaces;
@@ -22,19 +23,22 @@ namespace EEP.EventManagement.Api.Application.Features.Media.Handlers
         private readonly IStorageService _storageService;
         private readonly IMapper _mapper;
         private readonly IUserContext _userContext;
+        private readonly INotificationService _notificationService;
 
         public UploadMediaCommandHandler(
             IMediaFileRepository mediaRepository,
             IEventRepository eventRepository,
             IStorageService storageService,
             IMapper mapper,
-            IUserContext userContext)
+            IUserContext userContext,
+            INotificationService notificationService)
         {
             _mediaRepository = mediaRepository;
             _eventRepository = eventRepository;
             _storageService = storageService;
             _mapper = mapper;
             _userContext = userContext;
+            _notificationService = notificationService;
         }
 
         public async Task<MediaFileDto> Handle(UploadMediaCommand request, CancellationToken cancellationToken)
@@ -87,6 +91,19 @@ namespace EEP.EventManagement.Api.Application.Features.Media.Handlers
             }
 
             var result = await _mediaRepository.AddAsync(mediaFile);
+
+            // Notify event creator
+            if (ev.CreatedBy != Guid.Empty)
+            {
+                await _notificationService.SendNotificationAsync(
+                    ev.CreatedBy,
+                    "New Media Uploaded",
+                    $"New media has been uploaded for the event: {ev.Title}",
+                    NotificationType.Event,
+                    ev.Id
+                );
+            }
+
             return _mapper.Map<MediaFileDto>(result);
         }
     }

@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -42,6 +42,7 @@ export class LoginComponent {
   private route = inject(ActivatedRoute);
   private authService = inject(AuthService);
   private snackBar = inject(MatSnackBar);
+  private cdr = inject(ChangeDetectorRef);
 
   loginForm: FormGroup;
   hidePassword = true;
@@ -67,6 +68,9 @@ export class LoginComponent {
       this.authService.login(credentials).subscribe({
         next: (user) => {
           this.isLoading = false;
+          // Trigger change detection to avoid NG0100 error
+          this.cdr.detectChanges();
+          
           // Use fullName which is now properly mapped from firstName + lastName
           this.showSuccess(`Welcome back, ${user.fullName}!`);
 
@@ -76,6 +80,8 @@ export class LoginComponent {
         },
         error: (error) => {
           this.isLoading = false;
+          // Trigger change detection to avoid NG0100 error
+          this.cdr.detectChanges();
 
           // Clear password field for security
           this.loginForm.get('password')?.setValue('');

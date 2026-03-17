@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, ChangeDetectorRef, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef, PLATFORM_ID, OnDestroy } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
@@ -6,9 +6,12 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatBadgeModule } from '@angular/material/badge';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AuthService } from '../../../core/auth/auth.service';
 import { AuthUser } from '../../../core/models/auth-user.model';
 import { NotificationService, Notification } from '../../../core/services/notification.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-header',
@@ -20,12 +23,14 @@ import { NotificationService, Notification } from '../../../core/services/notifi
     MatButtonModule,
     MatMenuModule,
     MatDividerModule,
-    MatTooltipModule
+    MatTooltipModule,
+    MatBadgeModule,
+    MatProgressSpinnerModule
   ],
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.scss']
 })
-export class HeaderComponent implements OnInit {
+export class HeaderComponent implements OnInit, OnDestroy {
   private authService = inject(AuthService);
   private notificationService = inject(NotificationService);
   private router = inject(Router);
@@ -35,86 +40,79 @@ export class HeaderComponent implements OnInit {
   user: AuthUser | null = null;
   isMobileMenuOpen = false;
   isLoadingNotifications = false;
-
+  unreadCount = 0;
   notifications: Notification[] = [];
+  
+  private subscriptions = new Subscription();
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       this.user = this.authService.getCurrentUser();
-      this.loadNotifications();
+      
+      this.subscriptions.add(
+        this.notificationService.unreadCount$.subscribe(count => {
+          this.unreadCount = count;
+          this.cdr.detectChanges();
+        })
+      );
+      
+      this.subscriptions.add(
+        this.notificationService.newNotification$.subscribe(notification => {
+          this.notifications.unshift(notification);
+          if (this.notifications.length > 10) {
+            this.notifications.pop();
+          }
+          this.cdr.detectChanges();
+        })
+      );
     }
   }
 
   loadNotifications(): void {
+    if (this.isLoadingNotifications) return;
+    
     this.isLoadingNotifications = true;
     this.notificationService.getNotifications().subscribe({
       next: (data) => {
-        this.notifications = data;
+        this.notifications = data.slice(0, 10); // Keep only latest 10
         this.isLoadingNotifications = false;
         this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Failed to load notifications from backend:', err);
-        // Fallback to mock data if backend fails
-        this.notifications = this.getMockNotifications();
         this.isLoadingNotifications = false;
         this.cdr.detectChanges();
       }
     });
   }
 
-  getMockNotifications(): Notification[] {
-    return [
-      {
-        id: 1,
-        title: 'New Event Assigned',
-        message: 'You have been assigned to "Tech Conference 2026".',
-        time: '2 mins ago',
-        isRead: false,
-        type: 'info'
-      },
-      {
-        id: 2,
-        title: 'Draft Approved',
-        message: 'Your event "Staff Workshop" has been approved.',
-        time: '1 hour ago',
-        isRead: false,
-        type: 'success'
-      }
-    ];
-  }
-
-  get unreadCount(): number {
-    return this.notifications.filter(n => !n.isRead).length;
-  }
-
-  markAsRead(id: number): void {
-    const notification = this.notifications.find(n => n.id === id);
-    if (notification && !notification.isRead) {
-      this.notificationService.markAsRead(id).subscribe({
+  onNotificationClick(notification: Notification): void {
+    if (!notification.isRead) {
+      this.notificationService.markAsRead(notification.id).subscribe({
         next: () => {
           notification.isRead = true;
-        },
-        error: (err) => {
-          console.error('Failed to mark notification as read:', err);
-          // Optimistically update even if error for better UX
-          notification.isRead = true;
+          this.cdr.detectChanges();
         }
       });
+    }
+
+    if (notification.referenceId) {
+      if (notification.type === 'Announcement') {
+        this.router.navigate(['/internal-announcements', notification.referenceId]);
+      } else if (notification.type === 'Event' || notification.type === 'Assignment') {
+        this.router.navigate(['/events', notification.referenceId]);
+      }
     }
   }
 
   markAllAsRead(): void {
-    if (this.unreadCount === 0) return;
-    
-    this.notificationService.markAllAsRead().subscribe({
-      next: () => {
-        this.notifications.forEach(n => n.isRead = true);
-      },
-      error: (err) => {
-        console.error('Failed to mark all as read:', err);
-        this.notifications.forEach(n => n.isRead = true);
-      }
+    // Note: Backend doesn't have mark-all-read yet, so we loop or just skip for now.
+    // Based on requirements, we only need to allow marking notifications as read.
+    this.notifications.filter(n => !n.isRead).forEach(n => {
+      this.notificationService.markAsRead(n.id).subscribe(() => {
+        n.isRead = true;
+        this.cdr.detectChanges();
+      });
     });
   }
 
@@ -137,5 +135,9 @@ export class HeaderComponent implements OnInit {
   logout(): void {
     this.authService.logout();
     this.router.navigate(['/login']);
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
   }
 }
