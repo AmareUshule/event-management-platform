@@ -21,6 +21,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.FileProviders;
 using System.IO;
 using System.Text.Json.Serialization;
+using System.Threading.Tasks;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -43,7 +44,7 @@ builder.Services.AddCors(options =>
         policy.WithOrigins(
                 "http://localhost:4200",
                 "http://10.27.52.167:4200",
-                "http://10.27.52.119:4200"
+                "http://10.27.52.230:4200"
             )
             .AllowAnyHeader()
             .AllowAnyMethod()
@@ -73,6 +74,7 @@ builder.Services.AddDbContext<IdentityDbContext>(options =>
 // Application services
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IUserContext, EEP.EventManagement.Api.Infrastructure.Security.UserContext>();
+builder.Services.AddScoped<EEP.EventManagement.Api.Application.Services.INotificationService, EEP.EventManagement.Api.Application.Services.NotificationService>();
 builder.Services.AddScoped<EEP.EventManagement.Api.Application.Services.IEventLifecycleService, EEP.EventManagement.Api.Application.Services.EventLifecycleService>();
 builder.Services.AddHostedService<EEP.EventManagement.Api.Infrastructure.Services.EventStatusUpdateWorker>();
 builder.Services.AddScoped<IEventRepository, EventRepository>();
@@ -80,7 +82,11 @@ builder.Services.AddScoped<IDepartmentRepository, DepartmentRepository>();
 builder.Services.AddScoped<IAssignmentRepository, AssignmentRepository>();
 builder.Services.AddScoped<IMediaFileRepository, MediaFileRepository>();
 builder.Services.AddScoped<IAnnouncementRepository, AnnouncementRepository>();
+builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddScoped<EEP.EventManagement.Api.Infrastructure.Storage.Interfaces.IStorageService, EEP.EventManagement.Api.Infrastructure.Storage.Implementations.LocalStorageService>();
+
+// SignalR
+builder.Services.AddSignalR();
 
 // Register custom authorization handlers
 builder.Services.AddScoped<IAuthorizationHandler, EEP.EventManagement.Api.Infrastructure.Security.Authorization.Handlers.IsCommunicationManagerHandler>();
@@ -136,6 +142,21 @@ builder.Services.AddAuthentication(options =>
         ValidIssuer = jwtSettings.Issuer,
         ValidAudience = jwtSettings.Audience,
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Secret))
+    };
+
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            var accessToken = context.Request.Query["access_token"];
+            var path = context.HttpContext.Request.Path;
+            if (!string.IsNullOrEmpty(accessToken) &&
+                (path.StartsWithSegments("/notificationHub")))
+            {
+                context.Token = accessToken;
+            }
+            return Task.CompletedTask;
+        }
     };
 });
 
@@ -215,5 +236,6 @@ app.UseAuthorization();
 // ENABLE CONTROLLERS
 // -----------------------------
 app.MapControllers();
+app.MapHub<EEP.EventManagement.Api.Infrastructure.Notifications.Hubs.NotificationHub>("/notificationHub");
 
 app.Run();
