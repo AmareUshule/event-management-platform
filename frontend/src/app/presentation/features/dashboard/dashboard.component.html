@@ -32,72 +32,74 @@
           </ng-container>
 
           <!-- Actual Stats -->
-          <ng-container *ngIf="!isLoadingEvents">
-            <div class="stat-card" (click)="onStatCardClick('all')">
-              <div class="stat-icon total-events">
-                <mat-icon>event</mat-icon>
-              </div>
-              <div class="stat-details">
-                <h3 class="stat-value">{{ isStaff() ? assignedEventsCount : totalEvents }}</h3>
-                <p class="stat-label">{{ isStaff() ? 'My Total Assignments' : 'Total Events' }}</p>
-              </div>
-            </div>
+          <!-- Actual Stats -->
+<ng-container *ngIf="!isLoadingEvents">
+  <!-- Total / Assignments -->
+  <div class="stat-card" (click)="onStatCardClick('all')">
+    <div class="stat-icon total-events">
+      <mat-icon>event</mat-icon>
+    </div>
+    <div class="stat-content">
+      <p class="stat-label">{{ isStaff() ? 'My Total Assignments' : 'Total Events' }}</p>
+      <h3 class="stat-number">{{ isStaff() ? assignedEventsCount : totalEvents }}</h3>
+    </div>
+  </div>
 
-            <!-- Drafts for Admin/Manager -->
-            <div class="stat-card" *ngIf="authService.isAdmin() || authService.isManager()"
-              (click)="onStatCardClick('draft')">
-              <div class="stat-icon draft">
-                <mat-icon>edit_note</mat-icon>
-              </div>
-              <div class="stat-details">
-                <h3 class="stat-value">{{ draftEventsCount }}</h3>
-                <p class="stat-label">Drafts</p>
-              </div>
-            </div>
+  <!-- Drafts (Admin/Manager only) -->
+  <div class="stat-card" *ngIf="authService.isAdmin() || authService.isManager()" (click)="onStatCardClick('draft')">
+    <div class="stat-icon draft">
+      <mat-icon>edit_note</mat-icon>
+    </div>
+    <div class="stat-content">
+      <p class="stat-label">Drafts</p>
+      <h3 class="stat-number">{{ draftEventsCount }}</h3>
+    </div>
+  </div>
 
-            <!-- Pending Invitations for Staff -->
-            <div class="stat-card" *ngIf="isStaff()" (click)="onStatCardClick('assignments')">
-              <div class="stat-icon pending">
-                <mat-icon>notification_important</mat-icon>
-              </div>
-              <div class="stat-details">
-                <h3 class="stat-value">{{ pendingAssignmentsCount }}</h3>
-                <p class="stat-label">Pending Invitations</p>
-              </div>
-            </div>
+  <!-- Pending Invitations (Staff only) -->
+  <div class="stat-card" *ngIf="isStaff()" (click)="onStatCardClick('assignments')">
+    <div class="stat-icon pending">
+      <mat-icon>notification_important</mat-icon>
+    </div>
+    <div class="stat-content">
+      <p class="stat-label">Pending Invitations</p>
+      <h3 class="stat-number">{{ pendingAssignmentsCount }}</h3>
+    </div>
+  </div>
 
-            <!-- Ongoing for others (to maintain 4 cards) -->
-            <div class="stat-card" *ngIf="!isStaff() && !authService.isAdmin() && !authService.isManager()"
-              (click)="onStatCardClick('ongoing')">
-              <div class="stat-icon draft" style="background: linear-gradient(135deg, #3b82f6, #2563eb);">
-                <mat-icon>play_circle_outline</mat-icon>
-              </div>
-              <div class="stat-details">
-                <h3 class="stat-value">{{ ongoingEvents }}</h3>
-                <p class="stat-label">Ongoing Events</p>
-              </div>
-            </div>
+  <!-- Ongoing Events (Others) -->
+  <div class="stat-card" *ngIf="!isStaff() && !authService.isAdmin() && !authService.isManager()" (click)="onStatCardClick('ongoing')">
+    <div class="stat-icon draft" style="background: linear-gradient(135deg, #3b82f6, #2563eb);">
+      <mat-icon>play_circle_outline</mat-icon>
+    </div>
+    <div class="stat-content">
+      <p class="stat-label">Ongoing Events</p>
+      <h3 class="stat-number">{{ ongoingEvents }}</h3>
+    </div>
+  </div>
 
-            <div class="stat-card" (click)="onStatCardClick('scheduled')">
-              <div class="stat-icon published">
-                <mat-icon>check_circle</mat-icon>
-              </div>
-              <div class="stat-details">
-                <h3 class="stat-value">{{ scheduledEvents }}</h3>
-                <p class="stat-label">Scheduled</p>
-              </div>
-            </div>
+  <!-- Scheduled Events -->
+  <div class="stat-card" (click)="onStatCardClick('scheduled')">
+    <div class="stat-icon published">
+      <mat-icon>check_circle</mat-icon>
+    </div>
+    <div class="stat-content">
+      <p class="stat-label">Scheduled</p>
+      <h3 class="stat-number">{{ scheduledEvents }}</h3>
+    </div>
+  </div>
 
-            <div class="stat-card" (click)="onStatCardClick('past')">
-              <div class="stat-icon total-events" style="background: linear-gradient(135deg, #10b981, #059669);">
-                <mat-icon>history</mat-icon>
-              </div>
-              <div class="stat-details">
-                <h3 class="stat-value">{{ pastEventsCount }}</h3>
-                <p class="stat-label">Past Events</p>
-              </div>
-            </div>
-          </ng-container>
+  <!-- Past Events -->
+  <div class="stat-card" (click)="onStatCardClick('past')">
+    <div class="stat-icon total-events" style="background: linear-gradient(135deg, #10b981, #059669);">
+      <mat-icon>history</mat-icon>
+    </div>
+    <div class="stat-content">
+      <p class="stat-label">Past Events</p>
+      <h3 class="stat-number">{{ pastEventsCount }}</h3>
+    </div>
+  </div>
+</ng-container>
         </div>
       </div>
 
