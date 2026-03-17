@@ -142,11 +142,11 @@
       <div class="documents-section" *ngIf="pdfs.length > 0">
         <div class="section-title">
           <mat-icon>attachment</mat-icon>
-          <h3>Documents & PDFs</h3>
+          <h3>Official Documents (PDF)</h3>
         </div>
         <div class="pdf-viewer-container" *ngFor="let pdf of pdfs">
           <div class="pdf-header">
-            <span class="file-name">{{ pdf.fileName || 'Document.pdf' }}</span>
+            <span class="file-name"><mat-icon>description</mat-icon> {{ pdf.fileName || 'Document.pdf' }}</span>
             <div class="pdf-actions">
               <a [href]="getFileUrl(pdf.fileUrl)" target="_blank" mat-icon-button color="primary" matTooltip="Open in new tab">
                 <mat-icon>open_in_new</mat-icon>
@@ -157,7 +157,7 @@
             </div>
           </div>
           <div class="embedded-pdf">
-            <iframe [src]="getFileUrl(pdf.fileUrl) + '#toolbar=0' | safeUrl" width="100%" height="600px" style="border: none;"></iframe>
+            <iframe [src]="getFileUrl(pdf.fileUrl) + '#toolbar=0' | safeUrl" width="100%" height="800px" style="border: none; border-radius: 0 0 16px 16px;"></iframe>
           </div>
         </div>
       </div>

@@ -76,11 +76,11 @@
               </div>
               </mat-tab>
 
-              <mat-tab label="Pending" *ngIf="canPublish">
+              <mat-tab label="Pending" *ngIf="canPublish || canCreate">
                 <ng-template mat-tab-label>
                   <div class="tab-label-content">
                     <mat-icon>hourglass_top</mat-icon>
-                    <span>Pending</span>
+                    <span>{{ canPublish ? 'Approval Queue' : 'My Pending' }}</span>
                     <span class="count-badge" *ngIf="pendingAnnouncements.length > 0">{{ pendingAnnouncements.length }}</span>
                   </div>
                 </ng-template>

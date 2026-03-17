@@ -82,9 +82,8 @@ export class AnnouncementsPageComponent implements OnInit, OnDestroy {
       if (this.canCreate) {
         this.loadDrafts();
         this.loadRejected();
-      }
-      
-      if (this.canPublish) {
+        this.loadPending(); // Always load pending for creators too
+      } else if (this.canPublish) {
         this.loadPending();
       }
     });
