@@ -1,0 +1,335 @@
+<!-- register.component.html -->
+<!-- Premium Registration UI with Enhanced Visual Hierarchy & Micro-interactions -->
+
+<div class="registration-container">
+  <!-- Animated background elements -->
+  <div class="ambient-bg">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div class="grid-pattern"></div>
+  </div>
+
+  <div class="registration-wrapper">
+    <!-- ========== BRAND SIDE — DARK GREEN LUXURY WITH DYNAMIC ELEMENTS ========== -->
+    <div class="brand-side">
+      <!-- Floating particles for depth -->
+      <div class="particles">
+        <div class="particle" style="--delay: 0s; --size: 60px; --left: 10%; --top: 20%;"></div>
+        <div class="particle" style="--delay: 2s; --size: 80px; --left: 70%; --top: 60%;"></div>
+        <div class="particle" style="--delay: 4s; --size: 50px; --left: 40%; --top: 80%;"></div>
+      </div>
+
+      <div class="brand-content">
+        <!-- Animated logo with pulse effect -->
+        <div class="brand-logo-large">
+          <div class="logo-icon pulse-animation">
+            <mat-icon>calendar_today</mat-icon>
+            <div class="ripple"></div>
+          </div>
+          <div class="logo-text-wrapper">
+            <h1 class="brand-name">EventPortal</h1>
+            <span class="brand-badge">PRO</span>
+          </div>
+        </div>
+
+        <!-- Dynamic tagline with typewriter effect -->
+        <div class="brand-tagline">
+          <div class="typewriter-container">
+            <h2 class="typewriter-text">Elevate Your Events</h2>
+          </div>
+          <p class="brand-description">Join 5,000+ professionals managing events seamlessly</p>
+        </div>
+
+        <!-- Enhanced feature list with icons and counters -->
+        <div class="brand-features">
+          <div class="feature-item" *ngFor="let feature of [
+            { icon: 'event_available', text: 'Smart Scheduling', color: 'green', stats: '2.5k+ events' },
+            { icon: 'analytics', text: 'Real-time Analytics', color: 'green', stats: 'Live dashboard' },
+            { icon: 'security', text: 'Enterprise Security', color: 'red', stats: '256-bit encryption' },
+            { icon: 'support_agent', text: '24/7 Priority Support', color: 'green', stats: 'Instant response' }
+          ]">
+            <div class="feature-icon-wrapper" [class.green]="feature.color === 'green'" [class.red]="feature.color === 'red'">
+              <mat-icon class="feature-icon">{{ feature.icon }}</mat-icon>
+            </div>
+            <div class="feature-content">
+              <span class="feature-text">{{ feature.text }}</span>
+              <span class="feature-stats">{{ feature.stats }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Social proof with avatars -->
+        <div class="social-proof">
+          <div class="avatar-stack">
+            <div class="avatar" *ngFor="let i of [1,2,3,4]" [style.--index]="i">
+              <img src="https://i.pravatar.cc/40?img={{i+10}}" alt="User">
+            </div>
+          </div>
+          <div class="proof-text">
+            <span class="highlight">500+</span> companies joined this month
+          </div>
+        </div>
+
+        <!-- Dynamic testimonial -->
+        <div class="testimonial-banner">
+          <mat-icon class="quote-icon">format_quote</mat-icon>
+          <p>"The best event management platform we've ever used. Absolutely seamless!"</p>
+          <div class="testimonial-author">
+            <strong>- Sarah Chen</strong>, Event Director at TechCorp
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== FORM SIDE — ELEGANT GLASSMORPHISM WITH ENHANCED INTERACTIONS ========== -->
+    <div class="form-side">
+      <div class="form-wrapper">
+        <!-- Live stats header -->
+        <div class="form-header-stats">
+          <div class="live-badge">
+            <span class="pulse-dot"></span>
+            <span>Live registration</span>
+          </div>
+          <div class="time-display glass-effect">
+            <mat-icon>schedule</mat-icon>
+            <span>{{ currentDate | date : 'HH:mm' }}</span>
+          </div>
+        </div>
+
+        <!-- Enhanced header with progress indicator -->
+        <div class="registration-header">
+          <div class="header-badge">
+            <span class="badge-text">NEW USER</span>
+            <span class="badge-step">Step 1 of 2</span>
+          </div>
+          <h1 class="registration-title">Create account</h1>
+          <p class="registration-subtitle">Get started with your 14-day free trial</p>
+          
+          <!-- Animated progress bar -->
+          <div class="form-progress">
+            <div class="progress-step active"></div>
+            <div class="progress-step"></div>
+            <div class="progress-step"></div>
+          </div>
+        </div>
+
+        <!-- ========== ENHANCED FORM WITH RICH INTERACTIONS ========== -->
+        <form [formGroup]="signUpForm" (ngSubmit)="onSignUp()" class="signup-form">
+          <div class="form-fields">
+            <!-- Employee ID with validation animation -->
+            <mat-form-field appearance="outline" class="form-field premium-field">
+              <mat-label>Employee ID</mat-label>
+              <input matInput formControlName="employeeId" placeholder="e.g., 1001" 
+                     autocomplete="off" (input)="animateField('employeeId')">
+              <mat-icon matPrefix class="field-icon">badge</mat-icon>
+              <mat-icon matSuffix *ngIf="employeeId?.valid && employeeId?.touched" class="validation-icon success">check_circle</mat-icon>
+              <mat-error *ngIf="employeeId?.invalid && employeeId?.touched">
+                <mat-icon class="error-icon">error</mat-icon>
+                <span>{{ getEmployeeIdError() }}</span>
+              </mat-error>
+            </mat-form-field>
+
+            <!-- Full Name with smart suggestions -->
+            <mat-form-field appearance="outline" class="form-field premium-field">
+              <mat-label>Full name</mat-label>
+              <input matInput formControlName="fullName" placeholder="John Doe">
+              <mat-icon matPrefix class="field-icon">person_outline</mat-icon>
+              <mat-icon matSuffix *ngIf="fullName?.valid && fullName?.touched" class="validation-icon success">check_circle</mat-icon>
+              <mat-error *ngIf="fullName?.invalid && fullName?.touched">
+                <mat-icon class="error-icon">error</mat-icon>
+                <span>Please enter a valid name (minimum 2 characters)</span>
+              </mat-error>
+            </mat-form-field>
+
+            <!-- Email with domain suggestions -->
+            <mat-form-field appearance="outline" class="form-field premium-field">
+              <mat-label>Work email</mat-label>
+              <input matInput formControlName="email" placeholder="name@company.com" type="email">
+              <mat-icon matPrefix class="field-icon">mail_outline</mat-icon>
+              <mat-icon matSuffix *ngIf="email?.valid && email?.touched" class="validation-icon success">check_circle</mat-icon>
+              <mat-error *ngIf="email?.invalid && email?.touched">
+                <mat-icon class="error-icon">error</mat-icon>
+                <span>Please enter a valid email address</span>
+              </mat-error>
+              <mat-hint *ngIf="email?.touched && email?.value && !email?.valid" class="suggestion-hint">
+                Did you mean: {{ suggestEmailDomain() }}
+              </mat-hint>
+            </mat-form-field>
+
+            <!-- Role Dropdown with enhanced styling -->
+            <mat-form-field appearance="outline" class="form-field premium-field">
+              <mat-label>Select role</mat-label>
+              <mat-select formControlName="role" panelClass="premium-select-panel">
+                <mat-option *ngFor="let role of roleKeys" [value]="role" class="premium-option">
+                  <div class="role-option">
+                    <div class="role-icon" [class.admin]="role === 'ADMIN'" 
+                         [class.manager]="role === 'MANAGER'"
+                         [class.staff]="role === 'STAFF'"
+                         [class.employee]="role === 'EMPLOYEE'">
+                      {{ role.charAt(0) }}
+                    </div>
+                    <div class="role-info">
+                      <span class="role-name">{{ role | titlecase }}</span>
+                      <span class="role-desc">{{ getRoleDescription(role) }}</span>
+                    </div>
+                  </div>
+                </mat-option>
+              </mat-select>
+              <mat-icon matPrefix class="field-icon">work_outline</mat-icon>
+            </mat-form-field>
+
+            <!-- Department with icons and descriptions -->
+            <mat-form-field appearance="outline" class="form-field premium-field">
+              <mat-label>Department</mat-label>
+              <mat-select formControlName="departmentId" panelClass="premium-select-panel">
+                <mat-option *ngFor="let dept of departmentList" [value]="dept.id" class="premium-option">
+                  <div class="dept-option">
+                    <div class="dept-color" [style.background]="getDepartmentColor(dept.id)"></div>
+                    <div class="dept-info">
+                      <span class="dept-name">{{ dept.name }}</span>
+                      <span class="dept-code">{{ getDepartmentCode(dept.id) }}</span>
+                    </div>
+                  </div>
+                </mat-option>
+              </mat-select>
+              <mat-icon matPrefix class="field-icon">business</mat-icon>
+            </mat-form-field>
+
+            <!-- Password with enhanced strength meter -->
+            <mat-form-field appearance="outline" class="form-field premium-field">
+              <mat-label>Password</mat-label>
+              <input matInput [type]="hidePassword ? 'password' : 'text'" 
+                     formControlName="password" (input)="checkPasswordStrength()">
+              <mat-icon matPrefix class="field-icon">lock_outline</mat-icon>
+              <button mat-icon-button matSuffix type="button" (click)="hidePassword = !hidePassword" 
+                      class="password-toggle" [class.active]="!hidePassword">
+                <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+              </button>
+            </mat-form-field>
+
+            <!-- Enhanced Password Strength Indicator -->
+            <div class="password-strength-modern" *ngIf="password?.value">
+              <div class="strength-header">
+                <span class="strength-label">Password strength</span>
+                <span class="strength-score" [class]="getStrengthClass()">{{ getPasswordStrengthLabel() }}</span>
+              </div>
+              <div class="strength-bars-enhanced">
+                <div class="strength-segment" *ngFor="let bar of [1,2,3,4]; let i = index"
+                     [class.active]="passwordStrength > i"
+                     [style.background]="getSegmentColor(i)">
+                </div>
+              </div>
+              <div class="strength-requirements">
+                <div class="requirement" [class.valid]="hasUpperCase">
+                  <mat-icon>{{ hasUpperCase ? 'check_circle' : 'radio_button_unchecked' }}</mat-icon>
+                  <span>Uppercase</span>
+                </div>
+                <div class="requirement" [class.valid]="hasNumber">
+                  <mat-icon>{{ hasNumber ? 'check_circle' : 'radio_button_unchecked' }}</mat-icon>
+                  <span>Number</span>
+                </div>
+                <div class="requirement" [class.valid]="hasSpecialChar">
+                  <mat-icon>{{ hasSpecialChar ? 'check_circle' : 'radio_button_unchecked' }}</mat-icon>
+                  <span>Special</span>
+                </div>
+                <div class="requirement" [class.valid]="isLongEnough">
+                  <mat-icon>{{ isLongEnough ? 'check_circle' : 'radio_button_unchecked' }}</mat-icon>
+                  <span>8+ chars</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Confirm Password with match animation -->
+            <mat-form-field appearance="outline" class="form-field premium-field">
+              <mat-label>Confirm password</mat-label>
+              <input matInput [type]="hideConfirmPassword ? 'password' : 'text'" 
+                     formControlName="confirmPassword">
+              <mat-icon matPrefix class="field-icon">lock_outline</mat-icon>
+              <button mat-icon-button matSuffix type="button" (click)="hideConfirmPassword = !hideConfirmPassword"
+                      class="password-toggle">
+                <mat-icon>{{ hideConfirmPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+              </button>
+              <mat-icon matSuffix *ngIf="passwordsMatch && confirmPassword?.touched" 
+                       class="validation-icon success bounce-animation">check_circle</mat-icon>
+              <mat-error *ngIf="!passwordsMatch && confirmPassword?.touched">
+                <mat-icon class="error-icon">error</mat-icon>
+                <span>Passwords do not match</span>
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <!-- Enhanced Terms Section with Interactive Checkbox -->
+          <div class="terms-section-modern">
+            <mat-checkbox formControlName="agreeTerms" color="primary" class="premium-checkbox">
+              <span class="checkbox-content">
+                <span>I agree to the </span>
+                <a href="#" class="terms-link">Terms of Service</a>
+                <span> and </span>
+                <a href="#" class="terms-link">Privacy Policy</a>
+              </span>
+            </mat-checkbox>
+          </div>
+
+          <!-- Premium Sign Up Button with Ripple Effect -->
+          <button mat-raised-button type="submit" class="signup-btn-premium" 
+                  [disabled]="signUpForm.invalid || isLoading"
+                  [class.loading]="isLoading">
+            <div class="btn-content">
+              <span class="btn-text" *ngIf="!isLoading">Create Account</span>
+              <div class="btn-loader" *ngIf="isLoading">
+                <div class="loader-spinner"></div>
+                <span>Creating account...</span>
+              </div>
+            </div>
+            <div class="btn-ripple"></div>
+          </button>
+
+          <!-- Social Login Options -->
+          <div class="social-login">
+            <div class="divider">
+              <span>or continue with</span>
+            </div>
+            <div class="social-buttons">
+              <button type="button" class="social-btn google" (click)="socialLogin('google')">
+                <svg viewBox="0 0 24 24" width="20" height="20">
+                  <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                  <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                  <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                  <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                </svg>
+                <span>Google</span>
+              </button>
+              <button type="button" class="social-btn microsoft" (click)="socialLogin('microsoft')">
+                <svg viewBox="0 0 23 23" width="20" height="20">
+                  <path d="M11 1H1v10h10V1z" fill="#f25022"/>
+                  <path d="M22 1H12v10h10V1z" fill="#7fba00"/>
+                  <path d="M11 12H1v10h10V12z" fill="#00a4ef"/>
+                  <path d="M22 12H12v10h10V12z" fill="#ffb900"/>
+                </svg>
+                <span>Microsoft</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Login Link -->
+          <div class="login-link">
+            <span>Already have an account?</span>
+            <a routerLink="/login">Sign in</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Premium Loading Overlay -->
+  <div *ngIf="isLoading" class="loading-overlay-premium">
+    <div class="loading-content">
+      <div class="loader-ring"></div>
+      <div class="loader-text">
+        <span class="loader-title">Creating your workspace</span>
+        <span class="loader-subtitle">Setting up your personalized dashboard...</span>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,79 @@
+<app-header></app-header>
+
+<div class="profile-container">
+    <div class="profile-header-section">
+        <div class="profile-title">
+            <mat-icon>person</mat-icon>
+            <h1>My Profile</h1>
+        </div>
+    </div>
+
+    <div class="profile-content-grid" *ngIf="user">
+        <mat-card class="profile-card info-card">
+            <mat-card-header>
+                <div mat-card-avatar class="avatar-placeholder">
+                    {{ user.fullName.charAt(0) }}
+                </div>
+                <mat-card-title>{{ user.fullName }}</mat-card-title>
+                <mat-card-subtitle>{{ user.roles[0] }}</mat-card-subtitle>
+            </mat-card-header>
+            
+            <mat-card-content>
+                <mat-divider></mat-divider>
+                
+                <div class="detail-row">
+                    <div class="detail-label">
+                        <mat-icon>badge</mat-icon>
+                        <span>Employee ID</span>
+                    </div>
+                    <div class="detail-value">{{ user.employeeId }}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">
+                        <mat-icon>business</mat-icon>
+                        <span>Department</span>
+                    </div>
+                    <div class="detail-value">{{ user.departmentName }}</div>
+                </div>
+
+                <div class="detail-row">
+                    <div class="detail-label">
+                        <mat-icon>security</mat-icon>
+                        <span>Roles</span>
+                    </div>
+                    <div class="detail-value">
+                        <span class="role-chip" *ngFor="let role of user.roles">{{ role }}</span>
+                    </div>
+                </div>
+            </mat-card-content>
+            
+            <mat-card-actions align="end">
+                <button mat-stroked-button color="warn" (click)="logout()">
+                    <mat-icon>logout</mat-icon>
+                    LOGOUT
+                </button>
+            </mat-card-actions>
+        </mat-card>
+
+        <div class="profile-secondary-info">
+            <mat-card class="settings-card">
+                <mat-card-header>
+                    <mat-card-title>Account Settings</mat-card-title>
+                </mat-card-header>
+                <mat-card-content>
+                    <p class="settings-hint">Profile settings and security management options will be available soon.</p>
+                    <div class="action-list">
+                        <button mat-button disabled>
+                            <mat-icon>password</mat-icon>
+                            Change Password
+                        </button>
+                        <button mat-button disabled>
+                            <mat-icon>notifications</mat-icon>
+                            Notification Preferences
+                        </button>
+                    </div>
+                </mat-card-content>
+            </mat-card>
+        </div>
+    </div>
+</div>

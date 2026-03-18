@@ -1,0 +1,188 @@
+@use "sass:color";
+
+$primary-color: #1E590C;
+$primary-dark: #0D3B12;
+$primary-bg: #F1F8F0;
+$accent-color: #DD1407;
+
+$dark-900: #0f172a;
+$dark-700: #334155;
+$dark-600: #475569;
+$dark-500: #64748b;
+$dark-100: #f1f5f9;
+$white: #ffffff;
+
+/* Header */
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+
+  .title-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, $primary-color, $accent-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    mat-icon {
+      color: $white;
+      font-size: 26px;
+    }
+  }
+
+  .title-text {
+
+    h2 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 800;
+      color: $dark-900;
+    }
+
+    p {
+      margin: 0;
+      font-size: 14px;
+      color: $dark-500;
+    }
+  }
+}
+
+
+/* Card */
+
+.calendar-placeholder-card {
+
+  background: $white;
+  border-radius: 24px;
+
+  padding: 70px 40px;
+
+  box-shadow:
+    0 20px 40px rgba(0,0,0,0.06),
+    0 4px 10px rgba(0,0,0,0.04);
+
+  border: 1px solid rgba(0,0,0,0.04);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  min-height: 520px;
+
+  text-align: center;
+
+  transition: all .3s ease;
+
+  &:hover{
+    transform: translateY(-4px);
+  }
+}
+
+
+/* Content */
+
+.placeholder-content {
+
+  max-width: 520px;
+}
+
+
+/* Calendar Icon */
+
+.calendar-hero {
+
+  width: 90px;
+  height: 90px;
+
+  border-radius: 22px;
+
+  background: $primary-bg;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin: 0 auto 26px;
+
+  mat-icon{
+    font-size: 44px;
+    color: $primary-color;
+  }
+}
+
+
+/* Title */
+
+.placeholder-content h3 {
+
+  font-size: 28px;
+  font-weight: 800;
+
+  margin-bottom: 16px;
+
+  color: $dark-900;
+}
+
+
+.placeholder-content p {
+
+  color: $dark-600;
+  line-height: 1.6;
+
+  margin-bottom: 36px;
+}
+
+
+/* Feature Grid */
+
+.feature-grid {
+
+  display: grid;
+
+  grid-template-columns: 1fr;
+
+  gap: 14px;
+
+  margin-bottom: 40px;
+
+}
+
+
+.feature-item {
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+
+  padding: 14px 16px;
+
+  border-radius: 12px;
+
+  background: $dark-100;
+
+  font-weight: 600;
+
+  color: $dark-700;
+
+  transition: all .25s ease;
+
+  mat-icon{
+
+    font-size: 20px;
+
+    color: $primary-color;
+  }
+
+  &:hover{
+
+    background: $primary-bg;
+
+    transform: translateX(4px);
+  }
+}

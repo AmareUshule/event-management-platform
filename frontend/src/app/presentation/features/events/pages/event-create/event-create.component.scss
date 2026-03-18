@@ -1,0 +1,435 @@
+@use '@angular/material' as mat;
+@use 'sass:color';
+
+// EEP Brand Colors
+$eep-green-900: #1E590C;
+$eep-red-900: #DD1407;
+$eep-gray-800: #424242;
+$eep-gray-200: #eeeeee;
+$eep-light-bg: #F1F8F0;
+
+// Main container
+.event-creation-wrapper {
+  min-height: 100vh;
+  background: linear-gradient(135deg, $eep-light-bg 0%, #ffffff 100%);
+  padding: 20px;
+}
+
+// Loading container
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  
+  p {
+    margin-top: 16px;
+    color: $eep-gray-800;
+    font-size: 16px;
+  }
+}
+
+// Wizard container
+.wizard-container {
+  display: flex;
+  max-width: 1200px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  min-height: 80vh;
+}
+
+// Progress sidebar
+.progress-sidebar {
+  width: 320px;
+  background: linear-gradient(180deg, $eep-green-900 0%, color.adjust($eep-green-900, $lightness: -10%) 100%);
+  color: white;
+  padding: 40px 30px;
+  display: flex;
+  flex-direction: column;
+}
+
+.progress-header {
+  margin-bottom: 40px;
+  
+  h2 {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 600;
+    background: linear-gradient(45deg, color.adjust($eep-green-900, $lightness: 20%), color.adjust($eep-red-900, $lightness: 20%));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  
+  p {
+    color: rgba(255, 255, 255, 0.8);
+    margin-top: 8px;
+    font-size: 14px;
+  }
+}
+
+// Steps container
+.steps-container {
+  flex: 1;
+}
+
+.step-item {
+  display: flex;
+  align-items: center;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 15px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateX(5px);
+  }
+  
+  &.active {
+    background: rgba(255, 255, 255, 0.15);
+    border-left: 4px solid $eep-red-900;
+    
+    .step-icon {
+      background: $eep-red-900;
+      transform: scale(1.1);
+      box-shadow: 0 4px 12px rgba($eep-red-900, 0.3);
+    }
+    
+    .step-title {
+      color: white;
+      font-weight: 600;
+    }
+  }
+  
+  &.completed {
+    .step-icon {
+      background: $eep-green-900;
+      color: white;
+    }
+    
+    .step-title {
+      color: rgba(255, 255, 255, 0.9);
+    }
+  }
+}
+
+.step-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 15px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.step-info {
+  flex: 1;
+}
+
+.step-title {
+  font-weight: 500;
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.8);
+  transition: all 0.3s ease;
+}
+
+.step-description {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 4px;
+}
+
+// Progress indicator
+.progress-indicator {
+  margin-top: auto;
+  padding-top: 30px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.progress-bar {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, $eep-green-900, $eep-red-900);
+  transition: width 0.3s ease;
+  box-shadow: 0 2px 8px rgba($eep-red-900, 0.3);
+}
+
+.progress-text {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+  text-align: center;
+}
+
+// Form content
+.form-content {
+  flex: 1;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  
+  form {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+// Current step display
+.current-step-display {
+  margin-bottom: 40px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid $eep-gray-200;
+  
+  .step-badge {
+    background: linear-gradient(135deg, $eep-green-900, $eep-red-900);
+    color: white;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    display: inline-block;
+  }
+  
+  h3 {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 600;
+    color: $eep-gray-800;
+    background: linear-gradient(135deg, $eep-green-900, $eep-red-900);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+}
+
+// Form grid
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 40px;
+  
+  .full-width {
+    grid-column: 1 / -1;
+  }
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+// Event type selector - FIXED
+.event-type-selector {
+  margin-bottom: 30px;
+  
+  .type-toggle-group {
+    width: 100%;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 2px solid $eep-gray-200;
+    
+    mat-button-toggle {
+      flex: 1;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      
+      .mat-icon {
+        margin-right: 4px;
+      }
+      
+      &.mat-button-toggle-checked {
+        background: linear-gradient(135deg, $eep-green-900, $eep-red-900);
+        color: white;
+        
+        .mat-icon {
+          color: white;
+        }
+      }
+    }
+  }
+}
+
+// Location fields
+.location-fields {
+  margin-top: 24px;
+}
+
+// Form actions
+.form-actions {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 20px;
+  margin-top: auto;
+  border-top: 2px solid $eep-gray-200;
+  background: white;
+  
+  .left-actions, .right-actions {
+    display: flex;
+    gap: 12px;
+  }
+  
+  button {
+    min-width: 120px;
+    padding: 8px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-weight: 500;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    
+    &[color="primary"] {
+      background: linear-gradient(135deg, $eep-green-900, $eep-red-900);
+      color: white;
+      
+      &:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba($eep-red-900, 0.3);
+      }
+      
+      &:disabled {
+        opacity: 0.5;
+        background: $eep-gray-200;
+        color: $eep-gray-800;
+      }
+    }
+    
+    &.mat-stroked-button {
+      border: 1px solid $eep-gray-800;
+      color: $eep-gray-800;
+      
+      &:hover:not(:disabled) {
+        background: $eep-gray-200;
+      }
+      
+      &:disabled {
+        opacity: 0.5;
+        border-color: $eep-gray-200;
+        color: $eep-gray-200;
+      }
+    }
+    
+    mat-icon {
+      font-size: 18px;
+    }
+  }
+}
+
+// Animations
+.form-step {
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Date picker fixes
+::ng-deep .mat-datepicker-content {
+  z-index: 1000 !important;
+}
+
+::ng-deep .mat-datepicker-popup {
+  z-index: 1000 !important;
+}
+
+// Angular Material overrides
+:host ::ng-deep {
+  .mat-mdc-form-field-flex {
+    padding-left: 16px !important;
+  }
+  
+  .mat-mdc-form-field-infix {
+    padding: 14px 16px 14px 0 !important;
+  }
+  
+  .mat-mdc-input-element,
+  textarea.mat-mdc-input-element {
+    padding-left: 14px !important;
+    box-sizing: border-box;
+  }
+  
+  .mat-mdc-form-field-hint {
+    color: rgba($eep-gray-800, 0.6);
+  }
+}
+
+// Responsive design
+@media (max-width: 992px) {
+  .wizard-container {
+    flex-direction: column;
+  }
+  
+  .progress-sidebar {
+    width: 100%;
+    padding: 30px 20px;
+  }
+  
+  .form-content {
+    padding: 30px 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .event-creation-wrapper {
+    padding: 0;
+  }
+  
+  .wizard-container {
+    border-radius: 0;
+    min-height: 100vh;
+  }
+  
+  .form-actions {
+    position: sticky;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 16px;
+    background: white;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+    
+    .left-actions, .right-actions {
+      width: 100%;
+    }
+    
+    button {
+      flex: 1;
+    }
+  }
+  
+  .form-content {
+    padding-bottom: 20px;
+  }
+}

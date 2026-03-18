@@ -1,0 +1,247 @@
+<!-- event-detail-page.component.html -->
+<div class="event-detail-container">
+    <!-- Header with back button and actions -->
+    <div class="detail-header">
+        <div class="header-left">
+            <button mat-icon-button (click)="goBack()" matTooltip="Go back">
+                <mat-icon>arrow_back</mat-icon>
+            </button>
+            <h1>Event Details</h1>
+        </div>
+
+        <div class="header-actions" *ngIf="event">
+            <!-- Submit button - for Draft status -->
+            <button
+                class="action-btn"
+                *ngIf="canSubmit()"
+                (click)="submitEvent()"
+                matTooltip="Submit for approval">
+                <mat-icon>send</mat-icon>
+                <span>Submit</span>
+            </button>
+
+            <!-- Approve button - for Submitted status -->
+            <button
+                class="action-btn"
+                *ngIf="canApprove()"
+                (click)="approveEvent()"
+                matTooltip="Approve and schedule this event">
+                <mat-icon>check_circle</mat-icon>
+                <span>Approve</span>
+            </button>
+
+            <!-- Archive button - for Completed status -->
+            <button
+                class="action-btn"
+                *ngIf="canArchive()"
+                (click)="archiveEvent()"
+                matTooltip="Archive this event">
+                <mat-icon>archive</mat-icon>
+                <span>Archive</span>
+            </button>
+
+            <!-- Edit button - only for Admin or department manager of this event -->
+            <button
+                class="action-btn"
+                *ngIf="(event.status === 'Draft' || event.status === 'Submitted') && (authService.isAdmin() || (authService.isManager() && authService.getDepartmentGuid() === event.department?.id))"
+                (click)="editEvent()"
+                matTooltip="Edit event">
+                <mat-icon>edit</mat-icon>
+                <span>Edit</span>
+            </button>
+
+            <button class="action-btn" *ngIf="!isCompleted()" (click)="downloadICS()" matTooltip="Add to calendar">
+                <mat-icon>calendar_month</mat-icon>
+                <span>Add to Calendar</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Update the loading state condition -->
+    <div class="loading-state" *ngIf="loading && !event">
+        <mat-spinner diameter="40"></mat-spinner>
+        <p>Loading event details...</p>
+    </div>
+
+    <!-- Event details content -->
+    <div class="detail-content" *ngIf="!loading && event">
+        <!-- Main event info card -->
+        <div class="event-info-card">
+            <div class="event-title-section">
+                <h2>{{ event.title }}</h2>
+                <!-- Status banner moved inside the card after title -->
+                <div class="status-banner" [class]="event.status.toLowerCase()">
+                    <mat-icon>
+                        {{ event.status === 'Approved' ? 'check_circle' :
+                        event.status === 'Draft' ? 'drafts' :
+                        event.status === 'Completed' ? 'task_alt' : 'pending' }}
+                    </mat-icon>
+                    <span>{{ event.status }}</span>
+                </div>
+
+            <!-- Assign Employee Button - only for Admin or Communication Manager while event is active -->
+            <button
+                class="assign-employee-btn"
+                *ngIf="canAssignEmployees()"
+                (click)="assignEmployee()"
+                matTooltip="Assign employee to event">
+                    <mat-icon>person_add</mat-icon>
+                    <span>Assign Expert</span>
+                </button>
+            </div>
+
+            <div class="info-grid">
+                <!-- Date & Time -->
+                <div class="info-item">
+                    <div class="info-icon">
+                        <mat-icon>event</mat-icon>
+                    </div>
+                    <div class="info-content">
+                        <span class="info-label">Date</span>
+                        <span class="info-value">{{ event.startDate | date:'fullDate' }}</span>
+                        <span class="info-subvalue">
+                            {{ event.startDate | date:'shortTime' }} - {{ event.endDate | date:'shortTime' }}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Location -->
+                <div class="info-item">
+                    <div class="info-icon">
+                        <mat-icon>location_on</mat-icon>
+                    </div>
+                    <div class="info-content">
+                        <span class="info-label">Location</span>
+                        <span class="info-value">{{ event.eventPlace }}</span>
+                        <button class="map-link" (click)="openInMaps()">
+                            View on map
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Organizer -->
+                <div class="info-item" *ngIf="event.createdBy">
+                    <div class="info-icon">
+                        <mat-icon>person</mat-icon>
+                    </div>
+                    <div class="info-content">
+                        <span class="info-label">Organizer</span>
+                        <span class="info-value">{{ event.createdBy.firstName }} {{ event.createdBy.lastName }}</span>
+                    </div>
+                </div>
+
+                <!-- Department -->
+                <div class="info-item" *ngIf="event.department">
+                    <div class="info-icon">
+                        <mat-icon>business</mat-icon>
+                    </div>
+                    <div class="info-content">
+                        <span class="info-label">Department</span>
+                        <span class="info-value">{{ event.department.name }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Assignments Section -->
+            <div class="assignments-section" *ngIf="getTotalAssignments() > 0">
+                <h3>Assigned Personnel</h3>
+                <div class="assignments-grid">
+                    <ng-container *ngFor="let role of getActiveRoles()">
+                        <div class="role-group">
+                            <h4 class="role-title">{{ formatRoleName(role) }}</h4>
+                            <div class="assignment-list">
+                                <div class="assignment-item" *ngFor="let assignment of getAssignmentsByRole(role)">
+                                    <div class="assignee-info">
+                                        <div class="assignee-avatar">
+                                            <mat-icon>person</mat-icon>
+                                        </div>
+                                        <div class="assignee-details">
+                                            <span class="assignee-name">{{ getAssigneeName(role, assignment.id)
+                                                }}</span>
+                                            <span class="assigned-by" *ngIf="assignment.assignedBy">
+                                                Assigned by: {{ getAssignedByName(role, assignment.id) }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <button mat-icon-button color="warn" class="remove-btn" *ngIf="canAssignEmployees()"
+                                        (click)="removeAssignment(role, assignment.id)" matTooltip="Remove assignment">
+                                        <mat-icon>person_remove</mat-icon>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </ng-container>
+                </div>
+            </div>
+
+            <!-- Description -->
+            <div class="description-section" *ngIf="event.description">
+                <h3>About this event</h3>
+                <p>{{ event.description }}</p>
+            </div>
+
+            <!-- Media Section -->
+            <div class="media-section" *ngIf="event.status === 'Completed' || event.status === 'Archived'">
+                <h3>Event Media & Documentation</h3>
+                
+                <div class="media-upload-controls" *ngIf="canUploadMedia()">
+                    <input type="file" #fileInput hidden (change)="onFileUpload($event, 'Image')" accept="image/*">
+                    <button class="upload-btn" (click)="fileInput.click()">
+                        <mat-icon>image</mat-icon> Upload Image
+                    </button>
+                    
+                    <input type="file" #videoInput hidden (change)="onFileUpload($event, 'Video')" accept="video/*">
+                    <button class="upload-btn" (click)="videoInput.click()">
+                        <mat-icon>videocam</mat-icon> Upload Video
+                    </button>
+                    
+                    <input type="file" #docInput hidden (change)="onFileUpload($event, 'Document')" accept=".pdf,.doc,.docx">
+                    <button class="upload-btn" (click)="docInput.click()">
+                        <mat-icon>description</mat-icon> Upload Document
+                    </button>
+                    
+                    <button class="upload-btn" (click)="addExternalLink()">
+                        <mat-icon>link</mat-icon> Add Link
+                    </button>
+                </div>
+
+                <div class="media-grid" *ngIf="mediaFiles.length > 0">
+                    <div class="media-card" *ngFor="let m of mediaFiles">
+                        <div class="media-icon">
+                            <mat-icon *ngIf="m.fileType === 'Image'">image</mat-icon>
+                            <mat-icon *ngIf="m.fileType === 'Video'">videocam</mat-icon>
+                            <mat-icon *ngIf="m.fileType === 'Document'">description</mat-icon>
+                            <mat-icon *ngIf="m.fileType === 'Link'">link</mat-icon>
+                        </div>
+                        <div class="media-details">
+                            <span class="media-name">{{ m.fileName }}</span>
+                            <a [href]="m.filePath" target="_blank" class="media-link">View / Download</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="no-media" *ngIf="mediaFiles.length === 0">
+                    <p>No media files uploaded yet.</p>
+                </div>
+            </div>
+        </div>
+
+
+
+        <!-- Quick actions -->
+        <div class="quick-actions">
+            <button class="quick-action-btn" (click)="shareEvent()">
+                <mat-icon>share</mat-icon>
+                <span>Share</span>
+            </button>
+            <button class="quick-action-btn" *ngIf="!isCompleted()" (click)="downloadICS()">
+                <mat-icon>download</mat-icon>
+                <span>Save to calendar</span>
+            </button>
+            <button class="quick-action-btn" (click)="getDirections()">
+                <mat-icon>directions</mat-icon>
+                <span>Directions</span>
+            </button>
+        </div>
+    </div>
+</div>

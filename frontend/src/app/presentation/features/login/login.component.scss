@@ -1,0 +1,220 @@
+// ===============================
+// EEP BRAND COLORS & VARIABLES
+// ===============================
+@use "sass:color";
+
+$eep-green: #1E590C;
+$eep-red: #DD1407;
+$eep-brand-gradient: linear-gradient(90deg, $eep-green 0%, $eep-red 100%);
+
+$bg-light: #f8fafc;
+$text-primary: #1e293b;
+$text-secondary: #64748b;
+$text-muted: #94a3b8;
+$border-color: #e2e8f0;
+$white: #ffffff;
+
+$shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.08);
+$shadow-hover: 0 10px 25px rgba(0, 0, 0, 0.12);
+
+// ===============================
+// MAIN CONTAINER
+// ===============================
+.auth-shell {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: radial-gradient(circle at top right, #f1f5f9, #ffffff);
+  padding: 20px;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+// ===============================
+// AUTH PANEL
+// ===============================
+.auth-panel {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+// ===============================
+// LOGIN CARD
+// ===============================
+.auth-card {
+  background: $white;
+  border-radius: 16px !important;
+  border: 1px solid $border-color !important;
+  box-shadow: $shadow-soft !important;
+  overflow: hidden;
+  padding: 0 !important;
+
+  ::ng-deep .mat-mdc-card-content {
+    padding: 32px !important;
+  }
+}
+
+// ===============================
+// HEADER SECTION
+// ===============================
+.card-header {
+  text-align: center;
+  margin-bottom: 32px;
+
+  .header-brand {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 24px;
+
+    .logo-container {
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+      }
+    }
+
+    .brand-text {
+      font-size: 22px;
+      font-weight: 700;
+      color: $text-primary;
+      letter-spacing: -0.01em;
+    }
+  }
+
+  .welcome-title {
+    font-size: 28px;
+    font-weight: 800;
+    color: $text-primary;
+    margin: 0 0 8px 0;
+    letter-spacing: -0.02em;
+  }
+
+  .welcome-subtitle {
+    font-size: 15px;
+    color: $text-secondary;
+    margin: 0;
+    line-height: 1.5;
+  }
+}
+
+// ===============================
+// LOGIN FORM
+// ===============================
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+
+  .form-field {
+    width: 100%;
+
+    ::ng-deep .mat-mdc-text-field-wrapper {
+      background-color: transparent !important;
+      border-radius: 8px !important;
+      transition: all 0.2s ease;
+    }
+
+    &.mat-focused {
+      ::ng-deep .mat-mdc-text-field-wrapper {
+        border-color: $eep-green !important;
+        box-shadow: 0 0 0 3px rgba($eep-green, 0.1);
+      }
+    }
+
+    mat-icon {
+      color: $text-muted;
+    }
+  }
+}
+
+// ===============================
+// SIGN IN BUTTON
+// ===============================
+.submit-btn {
+  width: 100% !important;
+  height: 48px !important;
+  border-radius: 10px !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  background: $eep-brand-gradient !important;
+  color: $white !important;
+  margin-top: 8px !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  border: none !important;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 15px rgba($eep-green, 0.25);
+    filter: brightness(1.1);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+
+  .btn-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  mat-spinner {
+    ::ng-deep circle {
+      stroke: $white !important;
+    }
+  }
+}
+
+// ===============================
+// FOOTER
+// ===============================
+.auth-footer {
+  text-align: center;
+  
+  .footer-text {
+    font-size: 13px;
+    color: $text-secondary;
+    margin: 0;
+    font-weight: 400;
+
+    .divider {
+      margin: 0 8px;
+      color: $text-muted;
+    }
+  }
+}
+
+// ===============================
+// RESPONSIVE
+// ===============================
+@media (max-width: 480px) {
+  .auth-shell {
+    padding: 16px;
+  }
+  
+  .card-header {
+    .welcome-title {
+      font-size: 24px;
+    }
+  }
+}

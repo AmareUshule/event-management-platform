@@ -1,0 +1,192 @@
+<div class="event-creation-wrapper">
+
+  <!-- Loading -->
+  <div *ngIf="!formInitialized" class="loading-container">
+    <mat-spinner diameter="48"></mat-spinner>
+    <p>Loading form...</p>
+  </div>
+
+  <div class="wizard-container" *ngIf="formInitialized">
+
+    <!-- Sidebar -->
+    <div class="progress-sidebar">
+      <div class="progress-header">
+        <h2>Create Event</h2>
+        <p>Fill in event details step by step</p>
+      </div>
+
+      <div class="steps-container">
+        <div *ngFor="let step of steps; let i = index" class="step-item" [class.active]="currentStep === i"
+          [class.completed]="i < currentStep" [class.clickable]="i <= currentStep"
+          (click)="i <= currentStep && navigateToStep(i)">
+
+          <div class="step-icon">
+            {{ i < currentStep ? '✓' : i + 1 }}
+          </div>
+
+          <div class="step-info">
+            <div class="step-title">{{ step.label }}</div>
+            <div class="step-description">{{ step.description }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="progress-indicator">
+        <div class="progress-bar">
+          <div class="progress-fill" [style.width.%]="progressPercentage"></div>
+        </div>
+        <div class="progress-text">
+          Step {{ currentStep + 1 }} of {{ steps.length }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Form Area -->
+    <div class="form-content">
+      <form [formGroup]="eventForm" (ngSubmit)="submitForApproval()">
+
+        <!-- Step Header -->
+        <div class="current-step-display">
+          <span class="step-badge">Step {{ currentStep + 1 }}</span>
+          <h3>{{ steps[currentStep].label }}</h3>
+        </div>
+
+        <!-- STEP 1 -->
+        <div *ngIf="currentStep === 0" class="form-step">
+          <div class="form-grid">
+
+            <mat-form-field appearance="outline">
+              <mat-label>Event Title *</mat-label>
+              <input matInput formControlName="title">
+              <mat-error>{{ getFieldError('title') }}</mat-error>
+              <mat-hint align="end">{{ eventForm.get('title')?.value?.length || 0 }}/120</mat-hint>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="description">
+              <mat-label>Description</mat-label>
+              <textarea matInput formControlName="description" rows="5"></textarea>
+              <mat-hint align="end">
+                {{ eventForm.get('description')?.value?.length || 0 }}/500
+              </mat-hint>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Event Category *</mat-label>
+              <mat-select formControlName="eventCategoryId">
+                <mat-option *ngFor="let category of eventCategories" [value]="category.id">
+                  {{ category.name }}
+                </mat-option>
+              </mat-select>
+              <mat-error>{{ getFieldError('eventCategoryId') }}</mat-error>
+            </mat-form-field>
+
+          </div>
+        </div>
+
+        <!-- STEP 2 -->
+        <div *ngIf="currentStep === 1" class="form-step">
+          <div class="form-grid">
+
+            <mat-form-field appearance="outline">
+              <mat-label>Start Date & Time *</mat-label>
+              <input matInput [matDatepicker]="startPicker" formControlName="startDateTime">
+              <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+              <mat-datepicker #startPicker></mat-datepicker>
+              <mat-error>{{ getFieldError('startDateTime') }}</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>End Date & Time *</mat-label>
+              <input matInput [matDatepicker]="endPicker" formControlName="endDateTime">
+              <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
+              <mat-datepicker #endPicker></mat-datepicker>
+              <mat-error>{{ getFieldError('endDateTime') }}</mat-error>
+            </mat-form-field>
+
+          </div>
+        </div>
+
+        <!-- STEP 3 -->
+        <div *ngIf="currentStep === 2" class="form-step">
+          <div class="event-type-selector">
+            <mat-button-toggle-group formControlName="eventType" class="type-toggle-group">
+              <mat-button-toggle [value]="EventType.PHYSICAL">
+                <mat-icon>location_on</mat-icon>
+                Physical
+              </mat-button-toggle>
+              <mat-button-toggle [value]="EventType.VIRTUAL">
+                <mat-icon>videocam</mat-icon>
+                Virtual
+              </mat-button-toggle>
+            </mat-button-toggle-group>
+          </div>
+
+          <div class="location-fields">
+            <mat-form-field appearance="outline" class="full-width"
+              *ngIf="eventForm.get('eventType')?.value === EventType.PHYSICAL">
+              <mat-label>Address *</mat-label>
+              <textarea matInput formControlName="address" rows="3" 
+                       placeholder="Enter full physical address"></textarea>
+              <mat-error>{{ getFieldError('address') }}</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width"
+              *ngIf="eventForm.get('eventType')?.value === EventType.VIRTUAL">
+              <mat-label>Meeting Link *</mat-label>
+              <input matInput formControlName="meetingLink" 
+                     placeholder="https://meet.example.com/event">
+              <mat-error>{{ getFieldError('meetingLink') }}</mat-error>
+              <mat-hint>Enter a valid URL starting with https://</mat-hint>
+            </mat-form-field>
+          </div>
+        </div>
+
+        <!-- STEP 4 -->
+        <div *ngIf="currentStep === 3" class="form-step">
+          <div class="form-grid">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Host Department *</mat-label>
+              <mat-select formControlName="departmentId">
+                <mat-option *ngFor="let dept of departments" [value]="dept.id">
+                  {{ dept.name }}
+                </mat-option>
+              </mat-select>
+              <mat-error>{{ getFieldError('departmentId') }}</mat-error>
+            </mat-form-field>
+          </div>
+        </div>
+
+      </form>
+
+      <!-- Buttons -->
+      <div class="form-actions">
+        <div class="left-actions">
+          <button mat-stroked-button (click)="previousStep()" *ngIf="currentStep > 0" [disabled]="isSubmitting">
+            <mat-icon>arrow_back</mat-icon>
+            Back
+          </button>
+        </div>
+
+        <div class="right-actions">
+          <button mat-stroked-button (click)="saveAsDraft()" [disabled]="isSubmitting || !canSubmit">
+            <mat-icon>save</mat-icon>
+            Save Draft
+          </button>
+
+          <button mat-raised-button color="primary" (click)="nextStep()" *ngIf="currentStep < steps.length - 1"
+            [disabled]="!isCurrentStepValid || isSubmitting">
+            Continue
+            <mat-icon>arrow_forward</mat-icon>
+          </button>
+
+          <button mat-raised-button color="primary" (click)="submitForApproval()"
+            *ngIf="currentStep === steps.length - 1" [disabled]="!canSubmit">
+            <mat-spinner *ngIf="isSubmitting" diameter="20"></mat-spinner>
+            <span *ngIf="!isSubmitting">Submit for Approval</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

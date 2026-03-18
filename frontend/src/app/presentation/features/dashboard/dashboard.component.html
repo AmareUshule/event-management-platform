@@ -1,0 +1,527 @@
+<div class="dashboard-container">
+  <!-- Main Content - Visible once user is authenticated -->
+  <div *ngIf="user" class="main-content">
+    <app-header></app-header>
+
+    <!-- Main Dashboard Content -->
+    <main class="dashboard-main">
+      <!-- Dashboard Header -->
+      <div class="dashboard-header">
+        <div class="header-content">
+          <div class="section-title">
+            <h3>Event Management</h3>
+          </div>
+
+          <button class="create-event-btn" *ngIf="authService.canCreateEvents()" (click)="navigateToCreateEvent()">
+            <mat-icon>add</mat-icon>
+            CREATE EVENT
+          </button>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="stats-cards">
+          <!-- Skeleton Stats -->
+          <ng-container *ngIf="isLoadingEvents">
+            <div class="stat-card skeleton-card" *ngFor="let i of [1,2,3,4]">
+              <div class="stat-icon skeleton-circle"></div>
+              <div class="stat-details">
+                <div class="skeleton-title"></div>
+                <div class="skeleton-text"></div>
+              </div>
+            </div>
+          </ng-container>
+
+          <!-- Actual Stats -->
+          <!-- Actual Stats -->
+<ng-container *ngIf="!isLoadingEvents">
+  <!-- Total / Assignments -->
+  <div class="stat-card" (click)="onStatCardClick('all')">
+    <div class="stat-icon total-events">
+      <mat-icon>event</mat-icon>
+    </div>
+    <div class="stat-content">
+      <p class="stat-label">{{ isStaff() ? 'My Total Assignments' : 'Total Events' }}</p>
+      <h3 class="stat-number">{{ isStaff() ? assignedEventsCount : totalEvents }}</h3>
+    </div>
+  </div>
+
+  <!-- Drafts (Admin/Manager only) -->
+  <div class="stat-card" *ngIf="authService.isAdmin() || authService.isManager()" (click)="onStatCardClick('draft')">
+    <div class="stat-icon draft">
+      <mat-icon>edit_note</mat-icon>
+    </div>
+    <div class="stat-content">
+      <p class="stat-label">Drafts</p>
+      <h3 class="stat-number">{{ draftEventsCount }}</h3>
+    </div>
+  </div>
+
+  <!-- Pending Invitations (Staff only) -->
+  <div class="stat-card" *ngIf="isStaff()" (click)="onStatCardClick('assignments')">
+    <div class="stat-icon pending">
+      <mat-icon>notification_important</mat-icon>
+    </div>
+    <div class="stat-content">
+      <p class="stat-label">Pending Invitations</p>
+      <h3 class="stat-number">{{ pendingAssignmentsCount }}</h3>
+    </div>
+  </div>
+
+  <!-- Ongoing Events (Others) -->
+  <div class="stat-card" *ngIf="!isStaff() && !authService.isAdmin() && !authService.isManager()" (click)="onStatCardClick('ongoing')">
+    <div class="stat-icon draft" style="background: linear-gradient(135deg, #3b82f6, #2563eb);">
+      <mat-icon>play_circle_outline</mat-icon>
+    </div>
+    <div class="stat-content">
+      <p class="stat-label">Ongoing Events</p>
+      <h3 class="stat-number">{{ ongoingEvents }}</h3>
+    </div>
+  </div>
+
+  <!-- Scheduled Events -->
+  <div class="stat-card" (click)="onStatCardClick('scheduled')">
+    <div class="stat-icon published">
+      <mat-icon>check_circle</mat-icon>
+    </div>
+    <div class="stat-content">
+      <p class="stat-label">Scheduled</p>
+      <h3 class="stat-number">{{ scheduledEvents }}</h3>
+    </div>
+  </div>
+
+  <!-- Past Events -->
+  <div class="stat-card" (click)="onStatCardClick('past')">
+    <div class="stat-icon total-events" style="background: linear-gradient(135deg, #10b981, #059669);">
+      <mat-icon>history</mat-icon>
+    </div>
+    <div class="stat-content">
+      <p class="stat-label">Past Events</p>
+      <h3 class="stat-number">{{ pastEventsCount }}</h3>
+    </div>
+  </div>
+</ng-container>
+        </div>
+      </div>
+
+      <!-- Dashboard Content -->
+      <div class="dashboard-content">
+        <!-- Events Table Section -->
+        <div class="table-section">
+          <div class="section-header">
+
+
+            <div class="table-controls">
+              <!-- Left side: Event Tabs -->
+              <div class="event-tabs">
+                <button class="event-tab" [class.active]="activeTab === 'all'" (click)="onTabChange('all')">
+                  ALL <span class="tab-count">{{ totalEvents }}</span>
+                </button>
+
+                <!-- Admin & Manager Tabs -->
+                <ng-container *ngIf="authService.isAdmin() || authService.isManager()">
+                  <button class="event-tab" [class.active]="activeTab === 'draft'" (click)="onTabChange('draft')">
+                    Draft <span class="tab-count" *ngIf="draftEventsCount > 0">({{ draftEventsCount }})</span>
+                  </button>
+                  <button class="event-tab" [class.active]="activeTab === 'submitted'"
+                    (click)="onTabChange('submitted')">
+                    Submitted <span class="tab-count">{{ submittedEvents }}</span>
+                  </button>
+                </ng-container>
+
+                <!-- Cameraman & Expert Tabs -->
+                <ng-container *ngIf="isStaff()">
+                  <button class="event-tab" [class.active]="activeTab === 'assignments'"
+                    (click)="onTabChange('assignments')">
+                    My Assignments <span class="tab-count">{{ myAssignments.length }}</span>
+                  </button>
+                </ng-container>
+
+                <!-- Shared Tabs -->
+                <button class="event-tab" [class.active]="activeTab === 'scheduled'" (click)="onTabChange('scheduled')">
+                  Scheduled <span class="tab-count">{{ scheduledEvents }}</span>
+                </button>
+                <button class="event-tab" [class.active]="activeTab === 'ongoing'" (click)="onTabChange('ongoing')">
+                  Ongoing <span class="tab-count">{{ ongoingEvents }}</span>
+                </button>
+                <button class="event-tab" [class.active]="activeTab === 'past'" (click)="onTabChange('past')">
+                  Past Events <span class="tab-count">{{ pastEventsCount }}</span>
+                </button>
+              </div>
+
+              <!-- Right side: Search and Filter Section -->
+              <div class="search-filter-section">
+                <!-- Date Filter -->
+                <div class="date-filter">
+                  <button class="today-btn" (click)="filterByDate('today')" matTooltip="Show today's events">
+                    <mat-icon>today</mat-icon>
+                    Today
+                  </button>
+                </div>
+
+                <!-- Search Input with Clear Button -->
+                <div class="search-box">
+                  <mat-icon class="search-icon">search</mat-icon>
+                  <input type="text" placeholder="Search events by name or location..." (keyup)="applySearch($event)"
+                    [(ngModel)]="searchTerm" class="search-input" />
+                  <button *ngIf="searchTerm" class="clear-search-btn" (click)="clearSearch()" matTooltip="Clear search">
+                    <mat-icon>close</mat-icon>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Search Results Info -->
+            <div class="search-info" *ngIf="searchTerm">
+              <span class="search-term">Search results for: "{{ searchTerm }}"</span>
+              <span class="result-count">{{ filteredEvents.length }} event(s) found</span>
+            </div>
+          </div>
+
+          <!-- Events Table with Pagination -->
+          <div class="events-table-wrapper">
+            <!-- Skeleton Table -->
+            <div *ngIf="isLoadingEvents" class="skeleton-table">
+              <div class="skeleton-row" *ngFor="let i of [1,2,3,4,5]">
+                <div class="skeleton-cell skeleton-circle" style="width: 32px; height: 32px;"></div>
+                <div class="skeleton-cell" style="flex: 2;">
+                  <div class="skeleton-title" style="margin-bottom: 0;"></div>
+                </div>
+                <div class="skeleton-cell" style="flex: 1;">
+                  <div class="skeleton-text"></div>
+                </div>
+                <div class="skeleton-cell" style="flex: 1;">
+                  <div class="skeleton-text"></div>
+                </div>
+                <div class="skeleton-cell" style="width: 40px;">
+                  <div class="skeleton-circle" style="width: 24px; height: 24px;"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Main Events Table -->
+            <table mat-table [dataSource]="paginatedEvents" class="modern-table"
+              *ngIf="!isLoadingEvents && activeTab !== 'assignments'">
+
+              <!-- # Column -->
+              <ng-container matColumnDef="id">
+                <th mat-header-cell *matHeaderCellDef> # </th>
+                <td mat-cell *matCellDef="let element; let i = index">
+                  <div class="index-badge">{{ (currentPage * pageSize) + i + 1 }}</div>
+                </td>
+              </ng-container>
+
+              <!-- Event Name Column -->
+              <ng-container matColumnDef="eventName">
+                <th mat-header-cell *matHeaderCellDef> Event Name </th>
+                <td mat-cell *matCellDef="let element">
+                  <div class="event-name-cell">
+                    <div class="event-info">
+                      <span class="event-title">{{ element.name }}</span>
+                      <div class="event-status-badge"
+                        [class.scheduled]="element.status === 'Scheduled' || element.status === 'Ongoing' || element.status === 'Completed'"
+                        [class.archived]="element.status === 'Archived'" [class.draft]="element.status === 'Draft'"
+                        [class.pending]="element.status === 'Submitted'">
+                        {{ element.status | titlecase }}
+                      </div>
+                    </div>
+                  </div>
+                </td>
+              </ng-container>
+
+              <!-- Location Column -->
+              <ng-container matColumnDef="location">
+                <th mat-header-cell *matHeaderCellDef> Location </th>
+                <td mat-cell *matCellDef="let element">
+                  <div class="location-cell">
+                    <mat-icon class="location-icon">location_on</mat-icon>
+                    <span>{{ element.location }}</span>
+                  </div>
+                </td>
+              </ng-container>
+
+              <!-- Date Column -->
+              <ng-container matColumnDef="date">
+                <th mat-header-cell *matHeaderCellDef> Date </th>
+                <td mat-cell *matCellDef="let element">
+                  <div class="date-cell">
+                    <span>{{ element.date | date:'dd.MM.yyyy' }}</span>
+                  </div>
+                </td>
+              </ng-container>
+
+              <!-- Actions Column -->
+              <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef> Actions </th>
+                <td mat-cell *matCellDef="let element" (click)="$event.stopPropagation()">
+                  <div class="action-icons-container">
+                    <!-- View Button -->
+                    <button class="icon-btn view" mat-icon-button matTooltip="View Details"
+                      (click)="viewEvent(element)">
+                      <mat-icon>visibility</mat-icon>
+                    </button>
+                    <button class="icon-btn edit" *ngIf="canManageEvent(element)" (click)="editEvent(element)"
+                      matTooltip="Edit Event">
+                      <mat-icon>edit</mat-icon>
+                    </button>
+
+                    <button class="icon-btn publish"
+                      *ngIf="element.status === 'Draft' && element.raw.createdBy.id === user?.adObjectId"
+                      (click)="submitEvent(element)" matTooltip="Submit for Approval">
+                      <mat-icon>send</mat-icon>
+                    </button>
+
+                    <button class="icon-btn delete" *ngIf="canManageEvent(element)" (click)="deleteEvent(element)"
+                      matTooltip="Delete Event">
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                  </div>
+                </td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+              <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="table-row clickable-row"
+                (click)="onRowClick(row)"></tr>
+
+              <tr class="mat-row" *matNoDataRow>
+                <td class="mat-cell no-data-cell" [attr.colspan]="displayedColumns.length">
+                  <div class="no-data-content">
+                    <mat-icon>event_busy</mat-icon>
+                    <h4>No events found</h4>
+                    <p *ngIf="searchTerm">No events match your search "{{ searchTerm }}"</p>
+                    <p *ngIf="!searchTerm">No events available in this category</p>
+                  </div>
+                </td>
+              </tr>
+            </table>
+
+            <!-- My Assignments Table -->
+            <div class="assignments-table-container" *ngIf="activeTab === 'assignments'">
+              <table mat-table [dataSource]="myAssignments" class="modern-table">
+                <ng-container matColumnDef="id">
+                  <th mat-header-cell *matHeaderCellDef> # </th>
+                  <td mat-cell *matCellDef="let element; let i = index">{{ i + 1 }}</td>
+                </ng-container>
+
+                <ng-container matColumnDef="eventTitle">
+                  <th mat-header-cell *matHeaderCellDef> Event Title </th>
+                  <td mat-cell *matCellDef="let element">{{ element.eventTitle }}</td>
+                </ng-container>
+
+                <ng-container matColumnDef="date">
+                  <th mat-header-cell *matHeaderCellDef> Date </th>
+                  <td mat-cell *matCellDef="let element">{{ element.createdAt | date:'medium' }}</td>
+                </ng-container>
+
+                <ng-container matColumnDef="role">
+                  <th mat-header-cell *matHeaderCellDef> Role </th>
+                  <td mat-cell *matCellDef="let element">
+                    <span class="badge">{{ element.role }}</span>
+                  </td>
+                </ng-container>
+
+                <ng-container matColumnDef="status">
+                  <th mat-header-cell *matHeaderCellDef> Status </th>
+                  <td mat-cell *matCellDef="let element">
+                    <span class="status-badge" [class]="element.status.toLowerCase()">{{ element.status }}</span>
+                  </td>
+                </ng-container>
+
+                <ng-container matColumnDef="actions">
+                  <th mat-header-cell *matHeaderCellDef> Actions </th>
+                  <td mat-cell *matCellDef="let element">
+                    <div class="assignment-actions" *ngIf="element.status === 'Pending'">
+                      <button mat-icon-button color="primary" (click)="acceptAssignment(element)" matTooltip="Accept">
+                        <mat-icon>check_circle</mat-icon>
+                      </button>
+                      <button mat-icon-button color="warn" (click)="declineAssignment(element)" matTooltip="Decline">
+                        <mat-icon>cancel</mat-icon>
+                      </button>
+                    </div>
+                    <button mat-icon-button (click)="viewEvent(element)" matTooltip="View Event">
+                      <mat-icon>visibility</mat-icon>
+                    </button>
+                  </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="assignmentColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: assignmentColumns;" class="table-row"></tr>
+
+                <tr class="mat-row" *matNoDataRow>
+                  <td class="mat-cell no-data-cell" [attr.colspan]="assignmentColumns.length">
+                    <div class="no-data-content">
+                      <mat-icon>assignment_ind</mat-icon>
+                      <h4>No assignments found</h4>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            </div>
+
+            <!-- Custom Paginator Controls -->
+            <div class="custom-paginator" *ngIf="filteredEvents.length > 0 && activeTab !== 'assignments'">
+              <div class="paginator-info">
+                Showing {{ (currentPage * pageSize) + 1 }} -
+                {{ getCurrentPageEndIndex() }}
+                of {{ filteredEvents.length }} events
+              </div>
+
+              <div class="paginator-controls">
+                <button class="paginator-btn" [disabled]="currentPage === 0" (click)="goToFirstPage()">
+                  <mat-icon>first_page</mat-icon>
+                </button>
+
+                <button class="paginator-btn" [disabled]="currentPage === 0" (click)="previousPage()">
+                  <mat-icon>chevron_left</mat-icon>
+                </button>
+
+                <div class="page-numbers">
+                  <span class="current-page-display">Page {{ currentPage + 1 }} of {{ totalPages }}</span>
+                </div>
+
+                <button class="paginator-btn" [disabled]="currentPage === totalPages - 1" (click)="nextPage()">
+                  <mat-icon>chevron_right</mat-icon>
+                </button>
+
+                <button class="paginator-btn" [disabled]="currentPage === totalPages - 1" (click)="goToLastPage()">
+                  <mat-icon>last_page</mat-icon>
+                </button>
+              </div>
+
+              <div class="page-size-selector">
+                <span>Rows per page:</span>
+                <select (change)="onPageSizeChange($event)" [value]="pageSize">
+                  <option value="5">5</option>
+                  <option value="10">10</option>
+                  <option value="25">25</option>
+                  <option value="50">50</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Stats & Actions Sidebar -->
+        <div class="sidebar">
+          <div class="sidebar-card">
+            <div class="sidebar-header">
+              <mat-icon>event_upcoming</mat-icon>
+              <h4>Upcoming Events</h4>
+            </div>
+            <div class="sidebar-content">
+              <div class="empty-state" *ngIf="upcomingEvents.length === 0">
+                <mat-icon>event_busy</mat-icon>
+                <div>
+                  <div class="empty-title">No upcoming events</div>
+                  <div class="empty-subtitle">You’re all caught up for now.</div>
+                </div>
+              </div>
+
+              <div class="list" *ngIf="upcomingEvents.length > 0">
+                <button class="list-item" *ngFor="let event of upcomingEvents | slice:0:5"
+                  (click)="navigateToUpcomingEvent(event)">
+                  <div class="list-item-main">
+                    <div class="list-item-title">{{ event.title }}</div>
+                    <div class="list-item-meta">
+                      <mat-icon>location_on</mat-icon>
+                      <span>{{ event.eventPlace }}</span>
+                    </div>
+                  </div>
+                  <div class="list-item-right">
+                    <div class="pill">
+                      <mat-icon>schedule</mat-icon>
+                      <span>{{ event.startDate | date:'MMM d' }}</span>
+                    </div>
+                  </div>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="sidebar-card">
+            <div class="sidebar-header">
+              <mat-icon>campaign</mat-icon>
+              <h4>Latest Announcements</h4>
+            </div>
+            <div class="sidebar-content">
+              <div class="empty-state" *ngIf="!isLoadingAnnouncements && latestAnnouncements.length === 0">
+                <mat-icon>announcement</mat-icon>
+                <div>
+                  <div class="empty-title">No announcements yet</div>
+                  <div class="empty-subtitle">Create one to keep everyone in sync.</div>
+                </div>
+              </div>
+
+              <div class="skeleton" *ngIf="isLoadingAnnouncements">
+                <div class="skeleton-row" *ngFor="let _ of [1,2,3]"></div>
+              </div>
+
+              <div class="list" *ngIf="!isLoadingAnnouncements && latestAnnouncements.length > 0">
+                <button class="list-item" *ngFor="let a of latestAnnouncements"
+                  [routerLink]="['/internal-announcements', a.id]">
+                  <div class="list-item-main">
+                    <div class="list-item-title">{{ a.title }}</div>
+                    <div class="list-item-preview">{{ a.content }}</div>
+                    <div class="list-item-date">
+                      <mat-icon>calendar_today</mat-icon>
+                      <span>{{ a.createdAt | date:'MMM d, y' }}</span>
+                    </div>
+                  </div>
+                </button>
+              </div>
+
+              <button class="link-btn" (click)="navigateToAnnouncements()">
+                View all announcements
+                <mat-icon>chevron_right</mat-icon>
+              </button>
+            </div>
+          </div>
+
+          <div class="sidebar-card">
+            <div class="sidebar-header">
+              <mat-icon>insights</mat-icon>
+              <h4>Event Insights</h4>
+            </div>
+            <div class="sidebar-content">
+              <div class="insight-item">
+                <div class="insight-label">Upcoming Events</div>
+                <div class="insight-value">{{ upcomingEventsCount }}</div>
+              </div>
+
+              <div class="insight-item">
+                <div class="insight-label">Pending Approvals</div>
+                <div class="insight-value">{{ pendingApprovalsCount }}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="sidebar-card">
+            <div class="sidebar-header">
+              <mat-icon>rocket_launch</mat-icon>
+              <h4>Quick Actions</h4>
+            </div>
+            <div class="sidebar-content">
+              <button class="quick-action-btn" *ngIf="authService.canCreateEvents()" (click)="navigateToCreateEvent()">
+                <mat-icon>add</mat-icon>
+                Create Event
+              </button>
+              <button class="quick-action-btn" *ngIf="authService.isAdmin() || authService.isManager()"
+                (click)="navigateToCreateAnnouncement()">
+                <mat-icon>campaign</mat-icon>
+                Post Announcement
+              </button>
+              <button class="quick-action-btn" *ngIf="authService.isAdmin() || authService.isManager()"
+                (click)="exportData()">
+                <mat-icon>download</mat-icon>
+                Export Data
+              </button>
+              <button class="quick-action-btn">
+                <mat-icon>qr_code</mat-icon>
+                Generate QR Codes
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>

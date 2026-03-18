@@ -1,0 +1,67 @@
+# =========================
+# Build & compiled output
+# =========================
+bin/
+obj/
+dist/
+out-tsc/
+tmp/
+publish/
+
+# =========================
+# Dependencies
+# =========================
+node_modules/
+
+# =========================
+# Angular / Nx
+# =========================
+.angular/
+.nx/cache/
+.nx/workspace-data/
+
+# =========================
+# Logs
+# =========================
+Logs/
+*.log
+npm-debug.log
+yarn-error.log
+
+# =========================
+# Test & coverage
+# =========================
+coverage/
+TestResults/
+
+# =========================
+# Environment & secrets
+# =========================
+appsettings.Development.json
+appsettings.Local.json
+secrets.json
+
+# =========================
+# Entity Framework
+# =========================
+Migrations/*.cs
+!Migrations/*InitialCreate.cs
+
+# =========================
+# IDEs & Editors
+# =========================
+.vscode/
+.idea/
+
+# =========================
+# HTTP & temp files
+# =========================
+*.http
+*.tmp
+*.temp
+
+# =========================
+# Misc
+# =========================
+__screenshots__/
+Logs/
