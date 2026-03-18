@@ -21,6 +21,7 @@
   },
   "private": true,
   "dependencies": {
+<<<<<<< HEAD
     "@angular-devkit/build-angular": "21.2.0",
     "@angular/animations": "21.2.0",
     "@angular/cdk": "21.2.0",
@@ -33,6 +34,20 @@
     "@angular/platform-server": "21.2.0",
     "@angular/router": "21.2.0",
     "@angular/ssr": "21.2.0",
+=======
+    "@angular-devkit/build-angular": "~21.0.0",
+    "@angular/animations": "^21.0.6",
+    "@angular/cdk": "^21.0.5",
+    "@angular/common": "^21.0.6",
+    "@angular/compiler": "~21.0.0",
+    "@angular/core": "^21.0.6",
+    "@angular/forms": "~21.0.0",
+    "@angular/material": "^21.0.5",
+    "@angular/platform-browser": "~21.0.0",
+    "@angular/platform-server": "~21.0.0",
+    "@angular/router": "~21.0.0",
+    "@angular/ssr": "~21.0.0",
+>>>>>>> 0b1b82a95174536c78782fb8df3eaa16c01fb594
     "@auth0/angular-jwt": "^5.2.0",
     "@microsoft/signalr": "^10.0.0",
     "@ngrx/component-store": "^21.0.1",
@@ -55,6 +70,7 @@
     "zod": "^4.2.1"
   },
   "devDependencies": {
+<<<<<<< HEAD
     "@angular-devkit/core": "21.2.0",
     "@angular-devkit/schematics": "21.2.0",
     "@angular-eslint/schematics": "^21.2.0",
@@ -71,6 +87,25 @@
     "@nx/playwright": "21.0.0",
     "@nx/web": "21.0.0",
     "@nx/workspace": "21.0.0",
+=======
+    "@angular-devkit/core": "~21.0.0",
+    "@angular-devkit/schematics": "~21.0.0",
+    "@angular-eslint/schematics": "^21.1.0",
+    "@angular/build": "~21.0.0",
+    "@angular/cli": "^21.0.4",
+    "@angular/compiler-cli": "~21.0.0",
+    "@angular/language-service": "~21.0.0",
+    "@eslint/js": "^9.8.0",
+    "@nx/angular": "22.3.3",
+    "@nx/devkit": "22.3.3",
+    "@nx/eslint": "22.3.3",
+    "@nx/eslint-plugin": "^22.3.3",
+    "@nx/js": "22.3.3",
+    "@nx/linter": "^19.8.4",
+    "@nx/playwright": "22.3.3",
+    "@nx/web": "22.3.3",
+    "@nx/workspace": "22.3.3",
+>>>>>>> 0b1b82a95174536c78782fb8df3eaa16c01fb594
     "@playwright/test": "^1.36.0",
     "@schematics/angular": "~21.0.0",
     "@swc-node/register": "~1.9.1",
@@ -86,7 +121,11 @@
     "eslint-plugin-playwright": "^1.6.2",
     "husky": "^9.1.7",
     "jsdom": "^27.1.0",
+<<<<<<< HEAD
     "nx": "21.0.0",
+=======
+    "nx": "22.3.3",
+>>>>>>> 0b1b82a95174536c78782fb8df3eaa16c01fb594
     "prettier": "~3.6.2",
     "tslib": "^2.3.0",
     "typescript": "~5.9.2",
