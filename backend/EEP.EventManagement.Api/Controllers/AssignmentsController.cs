@@ -2,6 +2,7 @@ using EEP.EventManagement.Api.Application.Features.Assignments.Commands;
 using EEP.EventManagement.Api.Application.Features.Assignments.DTOs;
 using EEP.EventManagement.Api.Application.Features.Assignments.Queries;
 using EEP.EventManagement.Api.Application.Features.Auth.DTOs;
+using EEP.EventManagement.Api.Application.Features.Events.DTOs;
 using EEP.EventManagement.Api.Infrastructure.Security.Authorization;
 using EEP.EventManagement.Api.Infrastructure.Security.Claims;
 using MediatR;
@@ -24,6 +25,22 @@ namespace EEP.EventManagement.Api.Controllers
             _mediator = mediator;
             _authorizationService = authorizationService;
             _userContext = userContext;
+        }
+
+        [HttpDelete("{role}/{id}")]
+        public async Task<ActionResult<EventDto>> DeleteAssignment(Guid eventId, string role, Guid id)
+        {
+            var isAdmin = User.IsInRole("Admin");
+            var isCommunicationManagerAuth = await _authorizationService.AuthorizeAsync(User, null, AuthorizationPolicies.IsCommunicationManager);
+            
+            if (!isAdmin && !isCommunicationManagerAuth.Succeeded)
+            {
+                return Forbid();
+            }
+
+            var command = new DeleteAssignmentCommand { EventId = eventId, AssignmentId = id };
+            var result = await _mediator.Send(command);
+            return Ok(result);
         }
 
         [HttpPost("bulk")]
