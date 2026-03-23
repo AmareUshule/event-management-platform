@@ -542,16 +542,21 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
     return this.event?.status === EventStatus.COMPLETED;
   }
 
+  isArchived(): boolean {
+    return this.event?.status === EventStatus.ARCHIVED;
+  }
+
   canAssignEmployees(): boolean {
     // Only Admin or Communication Manager can assign staff,
-    // and only while the event is not completed or cancelled
+    // and only while the event is not completed, cancelled, or archived
     if (!this.event) {
       return false;
     }
 
     const notFinal =
       this.event.status !== EventStatus.COMPLETED &&
-      this.event.status !== EventStatus.CANCELLED;
+      this.event.status !== EventStatus.CANCELLED &&
+      this.event.status !== EventStatus.ARCHIVED;
 
     const canAssign =
       this.authService.isAdmin() ||

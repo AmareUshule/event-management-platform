@@ -72,11 +72,11 @@ export class AssignmentDialogComponent implements OnInit, OnDestroy {
   
   availableRoles: string[] = [];
   roleColors: Record<string, string> = {
-    'expert': '#7b1fa2',
-    'cameraman': '#1976d2',
-    'photographer': '#e91e63',
-    'speaker': '#ff9800',
-    'organizer': '#4caf50'
+    'expert': '#1B5E20', // Brand Green
+    'cameraman': '#2E7D32', // Shaded Green
+    'photographer': '#43A047', // Lighter Green
+    'speaker': '#388E3C', // Medium Green
+    'organizer': '#1B5E20' // Brand Green
   };
   
   private destroy$ = new Subject<void>();
@@ -251,8 +251,8 @@ export class AssignmentDialogComponent implements OnInit, OnDestroy {
   }
 
   getRoleColor(role: string): string {
-    if (!role) return '#2E7D32';
-    return this.roleColors[role.toLowerCase()] || '#2E7D32';
+    if (!role) return '#1B5E20';
+    return this.roleColors[role.toLowerCase()] || '#1B5E20';
   }
 
   formatRole(role: string): string {

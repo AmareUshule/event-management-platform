@@ -3,7 +3,7 @@
   <div class="dialog-header">
     <div class="header-content">
       <h2 mat-dialog-title class="dialog-title">
-        <mat-icon class="title-icon">assignment_ind</mat-icon>
+        <mat-icon class="title-icon">person_add_alt</mat-icon>
         Assign Personnel
       </h2>
       <button mat-icon-button class="close-btn" (click)="onCancel()" matTooltip="Close">
@@ -11,7 +11,7 @@
       </button>
     </div>
     <div class="event-badge">
-      <mat-icon>event</mat-icon>
+      <mat-icon>calendar_today</mat-icon>
       <span class="event-title">{{ data.eventTitle }}</span>
     </div>
   </div>
@@ -20,28 +20,28 @@
     <mat-dialog-content class="dialog-content">
       <!-- Loading State -->
       <div class="loading-state" *ngIf="loading">
-        <mat-spinner diameter="48"></mat-spinner>
-        <p>Loading available personnel...</p>
+        <mat-spinner diameter="48" strokeWidth="4"></mat-spinner>
+        <p>Fetching available personnel...</p>
       </div>
 
       <!-- Error State -->
       <div class="error-state" *ngIf="error">
-        <mat-icon class="error-icon">error_outline</mat-icon>
+        <mat-icon class="error-icon">report_problem</mat-icon>
         <p class="error-message">{{ error }}</p>
-        <button mat-raised-button color="primary" (click)="loadEmployees()">
+        <button mat-flat-button (click)="loadEmployees()">
           <mat-icon>refresh</mat-icon>
-          Retry
+          Try Again
         </button>
       </div>
 
       <!-- No Employees State -->
       <div class="empty-state" *ngIf="!loading && !error && employees.length === 0">
         <div class="empty-icon-container">
-          <mat-icon class="empty-icon">people_outline</mat-icon>
+          <mat-icon class="empty-icon">group_off</mat-icon>
         </div>
-        <h3>No Personnel Available</h3>
-        <p>No personnel found in the system</p>
-        <button mat-stroked-button color="primary" (click)="loadEmployees()">
+        <h3>No Personnel Found</h3>
+        <p>We couldn't find any personnel in the system. Please try refreshing or check your connection.</p>
+        <button mat-stroked-button (click)="loadEmployees()">
           <mat-icon>refresh</mat-icon>
           Refresh List
         </button>
@@ -49,10 +49,9 @@
 
       <!-- Assignment Form -->
       <div class="form-content" *ngIf="!loading && !error && employees.length > 0">
-        <!-- Assignments List -->
         <div class="assignments-section">
           <div class="section-header">
-            <h3>Assignments ({{ assignmentsArray.length }}/{{ maxAssignments }})</h3>
+            <h3>Assignments <span class="count-pill">{{ assignmentsArray.length }} / {{ maxAssignments }}</span></h3>
             <span class="assignment-summary" *ngIf="assignmentsArray.length > 0">
               {{ getAssignmentSummary() }}
             </span>
@@ -65,19 +64,22 @@
                  [class.focused]="assignment.dirty">
               
               <div class="assignment-header">
-                <div class="assignment-number" [style.background]="getRoleColor(assignment.get('role')?.value)">
+                <div class="assignment-number">
                   {{ i + 1 }}
                 </div>
                 <div class="assignment-title">
-                  <h4>Assignment #{{ i + 1 }}</h4>
-                  <span class="assignment-status" *ngIf="assignment.valid">✓ Ready</span>
+                  <h4>Personnel Role & Selection</h4>
+                  <span class="assignment-status" *ngIf="assignment.valid">
+                    <mat-icon style="font-size: 14px; width: 14px; height: 14px;">check_circle</mat-icon>
+                    Ready
+                  </span>
                 </div>
                 <button type="button" mat-icon-button 
                         class="remove-btn"
                         *ngIf="assignmentsArray.length > 1"
                         (click)="removeAssignment(i)" 
                         matTooltip="Remove this assignment">
-                  <mat-icon>delete_outline</mat-icon>
+                  <mat-icon>delete_sweep</mat-icon>
                 </button>
               </div>
 
@@ -100,19 +102,16 @@
                         <span class="availability-badge" 
                               [class.available]="hasAvailableEmployeesForRole(role)"
                               [class.unavailable]="!hasAvailableEmployeesForRole(role)">
-                          {{ getAvailableCountForRole(role) }} available
+                          {{ getAvailableCountForRole(role) }} free
                         </span>
                       </div>
                     </mat-option>
                   </mat-select>
-                  <mat-error *ngIf="assignment.get('role')?.hasError('required')">
-                    Role is required
-                  </mat-error>
                 </mat-form-field>
 
                 <!-- Employee Selection -->
                 <mat-form-field appearance="outline" class="employee-field">
-                  <mat-label>Select Person</mat-label>
+                  <mat-label>Select Expert</mat-label>
                   <mat-select formControlName="employeeId">
                     <mat-select-trigger>
                       <div class="selected-employee" *ngIf="assignment.get('employeeId')?.value">
@@ -122,8 +121,8 @@
                     </mat-select-trigger>
                     
                     <mat-option *ngIf="!assignment.get('role')?.value" [value]="" disabled class="hint-option">
-                      <mat-icon>info</mat-icon>
-                      <span>Select a role first</span>
+                      <mat-icon>info_outline</mat-icon>
+                      <span>Please select a role first</span>
                     </mat-option>
                     
                     <ng-container *ngIf="assignment.get('role')?.value">
@@ -135,19 +134,18 @@
                           </div>
                           <div class="employee-details">
                             <div class="employee-name-row">
-                              <span class="employee-name">{{ emp.name || (emp.firstName + ' ' + emp.lastName) || 'Unknown' }}</span>
-                              <span class="employee-role" [style.background]="getRoleColor(emp.role) + '20'" 
-                                    [style.color]="getRoleColor(emp.role)">
+                              <span class="employee-name">{{ emp.name || (emp.firstName + ' ' + emp.lastName) || 'Unknown Expert' }}</span>
+                              <span class="employee-role">
                                 {{ emp.role }}
                               </span>
                             </div>
                             <div class="employee-meta">
                               <span class="employee-id">
                                 <mat-icon>badge</mat-icon>
-                                {{ emp.employeeId }}
+                                ID: {{ emp.employeeId }}
                               </span>
                               <span class="employee-email" *ngIf="emp.email">
-                                <mat-icon>email</mat-icon>
+                                <mat-icon>alternate_email</mat-icon>
                                 {{ emp.email }}
                               </span>
                             </div>
@@ -157,18 +155,13 @@
 
                       <mat-option *ngIf="getFilteredEmployees(i, assignment.get('role')?.value).length === 0" 
                                 [value]="" disabled class="empty-option">
-                        <mat-icon>warning</mat-icon>
+                        <mat-icon>warning_amber</mat-icon>
                         <span>No available {{ formatRole(assignment.get('role')?.value) }}s found</span>
                       </mat-option>
                     </ng-container>
                   </mat-select>
-                  <mat-error *ngIf="assignment.get('employeeId')?.hasError('required')">
-                    Person is required
-                  </mat-error>
                 </mat-form-field>
               </div>
-
-              <mat-divider *ngIf="i < assignmentsArray.length - 1" class="divider"></mat-divider>
             </div>
           </div>
 
@@ -179,27 +172,27 @@
                     class="add-btn"
                     (click)="addAssignment()" 
                     [disabled]="isMaxAssignmentsReached()">
-              <mat-icon>add</mat-icon>
-              Add Another Person
+              <mat-icon>person_add</mat-icon>
+              Add Another Expert
             </button>
             <span class="max-hint" *ngIf="isMaxAssignmentsReached()">
               <mat-icon>info</mat-icon>
-              Maximum {{ maxAssignments }} assignments reached
+              Limit of {{ maxAssignments }} experts reached
             </span>
           </div>
         </div>
       </div>
 
-      <!-- No Available Employees for Selected Roles State - FIXED -->
+      <!-- No Available Employees for Selected Roles State -->
       <div class="empty-state" *ngIf="!loading && !error && employees.length > 0 && noAvailableEmployeesForAnyRole">
         <div class="empty-icon-container warning">
-          <mat-icon class="empty-icon">warning_amber</mat-icon>
+          <mat-icon class="empty-icon">person_off</mat-icon>
         </div>
-        <h3>No Available Personnel</h3>
-        <p>All personnel with the required roles are already assigned to this event</p>
-        <button mat-stroked-button color="primary" (click)="loadEmployees()">
-          <mat-icon>refresh</mat-icon>
-          Refresh List
+        <h3>All Experts Assigned</h3>
+        <p>All experts with the required roles have already been assigned to this event.</p>
+        <button mat-stroked-button (click)="loadEmployees()">
+          <mat-icon>sync</mat-icon>
+          Sync List
         </button>
       </div>
     </mat-dialog-content>
@@ -207,8 +200,8 @@
     <!-- Dialog Actions -->
     <mat-dialog-actions class="dialog-actions" align="end">
       <div class="actions-left" *ngIf="assignmentsArray.length > 0">
-        <mat-icon class="summary-icon">assignment</mat-icon>
-        <span class="summary-text">{{ assignmentsArray.length }} assignment(s) ready</span>
+        <mat-icon class="summary-icon">verified_user</mat-icon>
+        <span class="summary-text">{{ assignmentsArray.length }} personnel ready to assign</span>
       </div>
       
       <div class="actions-right">
@@ -222,7 +215,7 @@
           <mat-spinner diameter="20" *ngIf="isSubmitting"></mat-spinner>
           <ng-container *ngIf="!isSubmitting">
             <mat-icon>check_circle</mat-icon>
-            <span>Assign ({{ assignmentsArray.length }})</span>
+            <span>Assign Experts ({{ assignmentsArray.length }})</span>
           </ng-container>
           <span *ngIf="isSubmitting">Assigning...</span>
         </button>
