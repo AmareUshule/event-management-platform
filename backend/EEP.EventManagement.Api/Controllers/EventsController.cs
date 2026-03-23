@@ -65,7 +65,7 @@ namespace EEP.EventManagement.Api.Controllers
                     return true;
                 }
 
-                // Creators can see their own Draft/Submitted events
+                // Creators can see their own Draft events
                 if (e.CreatedBy != null && e.CreatedBy.Id == currentUserId)
                 {
                     return true;
@@ -162,15 +162,6 @@ namespace EEP.EventManagement.Api.Controllers
             var command = new DeleteEventCommand { Id = id };
             await _mediator.Send(command);
             return NoContent();
-        }
-
-        [HttpPost("{id}/submit")]
-        [Authorize(Roles = "Admin,Manager")]
-        public async Task<ActionResult<EventDto>> SubmitEvent(Guid id)
-        {
-            var command = new SubmitEventCommand { EventId = id };
-            var result = await _mediator.Send(command);
-            return Ok(result);
         }
 
         [HttpPost("{id}/approve")]

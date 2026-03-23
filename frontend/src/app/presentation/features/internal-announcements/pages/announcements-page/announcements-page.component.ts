@@ -43,7 +43,6 @@ export class AnnouncementsPageComponent implements OnInit, OnDestroy {
   private platformId = inject(PLATFORM_ID);
 
   publishedAnnouncements: Announcement[] = [];
-  draftAnnouncements: Announcement[] = [];
   pendingAnnouncements: Announcement[] = [];
   rejectedAnnouncements: Announcement[] = [];
   
@@ -80,7 +79,6 @@ export class AnnouncementsPageComponent implements OnInit, OnDestroy {
       this.loadPublished();
       
       if (this.canCreate) {
-        this.loadDrafts();
         this.loadRejected();
         this.loadPending(); // Always load pending for creators too
       } else if (this.canPublish) {
@@ -107,23 +105,6 @@ export class AnnouncementsPageComponent implements OnInit, OnDestroy {
       });
   }
 
-  loadDrafts(): void {
-    this.announcementService.getDraftAnnouncements()
-      .pipe(
-        takeUntil(this.destroy$),
-        finalize(() => {
-          this.cdr.detectChanges();
-        })
-      )
-      .subscribe({
-        next: (response: any) => {
-          // Extract items from paged response
-          this.draftAnnouncements = response.items || [];
-        },
-        error: () => this.snackBar.open('Failed to load draft announcements', 'Close', { duration: 3000 })
-      });
-  }
-
   loadPending(): void {
     this.announcementService.getPendingAnnouncements()
       .pipe(
@@ -146,6 +127,7 @@ export class AnnouncementsPageComponent implements OnInit, OnDestroy {
       )
       .subscribe({
         next: (response: any) => {
+          // Extract items from paged response
           this.rejectedAnnouncements = response.items || [];
         },
         error: () => this.snackBar.open('Failed to load rejected announcements', 'Close', { duration: 3000 })
@@ -210,17 +192,6 @@ export class AnnouncementsPageComponent implements OnInit, OnDestroy {
           this.loadAnnouncements();
         },
         error: () => this.snackBar.open('Failed to publish announcement', 'Close', { duration: 3000 })
-      });
-  }
-
-  onSubmitForApproval(announcement: Announcement): void {
-    this.announcementService.submitForApproval(announcement.id)
-      .subscribe({
-        next: () => {
-          this.snackBar.open('Submitted for approval', 'Close', { duration: 3000 });
-          this.loadAnnouncements();
-        },
-        error: () => this.snackBar.open('Failed to submit for approval', 'Close', { duration: 3000 })
       });
   }
 

@@ -13,7 +13,6 @@ export enum EventType {
 --------------------------------*/
 export enum EventStatus {
   DRAFT = 'Draft',
-  SUBMITTED = 'Submitted',
   SCHEDULED = 'Scheduled',
   ONGOING = 'Ongoing',
   CANCELLED = 'Cancelled',

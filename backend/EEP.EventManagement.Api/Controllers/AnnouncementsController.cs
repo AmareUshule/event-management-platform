@@ -77,7 +77,7 @@ namespace EEP.EventManagement.Api.Controllers
 
             var query = new GetAnnouncementsPagedQuery
             {
-                Status = AnnouncementStatus.PendingApproval,
+                Status = AnnouncementStatus.Draft,
                 CreatedById = isCommManager ? null : currentUserId,
                 Page = page,
                 PageSize = pageSize
@@ -111,7 +111,7 @@ namespace EEP.EventManagement.Api.Controllers
                 return NotFound();
 
             // Visibility: only Published is public to authenticated users.
-            // Any non-published (Draft/Pending/Rejected) is visible to Author or Communication Manager.
+            // Any non-published (Draft/Rejected) is visible to Author or Communication Manager.
             if (result.Status != AnnouncementStatus.Published.ToString())
             {
                 var currentUserId = _userContext.GetUserId();
@@ -163,15 +163,6 @@ namespace EEP.EventManagement.Api.Controllers
 
             await _mediator.Send(new DeleteAnnouncementCommand { Id = id });
             return NoContent();
-        }
-
-        [HttpPost("{id}/submit")]
-        [Authorize(Roles = "Admin,Manager")]
-        public async Task<ActionResult<AnnouncementDto>> SubmitForApproval(Guid id)
-        {
-            var command = new SubmitAnnouncementForApprovalCommand { Id = id };
-            var result = await _mediator.Send(command);
-            return Ok(result);
         }
 
         [HttpPost("{id}/publish")]

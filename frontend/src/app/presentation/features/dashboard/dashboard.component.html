@@ -122,10 +122,6 @@
                   <button class="event-tab" [class.active]="activeTab === 'draft'" (click)="onTabChange('draft')">
                     Draft <span class="tab-count" *ngIf="draftEventsCount > 0">({{ draftEventsCount }})</span>
                   </button>
-                  <button class="event-tab" [class.active]="activeTab === 'submitted'"
-                    (click)="onTabChange('submitted')">
-                    Submitted <span class="tab-count">{{ submittedEvents }}</span>
-                  </button>
                 </ng-container>
 
                 <!-- Cameraman & Expert Tabs -->
@@ -219,8 +215,7 @@
                       <span class="event-title">{{ element.name }}</span>
                       <div class="event-status-badge"
                         [class.scheduled]="element.status === 'Scheduled' || element.status === 'Ongoing' || element.status === 'Completed'"
-                        [class.archived]="element.status === 'Archived'" [class.draft]="element.status === 'Draft'"
-                        [class.pending]="element.status === 'Submitted'">
+                        [class.archived]="element.status === 'Archived'" [class.draft]="element.status === 'Draft'">
                         {{ element.status | titlecase }}
                       </div>
                     </div>
@@ -262,12 +257,6 @@
                     <button class="icon-btn edit" *ngIf="canManageEvent(element)" (click)="editEvent(element)"
                       matTooltip="Edit Event">
                       <mat-icon>edit</mat-icon>
-                    </button>
-
-                    <button class="icon-btn publish"
-                      *ngIf="element.status === 'Draft' && element.raw.createdBy.id === user?.adObjectId"
-                      (click)="submitEvent(element)" matTooltip="Submit for Approval">
-                      <mat-icon>send</mat-icon>
                     </button>
 
                     <button class="icon-btn delete" *ngIf="canManageEvent(element)" (click)="deleteEvent(element)"

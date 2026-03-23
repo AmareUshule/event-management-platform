@@ -468,24 +468,6 @@ assignMultipleEmployees(eventId: string, assignments: AssignmentPayload[]): Obse
   }
 
   /**
-   * Submit event for approval
-   */
-  submitEvent(eventId: string): Observable<Event> {
-    return this.http.post<Event>(
-      `${this.API_URL}/${eventId}/submit`,
-      {},
-      {
-        headers: this.getHeaders(),
-        responseType: 'json'
-      }
-    ).pipe(
-      timeout(this.REQUEST_TIMEOUT),
-      retry(1),
-      catchError(this.handleError.bind(this))
-    );
-  }
-
-  /**
    * Archive event
    */
   archiveEvent(eventId: string): Observable<Event> {

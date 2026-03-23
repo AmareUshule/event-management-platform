@@ -43,9 +43,9 @@ namespace EEP.EventManagement.Api.Application.Features.Announcements.Handlers
             if (announcement.Status == AnnouncementStatus.Published)
                 throw new BadRequestException("Announcement is already published.");
 
-            // Only allow publishing when it has been submitted (or when comm manager publishes directly).
-            if (announcement.Status != AnnouncementStatus.PendingApproval && announcement.Status != AnnouncementStatus.Draft)
-                throw new BadRequestException("Only Draft or PendingApproval announcements can be published.");
+            // Only allow publishing when it is in Draft or Rejected state.
+            if (announcement.Status != AnnouncementStatus.Draft && announcement.Status != AnnouncementStatus.Rejected)
+                throw new BadRequestException("Only Draft or Rejected announcements can be published.");
 
             announcement.Status = AnnouncementStatus.Published;
             announcement.ApprovedBy = userId;

@@ -33,12 +33,10 @@ export class AnnouncementCardComponent {
   @Input() isRejected: boolean = false;
   @Input() canManage: boolean = false;
   @Input() canPublish: boolean = false;
-  @Input() canSubmit: boolean = false;
 
   @Output() edit = new EventEmitter<Announcement>();
   @Output() delete = new EventEmitter<Announcement>();
   @Output() publish = new EventEmitter<Announcement>();
-  @Output() submitForApproval = new EventEmitter<Announcement>();
   @Output() reject = new EventEmitter<Announcement>();
 
   get bannerImage(): string | null {
@@ -89,11 +87,6 @@ export class AnnouncementCardComponent {
   onPublish(event: Event) {
     event.stopPropagation();
     this.publish.emit(this.announcement);
-  }
-
-  onSubmit(event: Event) {
-    event.stopPropagation();
-    this.submitForApproval.emit(this.announcement);
   }
 
   onReject(event: Event) {

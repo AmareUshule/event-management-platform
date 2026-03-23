@@ -55,15 +55,11 @@
           <mat-icon>edit</mat-icon>
           <span>Edit</span>
         </button>
-        <button mat-menu-item *ngIf="isDraft && canSubmit" (click)="onSubmit($event)">
-          <mat-icon>send</mat-icon>
-          <span>Submit for approval</span>
-        </button>
-        <button mat-menu-item *ngIf="isPending && canPublish" (click)="onPublish($event)">
+        <button mat-menu-item *ngIf="(isDraft || isRejected) && canPublish" (click)="onPublish($event)">
           <mat-icon>publish</mat-icon>
           <span>Approve & Publish</span>
         </button>
-        <button mat-menu-item *ngIf="isPending && canPublish" (click)="onReject($event)">
+        <button mat-menu-item *ngIf="isDraft && canPublish" (click)="onReject($event)">
           <mat-icon>block</mat-icon>
           <span>Reject</span>
         </button>

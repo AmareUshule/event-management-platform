@@ -129,15 +129,6 @@ export class AnnouncementService {
     );
   }
 
-  submitForApproval(id: string): Observable<Announcement> {
-    return this.http.post<Announcement>(`${this.API_URL}/${id}/submit`, {}, {
-      headers: this.getHeaders()
-    }).pipe(
-      timeout(this.REQUEST_TIMEOUT),
-      catchError(this.handleError.bind(this))
-    );
-  }
-
   rejectAnnouncement(id: string): Observable<Announcement> {
     return this.http.post<Announcement>(`${this.API_URL}/${id}/reject`, {}, {
       headers: this.getHeaders()

@@ -40,7 +40,7 @@ namespace EEP.EventManagement.Api.Application.Features.Reports.Handlers
                     CompletedCount = events.Count(e => e.Status == EventStatus.Completed),
                     ArchivedCount = events.Count(e => e.Status == EventStatus.Archived),
                     CancelledCount = events.Count(e => e.Status == EventStatus.Cancelled),
-                    PendingApprovalsCount = events.Count(e => e.Status == EventStatus.Submitted)
+                    PendingApprovalsCount = events.Count(e => e.Status == EventStatus.Draft)
                 };
             }
             

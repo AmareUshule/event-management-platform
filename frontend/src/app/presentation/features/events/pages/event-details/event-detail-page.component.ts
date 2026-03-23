@@ -143,23 +143,6 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
     this.location.back();
   }
 
-  submitEvent(): void {
-    if (!this.event?.id) return;
-    this.isLoading = true;
-    this.eventService.submitEvent(this.event.id).subscribe({
-      next: (updatedEvent) => {
-        this.isLoading = false;
-        this.event = updatedEvent;
-        this.showSuccess('Event submitted for approval!');
-        this.cdr.detectChanges();
-      },
-      error: (error) => {
-        this.isLoading = false;
-        this.showError(error.message || 'Failed to submit event');
-      }
-    });
-  }
-
   approveEvent(): void {
     if (!this.event?.id) return;
 
@@ -260,7 +243,7 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Only Admin or department manager of this event can edit, and only in Draft/Submitted
+    // Only Admin or department manager of this event can edit, and only in Draft
     const canEdit =
       this.authService.isAdmin() ||
       (this.authService.isManager() &&
@@ -271,21 +254,16 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (this.event.status !== EventStatus.DRAFT && this.event.status !== EventStatus.SUBMITTED) {
-      this.showError('Events can only be edited while in Draft or Submitted status');
+    if (this.event.status !== EventStatus.DRAFT) {
+      this.showError('Events can only be edited while in Draft status');
       return;
     }
 
     this.router.navigate(['/events/edit', this.event.id]);
   }
 
-  canSubmit(): boolean {
-    if (!this.event || this.event.status !== EventStatus.DRAFT) return false;
-    return this.authService.isAdmin() || this.event.createdBy.id === this.authService.getCurrentUser()?.adObjectId;
-  }
-
   canApprove(): boolean {
-    if (!this.event || this.event.status !== EventStatus.SUBMITTED) return false;
+    if (!this.event || this.event.status !== EventStatus.DRAFT) return false;
     return this.authService.isAdmin() || this.authService.isCommunicationManager();
   }
 

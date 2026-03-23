@@ -46,9 +46,6 @@ namespace EEP.EventManagement.Api.Application.Features.Announcements.Handlers
             if ((announcement.Status == AnnouncementStatus.Published) && !isCommManager)
                 throw new BadRequestException("Published announcements cannot be edited by authors.");
 
-            if (announcement.Status == AnnouncementStatus.PendingApproval && !isCommManager)
-                throw new BadRequestException("Announcements pending approval cannot be edited until rejected.");
-
             if (announcement.Status == AnnouncementStatus.Published && isCommManager)
                 throw new BadRequestException("Published announcements are immutable.");
 

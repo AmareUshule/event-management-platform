@@ -123,7 +123,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
   totalEvents = 0;
   scheduledEvents = 0;
   draftEventsCount = 0;
-  submittedEvents = 0;
   ongoingEvents = 0;
   pastEventsCount = 0;
   eventsThisWeek = 0;
@@ -377,7 +376,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.draftEventsCount = this.masterEvents.filter(e => 
       e.status === "Draft" && e.createdBy.id === currentUserId).length;
       
-    this.submittedEvents = this.masterEvents.filter(e => e.status === "Submitted").length;
     this.scheduledEvents = this.masterEvents.filter(e => e.status === "Scheduled").length;
     this.ongoingEvents = this.masterEvents.filter(e => e.status === "Ongoing").length;
     
@@ -424,7 +422,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
    * Update insights from master data
    */
   private updateInsights(): void {
-    this.pendingApprovals = this.submittedEvents;
+    this.pendingApprovals = this.masterEvents.filter(e => e.status === "Draft").length;
     this.pendingApprovalsCount = this.pendingApprovals;
 
     if (this.upcomingEvents.length === 0) {
@@ -503,9 +501,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
     switch (this.activeTab) {
       case 'draft': 
         filtered = filtered.filter(e => e.status === 'Draft' && e.raw.createdBy.id === this.user?.adObjectId);
-        break;
-      case 'submitted':
-        filtered = filtered.filter(e => e.status === 'Submitted');
         break;
       case 'scheduled':
         filtered = filtered.filter(e => e.status === 'Scheduled');
@@ -690,16 +685,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
   }
 
-  submitEvent(event: TableEvent): void {
-    this.eventService.submitEvent(event.id).subscribe({
-      next: () => {
-        this.snackBar.open('Event submitted for approval', 'Close', { duration: 3000 });
-        this.loadEvents();
-      },
-      error: () => this.showError('Failed to submit event')
-    });
-  }
-
   deleteEvent(event: TableEvent): void {
     if (confirm(`Are you sure you want to delete "${event.name}"?`)) {
       this.eventService.deleteEvent(event.id)
@@ -754,8 +739,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
         return 'published';
       case 'Draft':
         return 'draft';
-      case 'Submitted':
-        return 'pending';
       case 'Archived':
         return 'archived';
       case 'Cancelled':

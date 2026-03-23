@@ -35,8 +35,8 @@ namespace EEP.EventManagement.Api.Application.Features.Announcements.Handlers
             if (!isCommManager)
                 throw new UnauthorizedException("Only Communication Manager can reject announcements.");
 
-            if (announcement.Status != AnnouncementStatus.PendingApproval)
-                throw new BadRequestException("Only PendingApproval announcements can be rejected.");
+            if (announcement.Status != AnnouncementStatus.Draft)
+                throw new BadRequestException("Only Draft announcements can be rejected.");
 
             announcement.Status = AnnouncementStatus.Rejected;
             announcement.ApprovedBy = null;

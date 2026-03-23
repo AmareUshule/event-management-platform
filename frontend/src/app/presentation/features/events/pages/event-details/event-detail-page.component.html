@@ -10,17 +10,7 @@
         </div>
 
         <div class="header-actions" *ngIf="event">
-            <!-- Submit button - for Draft status -->
-            <button
-                class="action-btn"
-                *ngIf="canSubmit()"
-                (click)="submitEvent()"
-                matTooltip="Submit for approval">
-                <mat-icon>send</mat-icon>
-                <span>Submit</span>
-            </button>
-
-            <!-- Approve button - for Submitted status -->
+            <!-- Approve button - for Draft status -->
             <button
                 class="action-btn"
                 *ngIf="canApprove()"
@@ -43,7 +33,7 @@
             <!-- Edit button - only for Admin or department manager of this event -->
             <button
                 class="action-btn"
-                *ngIf="(event.status === 'Draft' || event.status === 'Submitted') && (authService.isAdmin() || (authService.isManager() && authService.getDepartmentGuid() === event.department?.id))"
+                *ngIf="(event.status === 'Draft') && (authService.isAdmin() || (authService.isManager() && authService.getDepartmentGuid() === event.department?.id))"
                 (click)="editEvent()"
                 matTooltip="Edit event">
                 <mat-icon>edit</mat-icon>
