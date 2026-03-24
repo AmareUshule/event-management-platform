@@ -122,13 +122,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
   // =========== STATISTICS (DERIVED FROM MASTER DATA) =============
   totalEvents = 0;
   scheduledEvents = 0;
-  draftEventsCount = 0;
+  pendingApprovalCount = 0; // Renamed from draftEventsCount
   ongoingEvents = 0;
   pastEventsCount = 0;
   eventsThisWeek = 0;
   assignedEventsCount = 0;
   pendingAssignmentsCount = 0;
-  pendingApprovals = 0;
 
   // ============ INSIGHTS (DERIVED FROM MASTER DATA) ============
   upcomingEventsCount = 0;
@@ -372,9 +371,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
     const currentUserId = this.user?.adObjectId;
     this.totalEvents = this.masterEvents.length;
     
-    // Drafts are specific to the current user
-    this.draftEventsCount = this.masterEvents.filter(e => 
-      e.status === "Draft" && e.createdBy.id === currentUserId).length;
+    // Drafts (Pending Approval) visibility is now handled by the backend.
+    // So all Draft events in masterEvents are visible to the current user.
+    this.pendingApprovalCount = this.masterEvents.filter(e => e.status === "Draft").length;
       
     this.scheduledEvents = this.masterEvents.filter(e => e.status === "Scheduled").length;
     this.ongoingEvents = this.masterEvents.filter(e => e.status === "Ongoing").length;
@@ -422,8 +421,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
    * Update insights from master data
    */
   private updateInsights(): void {
-    this.pendingApprovals = this.masterEvents.filter(e => e.status === "Draft").length;
-    this.pendingApprovalsCount = this.pendingApprovals;
+    this.pendingApprovalsCount = this.masterEvents.filter(e => e.status === "Draft").length;
 
     if (this.upcomingEvents.length === 0) {
       const now = new Date();
@@ -500,7 +498,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     switch (this.activeTab) {
       case 'draft': 
-        filtered = filtered.filter(e => e.status === 'Draft' && e.raw.createdBy.id === this.user?.adObjectId);
+        filtered = filtered.filter(e => e.status === 'Draft');
         break;
       case 'scheduled':
         filtered = filtered.filter(e => e.status === 'Scheduled');
@@ -762,9 +760,23 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   canManageEvent(event: TableEvent): boolean {
+    // Admins can manage any event in any status
     if (this.authService.isAdmin()) return true;
+
+    // For others, management (edit/delete) is ONLY allowed if the event is in Draft status
     if (event.status !== 'Draft') return false;
-    return event.raw.createdBy.id === this.user?.adObjectId;
+
+    // Communication Managers can manage any Draft event
+    if (this.authService.isCommunicationManager()) return true;
+
+    // Department Managers can manage Draft events from their own department
+    const user = this.authService.getCurrentUser();
+    if (this.authService.isManager() && user?.departmentGuid === event.raw.department.id) {
+      return true;
+    }
+
+    // Creators can manage their own Draft events
+    return event.raw.createdBy.id === user?.adObjectId;
   }
 
   private showError(message: string): void {

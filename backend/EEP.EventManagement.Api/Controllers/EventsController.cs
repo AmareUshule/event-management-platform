@@ -38,16 +38,17 @@ namespace EEP.EventManagement.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<EventDto>>> GetAllEvents()
+        public async Task<ActionResult<List<EventDto>>> GetAllEvents([FromQuery] EventStatus? status)
         {
             var roles = _userContext.GetRoles();
             var currentUserId = _userContext.GetUserId();
+            var currentUserDeptId = _userContext.GetDepartmentId();
             var isCommManager = (await _authorizationService.AuthorizeAsync(
                 User,
                 null,
                 Infrastructure.Security.Authorization.AuthorizationPolicies.IsCommunicationManager)).Succeeded;
 
-            var allEvents = await _mediator.Send(new GetAllEventsQuery());
+            var allEvents = await _mediator.Send(new GetAllEventsQuery { Status = status });
 
             // Admin and Communication Manager can see everything
             if (roles.Contains("Admin") || isCommManager)
@@ -65,10 +66,23 @@ namespace EEP.EventManagement.Api.Controllers
                     return true;
                 }
 
-                // Creators can see their own Draft events
-                if (e.CreatedBy != null && e.CreatedBy.Id == currentUserId)
+                // New logic for Draft events (Pending Approval)
+                if (e.Status == EventStatus.Draft.ToString())
                 {
-                    return true;
+                    // Department Managers can only see Draft events from their own department
+                    if (roles.Contains("Manager") && currentUserDeptId != null && 
+                        e.Department != null && e.Department.Id == currentUserDeptId)
+                    {
+                        return true;
+                    }
+
+                    // Original logic: Creators can see their own Draft events
+                    if (e.CreatedBy != null && e.CreatedBy.Id == currentUserId)
+                    {
+                        return true;
+                    }
+
+                    return false;
                 }
 
                 // Assigned staff can see events they are assigned to (even if not yet Scheduled)
@@ -115,31 +129,61 @@ namespace EEP.EventManagement.Api.Controllers
             return CreatedAtAction(nameof(GetEventById), new { id = result.Id }, result);
         }
 
-        [HttpPut]
+        [HttpPut("{id}")]
         [Authorize(Roles = "Admin,Manager")]
-        public async Task<IActionResult> UpdateEvent([FromBody] UpdateEventDto updateEventDto)
+        public async Task<IActionResult> UpdateEvent(Guid id, [FromBody] UpdateEventDto updateEventDto)
         {
-            var eventEntity = await _mediator.Send(new GetEventByIdQuery { Id = updateEventDto.Id });
+            if (id != updateEventDto.Id)
+            {
+                return BadRequest(new { message = "ID in route does not match ID in body." });
+            }
 
-            if (eventEntity == null)
+            var eventDto = await _mediator.Send(new GetEventByIdQuery { Id = updateEventDto.Id });
+
+            if (eventDto == null)
             {
                 return NotFound();
             }
 
-            if (!User.IsInRole("Admin")) // Regular update: check if they are the department manager
+            // Admin can edit any event in any status
+            if (User.IsInRole("Admin"))
             {
-                var authResult = await _authorizationService.AuthorizeAsync(User, null,
-                    new IsDepartmentManagerOfResourceRequirement(eventEntity.Department!.Id));
-
-                if (!authResult.Succeeded)
-                {
-                    return Forbid();
-                }
+                var command = new UpdateEventCommand { UpdateEventDto = updateEventDto };
+                await _mediator.Send(command);
+                return NoContent();
             }
 
-            var command = new UpdateEventCommand { UpdateEventDto = updateEventDto };
-            await _mediator.Send(command);
-            return NoContent();
+            // For non-admins, editing is ONLY allowed if the event is in Draft status
+            if (eventDto.Status != EventStatus.Draft.ToString())
+            {
+                return BadRequest(new { message = "Only events in Draft status can be edited." });
+            }
+
+            // Check if Communication Manager (can edit any Draft)
+            var isCommManager = (await _authorizationService.AuthorizeAsync(
+                User,
+                null,
+                Infrastructure.Security.Authorization.AuthorizationPolicies.IsCommunicationManager)).Succeeded;
+
+            // Check if Department Manager
+            var isDeptManager = (await _authorizationService.AuthorizeAsync(User, null,
+                new IsDepartmentManagerOfResourceRequirement(eventDto.Department!.Id))).Succeeded;
+
+            // Check if Creator
+            var isCreator = eventDto.CreatedBy != null && eventDto.CreatedBy.Id == _userContext.GetUserId();
+
+            if (isCommManager || isDeptManager || isCreator)
+            {
+                // Ensure non-admins cannot change the status via this endpoint
+                // They should use the Approval endpoint for status changes
+                updateEventDto.Status = EventStatus.Draft;
+
+                var command = new UpdateEventCommand { UpdateEventDto = updateEventDto };
+                await _mediator.Send(command);
+                return NoContent();
+            }
+
+            return Forbid();
         }
 
         [HttpDelete("{id}")]

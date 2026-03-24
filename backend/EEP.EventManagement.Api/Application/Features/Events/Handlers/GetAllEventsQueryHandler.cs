@@ -23,7 +23,13 @@ namespace EEP.EventManagement.Api.Application.Features.Events.Handlers
         public async Task<List<EventDto>> Handle(GetAllEventsQuery request, CancellationToken cancellationToken)
         {
             var events = await _eventRepository.GetAllAsync();
-            return _mapper.Map<List<EventDto>>(events);
+
+            if (request.Status.HasValue)
+            {
+                events = events.Where(e => e.Status == request.Status.Value).ToList();
+            }
+
+            return _mapper.Map<List<EventDto>>(events) ?? new List<EventDto>();
         }
     }
 }

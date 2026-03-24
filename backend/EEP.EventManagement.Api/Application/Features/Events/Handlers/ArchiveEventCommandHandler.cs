@@ -40,7 +40,7 @@ namespace EEP.EventManagement.Api.Application.Features.Events.Handlers
 
             await _eventRepository.UpdateAsync(ev);
 
-            return _mapper.Map<EventDto>(ev);
+            return _mapper.Map<EventDto>(ev)!;
         }
     }
 }

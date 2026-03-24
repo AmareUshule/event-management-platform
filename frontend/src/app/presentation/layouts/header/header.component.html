@@ -36,7 +36,13 @@
     <div class="nav-right">
       <div class="notification-wrapper">
         <button mat-icon-button class="nav-icon-btn" matTooltip="Notifications" [matMenuTriggerFor]="notificationMenu" (click)="loadNotifications()">
-          <mat-icon [matBadge]="unreadCount > 0 ? unreadCount : null" matBadgeColor="warn">notifications</mat-icon>
+          <mat-icon 
+            [matBadge]="unreadCount > 0 ? unreadCount : null" 
+            matBadgeColor="warn" 
+            aria-hidden="false" 
+            [attr.aria-label]="unreadCount > 0 ? unreadCount + ' unread notifications' : 'No unread notifications'">
+            notifications
+          </mat-icon>
         </button>
       </div>
 

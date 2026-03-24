@@ -30,7 +30,7 @@ namespace EEP.EventManagement.Api.Application.Features.Events.Handlers
                 throw new NotFoundException(nameof(Event), request.Id);
             }
 
-            return _mapper.Map<EventDto>(@event);
+            return _mapper.Map<EventDto>(@event)!;
         }
     }
 }

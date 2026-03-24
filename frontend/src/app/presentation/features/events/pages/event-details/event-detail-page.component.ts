@@ -243,11 +243,13 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Only Admin or department manager of this event can edit, and only in Draft
-    const canEdit =
-      this.authService.isAdmin() ||
-      (this.authService.isManager() &&
-        this.authService.getDepartmentGuid() === this.event.department?.id);
+    // RBAC check: Admin, Communication Manager, Dept Manager, or Creator
+    const user = this.authService.getCurrentUser();
+    const isCommManager = this.authService.isCommunicationManager();
+    const isDeptManager = this.authService.isManager() && user?.departmentGuid === this.event.department?.id;
+    const isCreator = this.event.createdBy?.id === user?.adObjectId;
+
+    const canEdit = this.authService.isAdmin() || isCommManager || isDeptManager || isCreator;
 
     if (!canEdit) {
       this.showError('You do not have permission to edit this event');

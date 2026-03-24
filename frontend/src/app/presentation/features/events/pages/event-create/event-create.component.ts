@@ -4,8 +4,8 @@ import { Component, OnInit, inject, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
-import { RouterModule, Router } from '@angular/router';
-import { Subject, takeUntil } from 'rxjs';
+import { RouterModule, Router, ActivatedRoute } from '@angular/router';
+import { Subject, takeUntil, finalize } from 'rxjs';
 
 // Material imports
 import { MatInputModule } from '@angular/material/input';
@@ -24,7 +24,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 
 // Services and Models
 import { EventService } from '../../services/event.service';
-import { EventStatus, EventType, EventFormData } from '../../models/event.model';
+import { EventStatus, EventType, EventFormData, Event } from '../../models/event.model';
 import { AuthService } from '../../../../../core/auth/auth.service';
 import { AuthUser } from '../../../../../core/models/auth-user.model';
 
@@ -71,6 +71,10 @@ export class EventCreateComponent implements OnInit, OnDestroy {
   progressPercentage = 0;
   isSubmitting = false;
   formInitialized = false;
+  isEditMode = false;
+  eventId: string | null = null;
+  loadingEvent = false;
+  originalEvent: Event | null = null;
 
   steps = [
     { label: 'Basic Details', icon: 'info', description: 'Event title and description' },
@@ -113,6 +117,7 @@ export class EventCreateComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
   private eventService = inject(EventService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private authService = inject(AuthService);
   private snackBar = inject(MatSnackBar);
 
@@ -169,7 +174,7 @@ export class EventCreateComponent implements OnInit, OnDestroy {
     if (errors['required']) return 'This field is required';
     if (errors['maxlength']) return `Maximum ${errors['maxlength'].requiredLength} characters allowed`;
     if (errors['minlength']) return `Minimum ${errors['minlength'].requiredLength} characters required`;
-    if (errors['pattern']) return 'Invalid format. Please enter a valid URL starting with https://';
+    if (errors['pattern']) return 'Invalid format. Please enter a URL starting with https://';
     if (errors['invalidDate']) return 'End date must be after start date';
 
     return 'Invalid field';
@@ -227,7 +232,17 @@ export class EventCreateComponent implements OnInit, OnDestroy {
 
     this.setupEventTypeValidation();
     this.setupDateValidation();
-    this.autoFillUserDepartment();
+    
+    this.route.paramMap.pipe(takeUntil(this.destroy$)).subscribe(params => {
+      this.eventId = params.get('id');
+      if (this.eventId) {
+        this.isEditMode = true;
+        this.loadEventForEdit(this.eventId);
+      } else {
+        this.autoFillUserDepartment();
+      }
+    });
+
     this.updateProgress();
   }
 
@@ -243,6 +258,44 @@ export class EventCreateComponent implements OnInit, OnDestroy {
       meetingLink: [''],
       departmentId: [null, Validators.required]
     });
+  }
+
+  private loadEventForEdit(id: string): void {
+    this.loadingEvent = true;
+    this.eventService.getEventById(id).pipe(
+      takeUntil(this.destroy$),
+      finalize(() => this.loadingEvent = false)
+    ).subscribe({
+      next: (event) => {
+        this.originalEvent = event;
+        this.populateFormWithEvent(event);
+      },
+      error: (error) => {
+        this.showError('Failed to load event for editing');
+        this.router.navigate(['/dashboard']);
+      }
+    });
+  }
+
+  private populateFormWithEvent(event: Event): void {
+    const isVirtual = event.eventPlace?.startsWith('http');
+    const type = isVirtual ? EventType.VIRTUAL : EventType.PHYSICAL;
+
+    const departmentId = this.departments.find(d => d.name === event.department.name)?.id || 1;
+
+    this.eventForm.patchValue({
+      title: event.title,
+      description: event.description,
+      eventCategoryId: 1, 
+      startDateTime: new Date(event.startDate),
+      endDateTime: new Date(event.endDate),
+      eventType: type,
+      address: !isVirtual ? event.eventPlace : '',
+      meetingLink: isVirtual ? event.eventPlace : '',
+      departmentId: departmentId
+    });
+
+    this.updateLocationValidators(type);
   }
 
   // ================= VALIDATION =================
@@ -314,10 +367,7 @@ export class EventCreateComponent implements OnInit, OnDestroy {
     this.progressPercentage = ((this.currentStep + 1) / this.steps.length) * 100;
   }
 
-  // =========== FIXED SUBMIT METHOD ===========
-
   private submitEvent(status: EventStatus): void {
-
     if (!this.eventForm.valid || this.isSubmitting) {
       this.markFormGroupTouched(this.eventForm);
       this.showError('Please fill all required fields correctly');
@@ -325,31 +375,37 @@ export class EventCreateComponent implements OnInit, OnDestroy {
     }
 
     this.isSubmitting = true;
+    const formData = { ...this.eventForm.value };
 
-    // Get the raw form data - this matches EventFormData interface
-    const formData = this.eventForm.value;
+    if (this.isEditMode && this.originalEvent) {
+      formData.departmentId = this.originalEvent.department.id;
+    } else {
+      const userDeptGuid = this.authService.getCurrentUser()?.departmentGuid;
+      if (userDeptGuid) {
+        formData.departmentId = userDeptGuid;
+      }
+    }
 
-    // Call service with 2 arguments as expected
-    this.eventService.createEvent(formData, status).subscribe({
+    const request$ = this.isEditMode && this.eventId
+      ? this.eventService.updateEvent(this.eventId, formData, status)
+      : this.eventService.createEvent(formData, status);
+
+    request$.subscribe({
       next: (response) => {
         this.isSubmitting = false;
-        console.log('✅ Event created successfully:', response);
-
-        const message = status === EventStatus.DRAFT
-          ? 'Event submitted for approval!'
-          : 'Draft saved successfully!';
+        const message = this.isEditMode 
+          ? 'Event updated successfully!' 
+          : (status === EventStatus.DRAFT ? 'Event submitted for approval!' : 'Draft saved successfully!');
 
         this.showSuccess(message);
         setTimeout(() => {
           const redirectUrl = this.authService.getDashboardRoute();
           this.router.navigate([redirectUrl]);
         }, 1500);
-
-
       },
       error: (error) => {
         this.isSubmitting = false;
-        this.showError(error.message || 'Failed to create event');
+        this.showError(error.message || `Failed to ${this.isEditMode ? 'update' : 'create'} event`);
       }
     });
   }
@@ -365,13 +421,11 @@ export class EventCreateComponent implements OnInit, OnDestroy {
   }
 
   private checkPermissions(): boolean {
-    // Only Admins and Managers are allowed to create events
     if (!this.authService.canCreateEvents()) {
-      this.showError('You do not have permission to create events');
+      this.showError('You do not have permission to create/edit events');
       this.router.navigate(['/dashboard']);
       return false;
     }
-
     return true;
   }
 

@@ -11,11 +11,17 @@
     <!-- Sidebar -->
     <div class="progress-sidebar">
       <div class="progress-header">
-        <h2>Create Event</h2>
-        <p>Fill in event details step by step</p>
+        <h2>{{ isEditMode ? 'Edit Event' : 'Create Event' }}</h2>
+        <p>{{ isEditMode ? 'Update event details' : 'Fill in event details step by step' }}</p>
       </div>
 
-      <div class="steps-container">
+      <!-- Loading Event Indicator -->
+      <div *ngIf="loadingEvent" class="loading-overlay">
+        <mat-spinner diameter="40"></mat-spinner>
+        <p>Fetching event details...</p>
+      </div>
+
+      <div class="steps-container" *ngIf="!loadingEvent">
         <div *ngFor="let step of steps; let i = index" class="step-item" [class.active]="currentStep === i"
           [class.completed]="i < currentStep" [class.clickable]="i <= currentStep"
           (click)="i <= currentStep && navigateToStep(i)">
@@ -170,7 +176,7 @@
         <div class="right-actions">
           <button mat-stroked-button (click)="saveAsDraft()" [disabled]="isSubmitting || !canSubmit">
             <mat-icon>save</mat-icon>
-            Save Draft
+            {{ isEditMode ? 'Save Changes' : 'Save Draft' }}
           </button>
 
           <button mat-raised-button color="primary" (click)="nextStep()" *ngIf="currentStep < steps.length - 1"
@@ -182,7 +188,7 @@
           <button mat-raised-button color="primary" (click)="submitForApproval()"
             *ngIf="currentStep === steps.length - 1" [disabled]="!canSubmit">
             <mat-spinner *ngIf="isSubmitting" diameter="20"></mat-spinner>
-            <span *ngIf="!isSubmitting">Submit for Approval</span>
+            <span *ngIf="!isSubmitting">{{ isEditMode ? 'Update Event' : 'Submit for Approval' }}</span>
           </button>
         </div>
       </div>

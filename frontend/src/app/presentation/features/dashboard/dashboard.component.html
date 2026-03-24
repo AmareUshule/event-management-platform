@@ -45,14 +45,14 @@
     </div>
   </div>
 
-  <!-- Drafts (Admin/Manager only) -->
+  <!-- Pending Approval (Admin/Manager only) -->
   <div class="stat-card" *ngIf="authService.isAdmin() || authService.isManager()" (click)="onStatCardClick('draft')">
     <div class="stat-icon draft">
       <mat-icon>edit_note</mat-icon>
     </div>
     <div class="stat-content">
-      <p class="stat-label">Drafts</p>
-      <h3 class="stat-number">{{ draftEventsCount }}</h3>
+      <p class="stat-label">Pending Approval</p>
+      <h3 class="stat-number">{{ pendingApprovalCount }}</h3>
     </div>
   </div>
 
@@ -120,7 +120,7 @@
                 <!-- Admin & Manager Tabs -->
                 <ng-container *ngIf="authService.isAdmin() || authService.isManager()">
                   <button class="event-tab" [class.active]="activeTab === 'draft'" (click)="onTabChange('draft')">
-                    Draft <span class="tab-count" *ngIf="draftEventsCount > 0">({{ draftEventsCount }})</span>
+                    Pending Approval <span class="tab-count" *ngIf="pendingApprovalCount > 0">({{ pendingApprovalCount }})</span>
                   </button>
                 </ng-container>
 
@@ -216,7 +216,7 @@
                       <div class="event-status-badge"
                         [class.scheduled]="element.status === 'Scheduled' || element.status === 'Ongoing' || element.status === 'Completed'"
                         [class.archived]="element.status === 'Archived'" [class.draft]="element.status === 'Draft'">
-                        {{ element.status | titlecase }}
+                        {{ element.status === 'Draft' ? 'Pending Approval' : (element.status | titlecase) }}
                       </div>
                     </div>
                   </div>
