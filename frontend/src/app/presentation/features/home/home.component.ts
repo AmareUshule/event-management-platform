@@ -28,6 +28,7 @@ export class HomeComponent {
     return this.authService.getDashboardRoute();
   }
 
+  features = [
     {
       icon: 'calendar_today',
       title: 'Centralized Planning',
