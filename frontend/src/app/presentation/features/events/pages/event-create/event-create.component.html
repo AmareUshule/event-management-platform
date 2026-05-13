@@ -1,3 +1,5 @@
+<app-header></app-header>
+
 <div class="event-creation-wrapper">
 
   <!-- Loading -->
@@ -70,7 +72,8 @@
 
             <mat-form-field appearance="outline" class="description">
               <mat-label>Description</mat-label>
-              <textarea matInput formControlName="description" rows="5"></textarea>
+              <textarea matInput formControlName="description" rows="6"
+                placeholder="Briefly describe the purpose, audience, and expected outcome"></textarea>
               <mat-hint align="end">
                 {{ eventForm.get('description')?.value?.length || 0 }}/500
               </mat-hint>
@@ -91,23 +94,26 @@
 
         <!-- STEP 2 -->
         <div *ngIf="currentStep === 1" class="form-step">
-          <div class="form-grid">
+          <div class="date-time-panel">
+            <app-date-time-picker
+              label="Start"
+              icon="play_circle"
+              formControlName="startDateTime"
+              [required]="true"
+              errorText="Select a start date and time">
+            </app-date-time-picker>
 
-            <mat-form-field appearance="outline">
-              <mat-label>Start Date & Time *</mat-label>
-              <input matInput [matDatepicker]="startPicker" formControlName="startDateTime">
-              <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
-              <mat-datepicker #startPicker></mat-datepicker>
-              <mat-error>{{ getFieldError('startDateTime') }}</mat-error>
-            </mat-form-field>
+            <app-date-time-picker
+              label="End"
+              icon="stop_circle"
+              formControlName="endDateTime"
+              [required]="true"
+              errorText="Select an end date and time">
+            </app-date-time-picker>
 
-            <mat-form-field appearance="outline">
-              <mat-label>End Date & Time *</mat-label>
-              <input matInput [matDatepicker]="endPicker" formControlName="endDateTime">
-              <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
-              <mat-datepicker #endPicker></mat-datepicker>
-              <mat-error>{{ getFieldError('endDateTime') }}</mat-error>
-            </mat-form-field>
+            <div class="date-time-error" *ngIf="eventForm.get('endDateTime')?.hasError('invalidDate')">
+              End date and time must be after start date and time.
+            </div>
 
           </div>
         </div>
@@ -149,6 +155,17 @@
 
         <!-- STEP 4 -->
         <div *ngIf="currentStep === 3" class="form-step">
+          <div class="review-strip">
+            <div>
+              <span>Category</span>
+              <strong>{{ getEventCategoryName(eventForm.get('eventCategoryId')?.value) }}</strong>
+            </div>
+            <div>
+              <span>Location type</span>
+              <strong>{{ eventForm.get('eventType')?.value === EventType.PHYSICAL ? 'Physical' : 'Virtual' }}</strong>
+            </div>
+          </div>
+
           <div class="form-grid">
             <mat-form-field appearance="outline" class="full-width">
               <mat-label>Host Department *</mat-label>
@@ -180,7 +197,7 @@
           </button>
 
           <button mat-raised-button color="primary" (click)="nextStep()" *ngIf="currentStep < steps.length - 1"
-            [disabled]="!isCurrentStepValid || isSubmitting">
+            [disabled]="!isCurrentStepValid() || isSubmitting">
             Continue
             <mat-icon>arrow_forward</mat-icon>
           </button>

@@ -145,6 +145,7 @@ export interface Event {
   id?: string;
   title: string;
   description: string;
+  category: string;
   startDate: string;
   endDate: string;
   eventPlace: string;
@@ -166,19 +167,10 @@ export interface Event {
 export interface CreateEventRequest {
   title: string;
   description: string;
+  category: string;
   startDate: string;
   endDate: string;
   eventPlace: string;
-  status: EventStatus | string;
-
-  department: {
-    id: string;
-  };
-
-  createdBy: {
-    id: string;
-    employeeId: string;
-  };
 }
 
 /* -----------------------------
@@ -193,5 +185,5 @@ export interface EventFormData {
   eventType: EventType;
   address: string;
   meetingLink: string;
-  departmentId: number;
+  departmentId: number | string;
 }

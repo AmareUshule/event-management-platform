@@ -22,6 +22,9 @@ using Microsoft.Extensions.FileProviders;
 using System.IO;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using EEP.EventManagement.Api.Configurations;
+using EEP.EventManagement.Api.Infrastructure.Notifications.Implementations;
+using EEP.EventManagement.Api.Infrastructure.Notifications.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,7 +47,7 @@ builder.Services.AddCors(options =>
         policy.WithOrigins(
                 "http://localhost:4200",
                 "http://10.27.52.167:4200",
-                "http://10.27.52.230:4200"
+                "http://10.27.52.160:4200"
             )
             .AllowAnyHeader()
             .AllowAnyMethod()
@@ -72,9 +75,11 @@ builder.Services.AddDbContext<IdentityDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Application services
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection(EmailSettings.SectionName));
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IUserContext, EEP.EventManagement.Api.Infrastructure.Security.UserContext>();
 builder.Services.AddScoped<EEP.EventManagement.Api.Application.Services.INotificationService, EEP.EventManagement.Api.Application.Services.NotificationService>();
+builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
 builder.Services.AddScoped<EEP.EventManagement.Api.Application.Services.IEventLifecycleService, EEP.EventManagement.Api.Application.Services.EventLifecycleService>();
 builder.Services.AddHostedService<EEP.EventManagement.Api.Infrastructure.Services.EventStatusUpdateWorker>();
 builder.Services.AddScoped<IEventRepository, EventRepository>();

@@ -16,7 +16,6 @@ import {
   AssignmentResponse} from '../models/event.model';
 import { environment } from '../../../../../environments/environment';
 import { AuthService } from '../../../../core/auth/auth.service';
-import { AuthUser } from '../../../../core/models/auth-user.model';
 
 export interface ApiResponse<T> {
   success: boolean;
@@ -108,7 +107,7 @@ export class EventService {
   /**
    * Transform form data to API request format
    */
-  private transformToApiRequest(formData: EventFormData, status: EventStatus, user: AuthUser): CreateEventRequest {
+  private transformToApiRequest(formData: EventFormData): CreateEventRequest {
     // Determine the event place based on event type
     const eventPlace = formData.eventType === EventType.PHYSICAL 
       ? formData.address 
@@ -117,18 +116,26 @@ export class EventService {
     return {
       title: formData.title.trim(),
       description: formData.description?.trim() || '',
+      category: this.getCategoryName(formData.eventCategoryId),
       startDate: this.formatDateToISO(formData.startDateTime),
       endDate: this.formatDateToISO(formData.endDateTime),
-      eventPlace: eventPlace?.trim() || '',
-      status: status,
-      department: {
-        id: formData.departmentId.toString() // Convert number to string - API expects string
-      },
-      createdBy: {
-        id: user.adObjectId,        // This is the GUID/string ID from backend
-        employeeId: user.employeeId.toString() // Convert number to string - API expects string
-      }
+      eventPlace: eventPlace?.trim() || ''
     };
+  }
+
+  private getCategoryName(categoryId: number): string {
+    const categories: Record<number, string> = {
+      1: 'Project Launch',
+      2: 'Workshop / Training',
+      3: 'Media Visit',
+      4: 'Inspection',
+      5: 'Board Meeting',
+      6: 'Team Building',
+      7: 'Conference',
+      8: 'Networking Event'
+    };
+
+    return categories[categoryId] || '';
   }
 
   /**
@@ -152,18 +159,14 @@ export class EventService {
   /**
    * Create a new event
    */
-  createEvent(formData: EventFormData, status: EventStatus): Observable<Event> {
+  createEvent(formData: EventFormData, _status: EventStatus): Observable<Event> {
     const currentUser = this.authService.getCurrentUser();
     
     if (!currentUser) {
       return throwError(() => new Error('User not authenticated'));
     }
 
-    const requestData = this.transformToApiRequest(
-      formData, 
-      status, 
-      currentUser  // Pass the entire user object
-    );
+    const requestData = this.transformToApiRequest(formData);
 
     console.log('📦 Sending to API:', JSON.stringify(requestData, null, 2));
 
@@ -252,6 +255,7 @@ export class EventService {
     
     if (formData.title) requestData.title = formData.title.trim();
     if (formData.description !== undefined) requestData.description = formData.description?.trim() || '';
+    if (formData.eventCategoryId) requestData.category = this.getCategoryName(formData.eventCategoryId);
     if (formData.startDateTime) requestData.startDate = this.formatDateToISO(formData.startDateTime);
     if (formData.endDateTime) requestData.endDate = this.formatDateToISO(formData.endDateTime);
     if (formData.eventType && (formData.address || formData.meetingLink)) {
