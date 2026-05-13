@@ -11,7 +11,7 @@ namespace EEP.EventManagement.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize(Roles = "Admin,Manager,Expert,Cameraman")] // All actions in this controller require authorization
+    [Authorize] // Require basic auth for all
     public class ReportsController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -22,6 +22,7 @@ namespace EEP.EventManagement.Api.Controllers
         }
 
         [HttpGet("summary")]
+        [Authorize(Roles = "Admin,Manager,Expert,Cameraman")]
         public async Task<ActionResult<ReportSummaryDto>> GetReportSummary()
         {
             var query = new GetReportSummaryQuery();
@@ -29,7 +30,27 @@ namespace EEP.EventManagement.Api.Controllers
             return Ok(result);
         }
 
+        [HttpGet("staff-workload")]
+        [Authorize(Roles = "Admin,Manager")]
+        public async Task<ActionResult<List<StaffWorkloadDto>>> GetStaffWorkload(
+            [FromQuery] DateTime? startDate, 
+            [FromQuery] DateTime? endDate, 
+            [FromQuery] string? role,
+            [FromQuery] Guid? staffId)
+        {
+            var query = new GetStaffWorkloadQuery 
+            { 
+                StartDate = startDate, 
+                EndDate = endDate, 
+                Role = role,
+                StaffId = staffId
+            };
+            var result = await _mediator.Send(query);
+            return Ok(result);
+        }
+
         [HttpGet("summary/export")]
+        [Authorize(Roles = "Admin,Manager")]
         public async Task<IActionResult> ExportReportSummary()
         {
             var query = new GetReportSummaryQuery();

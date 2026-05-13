@@ -25,6 +25,10 @@
           <mat-icon>calendar_month</mat-icon>
           <span>Calendar</span>
         </button>
+        <button class="nav-tab" routerLink="/staff-workload" [routerLinkActive]="['active']" *ngIf="isAdmin() || isInCommunicationDepartment()">
+          <mat-icon>groups</mat-icon>
+          <span>Resource Planning</span>
+        </button>
         <a class="nav-tab external-link" href="https://communicationportal.val.run/" target="_blank" *ngIf="isInCommunicationDepartment()">
           <mat-icon>language</mat-icon>
           <span>Communication Portal</span>
@@ -176,6 +180,10 @@
       <button class="mobile-nav-item" routerLink="/calendar" [routerLinkActive]="['active']" (click)="toggleMobileMenu()">
         <mat-icon>calendar_month</mat-icon>
         <span>Calendar</span>
+      </button>
+      <button class="mobile-nav-item" routerLink="/staff-workload" [routerLinkActive]="['active']" *ngIf="isAdmin() || isInCommunicationDepartment()" (click)="toggleMobileMenu()">
+        <mat-icon>groups</mat-icon>
+        <span>Resource Planning</span>
       </button>
       <a class="mobile-nav-item external-link" href="https://communicationportal.val.run/" target="_blank" *ngIf="isInCommunicationDepartment()" (click)="toggleMobileMenu()">
         <mat-icon>language</mat-icon>

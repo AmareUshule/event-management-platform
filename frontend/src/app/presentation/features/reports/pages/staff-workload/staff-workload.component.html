@@ -1,0 +1,141 @@
+<app-header></app-header>
+
+<div class="workload-container">
+  <div class="page-header">
+    <div class="header-content">
+      <div class="title-section">
+        <mat-icon class="header-icon">groups</mat-icon>
+        <div>
+          <h1>Resource Planning</h1>
+          <p>Monitor staff assignments and manage workloads across the department</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters Section -->
+  <mat-card class="filter-card">
+    <mat-card-content>
+      <div class="filter-grid">
+        <mat-form-field appearance="outline">
+          <mat-label>Role</mat-label>
+          <mat-select [(ngModel)]="selectedRole" (selectionChange)="applyFilters()">
+            <mat-option *ngFor="let role of roles" [value]="role.value">
+              {{ role.label }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Staff Member</mat-label>
+          <mat-select [(ngModel)]="selectedStaffId" (selectionChange)="applyFilters()">
+            <mat-option value="">All Staff</mat-option>
+            <mat-option *ngFor="let staff of allStaff" [value]="staff.id">
+              {{ staff.name }} ({{ staff.role }})
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Start Date</mat-label>
+          <input matInput [matDatepicker]="startPicker" [(ngModel)]="startDate" (dateChange)="applyFilters()">
+          <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+          <mat-datepicker #startPicker></mat-datepicker>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>End Date</mat-label>
+          <input matInput [matDatepicker]="endPicker" [(ngModel)]="endDate" (dateChange)="applyFilters()">
+          <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
+          <mat-datepicker #endPicker></mat-datepicker>
+        </mat-form-field>
+
+        <div class="filter-actions">
+          <button mat-stroked-button (click)="resetFilters()">
+            <mat-icon>restart_alt</mat-icon>
+            Reset
+          </button>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-state">
+    <mat-spinner diameter="50"></mat-spinner>
+    <p>Loading staff workload data...</p>
+  </div>
+
+  <!-- Data Grid -->
+  <div *ngIf="!isLoading" class="staff-grid">
+    <div *ngIf="staffWorkload.length === 0" class="empty-state">
+      <mat-icon>person_off</mat-icon>
+      <p>No staff members found matching the current criteria.</p>
+    </div>
+
+    <mat-card *ngFor="let staff of staffWorkload" class="staff-card">
+      <mat-card-header>
+        <div mat-card-avatar class="staff-avatar">
+          {{ staff.fullName.charAt(0) }}
+        </div>
+        <mat-card-title>{{ staff.fullName }}</mat-card-title>
+        <mat-card-subtitle>{{ staff.role }}</mat-card-subtitle>
+        <span class="spacer"></span>
+        <div class="workload-summary">
+          <div class="stat-item" matTooltip="Total Assignments">
+            <span class="stat-value">{{ staff.totalAssignments }}</span>
+            <span class="stat-label">Total</span>
+          </div>
+        </div>
+      </mat-card-header>
+
+      <mat-card-content>
+        <div class="detailed-stats">
+          <div class="mini-stat">
+            <span class="count">{{ staff.scheduledAssignments }}</span>
+            <span class="label">Scheduled</span>
+          </div>
+          <div class="mini-stat">
+            <span class="count">{{ staff.pastAssignments }}</span>
+            <span class="label">Past</span>
+          </div>
+        </div>
+
+        <mat-divider></mat-divider>
+
+        <div class="assignments-section">
+          <h3>Recent & Upcoming Events</h3>
+          <div *ngIf="staff.events.length === 0" class="no-events">
+            No events assigned in this period.
+          </div>
+          
+          <mat-accordion *ngIf="staff.events.length > 0">
+            <mat-expansion-panel>
+              <mat-expansion-panel-header>
+                <mat-panel-title>
+                  View Details ({{ staff.events.length }})
+                </mat-panel-title>
+              </mat-expansion-panel-header>
+              
+              <div class="event-list">
+                <div *ngFor="let event of staff.events" class="event-item" [routerLink]="['/events', event.eventId]">
+                  <div class="event-info">
+                    <span class="event-title">{{ event.title }}</span>
+                    <span class="event-date">{{ event.startDate | date:'mediumDate' }}</span>
+                  </div>
+                  <span class="event-status" [ngClass]="getStatusClass(event.status)">{{ event.status }}</span>
+                </div>
+              </div>
+            </mat-expansion-panel>
+          </mat-accordion>
+        </div>
+      </mat-card-content>
+      
+      <mat-card-actions align="end">
+        <button mat-button color="primary" [routerLink]="['/admin/dashboard']" [queryParams]="{ staffId: staff.staffId }">
+          VIEW FULL HISTORY
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+</div>

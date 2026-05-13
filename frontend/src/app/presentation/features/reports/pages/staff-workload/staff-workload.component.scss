@@ -1,0 +1,317 @@
+@import '../../../../../../styles.scss';
+
+$eep-green-900: #1E590C;
+$eep-red-900: #8C1D18;
+$eep-light-bg: #F1F8F0;
+$eep-gray-200: #E0E0E0;
+$eep-gray-800: #424242;
+
+.workload-container {
+  max-width: 1400px;
+  margin: 72px auto 0; // Added 72px top margin for the fixed header
+  padding: 24px;
+}
+
+.page-header {
+  margin-bottom: 32px;
+  
+  .header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .title-section {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    
+    .header-icon {
+      font-size: 40px;
+      width: 40px;
+      height: 40px;
+      color: $eep-green-900;
+    }
+    
+    h1 {
+      margin: 0;
+      font-size: 36px; // Larger title
+      font-weight: 800;
+      color: $eep-green-900; // Branded green
+      letter-spacing: -0.5px;
+    }
+    
+    p {
+      margin: 4px 0 0;
+      font-size: 18px; // Larger description
+      font-weight: 500;
+      color: rgba($eep-green-900, 0.8); // Slightly lighter green
+    }
+  }
+}
+
+.filter-card {
+  margin-bottom: 32px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  position: relative;
+  z-index: 100;
+  background: white !important; // Explicitly solid background
+  
+  .filter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    align-items: center;
+    background: white; // Ensure the inner grid is also solid
+    
+    mat-form-field {
+      width: 100%;
+      background: white;
+    }
+  }
+  
+  .filter-actions {
+    display: flex;
+    justify-content: flex-end;
+  }
+}
+
+// Fix for Material Select Overlay transparency
+::ng-deep .cdk-overlay-pane {
+  .mat-mdc-select-panel {
+    background-color: white !important;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.2) !important;
+  }
+  
+  .mat-mdc-option {
+    background-color: white !important;
+    &:hover {
+      background-color: rgba($eep-green-900, 0.05) !important;
+    }
+  }
+
+  // Fix for Datepicker Overlay transparency
+  .mat-datepicker-content {
+    background-color: white !important;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.25) !important;
+    
+    .mat-calendar {
+      background-color: white !important;
+    }
+  }
+}
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px;
+  gap: 16px;
+  color: #666;
+}
+
+.staff-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 24px;
+  position: relative;
+  z-index: 1;
+}
+
+.staff-card {
+  border-radius: 12px;
+  transition: transform 0.2s, box-shadow 0.2s;
+  overflow: hidden;
+  border-top: 4px solid $eep-green-900;
+  border-left: 4px solid $eep-red-900; // Added red accent on the left
+  background: white;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  }
+
+  .staff-avatar {
+    background: $eep-green-900;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 20px;
+  }
+
+  .spacer {
+    flex: 1 1 auto;
+  }
+
+  .workload-summary {
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: $eep-light-bg;
+      padding: 4px 12px;
+      border-radius: 8px;
+      
+      .stat-value {
+        font-size: 18px;
+        font-weight: 700;
+        color: $eep-green-900;
+      }
+      
+      .stat-label {
+        font-size: 10px;
+        text-transform: uppercase;
+        color: #666;
+      }
+    }
+  }
+
+  .detailed-stats {
+    display: flex;
+    justify-content: space-around;
+    padding: 16px 0;
+    
+    .mini-stat {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      
+      .count {
+        font-size: 20px;
+        font-weight: 600;
+      }
+      
+      .label {
+        font-size: 12px;
+        color: #666;
+      }
+    }
+  }
+
+  .assignments-section {
+    padding: 16px 0;
+    
+    h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: #555;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .no-events {
+      font-style: italic;
+      color: #999;
+      font-size: 13px;
+      text-align: center;
+      padding: 10px;
+    }
+
+    mat-accordion {
+      box-shadow: none !important;
+      
+      mat-expansion-panel {
+        background: transparent !important;
+        box-shadow: none !important;
+        border: 1px solid rgba($eep-green-900, 0.1);
+        
+        .mat-expansion-panel-header {
+          padding: 0 12px;
+          height: 48px;
+        }
+        
+        mat-panel-title {
+          font-size: 13px;
+          color: $eep-green-900;
+          font-weight: 500;
+        }
+      }
+    }
+  }
+
+  .event-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-top: 10px;
+  }
+
+  .event-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    cursor: pointer;
+    border-left: 3px solid transparent;
+    
+    &:hover {
+      background: #f0f0f0;
+      border-left-color: $eep-green-900;
+    }
+    
+    .event-info {
+      display: flex;
+      flex-direction: column;
+      
+      .event-title {
+        font-weight: 500;
+        font-size: 13px;
+        color: #333;
+      }
+      
+      .event-date {
+        font-size: 11px;
+        color: #777;
+      }
+    }
+    
+    .event-status {
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+  }
+
+  .more-events {
+    text-align: center;
+    font-size: 12px;
+    color: $eep-green-900;
+    padding-top: 8px;
+    font-weight: 500;
+  }
+}
+
+// Status Classes
+.status-published { background: rgba($eep-green-900, 0.1); color: $eep-green-900; }
+.status-draft { background: rgba(0,0,0,0.05); color: #666; }
+.status-archived { background: rgba(0,0,0,0.1); color: #333; }
+.status-rejected { background: rgba($eep-red-900, 0.1); color: $eep-red-900; }
+
+.empty-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 80px;
+  color: #999;
+  
+  mat-icon {
+    font-size: 64px;
+    width: 64px;
+    height: 64px;
+    margin-bottom: 16px;
+  }
+}
+
+@media (max-width: 600px) {
+  .staff-grid {
+    grid-template-columns: 1fr;
+  }
+}

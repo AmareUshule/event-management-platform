@@ -32,6 +32,15 @@ export const appRoutes: Routes = [
     canActivate: [authGuard]
   },
   
+  // Resource Planning / Staff Workload
+  {
+    path: 'staff-workload',
+    loadComponent: () => import('./presentation/features/reports/pages/staff-workload/staff-workload.component')
+      .then(m => m.StaffWorkloadComponent),
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['Admin', 'Manager'] }
+  },
+  
   // Regular user dashboard
   {
     path: 'dashboard',

@@ -17,6 +17,26 @@ export interface ReportSummary {
   pendingAssignmentsCount: number;
 }
 
+export interface StaffEventSummary {
+  eventId: string;
+  title: string;
+  startDate: string;
+  endDate: string;
+  status: string;
+  roleInEvent: string;
+}
+
+export interface StaffWorkload {
+  staffId: string;
+  fullName: string;
+  role: string;
+  departmentName: string;
+  totalAssignments: number;
+  scheduledAssignments: number;
+  pastAssignments: number;
+  events: StaffEventSummary[];
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -40,6 +60,27 @@ export class ReportService {
     }).pipe(
       timeout(this.REQUEST_TIMEOUT),
       retry(1),
+      catchError(this.handleError)
+    );
+  }
+
+  getStaffWorkload(params?: { startDate?: string; endDate?: string; role?: string; staffId?: string }): Observable<StaffWorkload[]> {
+    let url = `${this.API_URL}/staff-workload`;
+    if (params) {
+      const queryParams = new URLSearchParams();
+      if (params.startDate) queryParams.set('startDate', params.startDate);
+      if (params.endDate) queryParams.set('endDate', params.endDate);
+      if (params.role) queryParams.set('role', params.role);
+      if (params.staffId) queryParams.set('staffId', params.staffId);
+      
+      const queryString = queryParams.toString();
+      if (queryString) url += `?${queryString}`;
+    }
+
+    return this.http.get<StaffWorkload[]>(url, {
+      headers: this.getHeaders()
+    }).pipe(
+      timeout(this.REQUEST_TIMEOUT),
       catchError(this.handleError)
     );
   }
