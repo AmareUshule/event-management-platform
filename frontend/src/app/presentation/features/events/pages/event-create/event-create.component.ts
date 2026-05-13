@@ -21,6 +21,8 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatCardModule } from '@angular/material/card';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { DateTimePickerComponent } from '../../../../../shared/components/date-time-picker/date-time-picker.component';
+import { HeaderComponent } from '../../../../layouts/header/header.component';
 
 // Services and Models
 import { EventService } from '../../services/event.service';
@@ -57,7 +59,9 @@ export interface EventCategory {
     MatProgressSpinnerModule,
     MatCardModule,
     MatDividerModule,
-    MatTooltipModule
+    MatTooltipModule,
+    DateTimePickerComponent,
+    HeaderComponent
   ],
   templateUrl: './event-create.component.html',
   styleUrls: ['./event-create.component.scss']
@@ -77,7 +81,7 @@ export class EventCreateComponent implements OnInit, OnDestroy {
   originalEvent: Event | null = null;
 
   steps = [
-    { label: 'Basic Details', icon: 'info', description: 'Event title and description' },
+    { label: 'Basic Details', icon: 'info', description: 'Event title, category, and summary' },
     { label: 'Date & Time', icon: 'schedule', description: 'Schedule your event' },
     { label: 'Location', icon: 'location_on', description: 'Physical or virtual location' },
     { label: 'Host Department', icon: 'groups', description: 'Department information' }
@@ -282,11 +286,12 @@ export class EventCreateComponent implements OnInit, OnDestroy {
     const type = isVirtual ? EventType.VIRTUAL : EventType.PHYSICAL;
 
     const departmentId = this.departments.find(d => d.name === event.department.name)?.id || 1;
+    const eventCategoryId = this.eventCategories.find(c => c.name === event.category)?.id || 1;
 
     this.eventForm.patchValue({
       title: event.title,
       description: event.description,
-      eventCategoryId: 1, 
+      eventCategoryId,
       startDateTime: new Date(event.startDate),
       endDateTime: new Date(event.endDate),
       eventType: type,
@@ -435,7 +440,7 @@ export class EventCreateComponent implements OnInit, OnDestroy {
       this.eventForm.patchValue({ departmentId: userDeptId });
     }
   }
-  
+
   private markFormGroupTouched(formGroup: FormGroup): void {
     Object.values(formGroup.controls).forEach(control => {
       control.markAsTouched();

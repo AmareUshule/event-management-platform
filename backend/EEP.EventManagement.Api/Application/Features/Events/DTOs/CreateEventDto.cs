@@ -12,6 +12,10 @@ namespace EEP.EventManagement.Api.Application.Features.Events.DTOs
         public string? Description { get; set; }
 
         [Required]
+        [MaxLength(100)]
+        public string Category { get; set; } = string.Empty;
+
+        [Required]
         public DateTime StartDate { get; set; }
 
         [Required]

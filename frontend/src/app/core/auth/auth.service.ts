@@ -205,15 +205,7 @@ export class AuthService {
       return '/admin/dashboard';
     }
 
-    if (this.isManager()) {
-      return '/manager/dashboard';
-    }
-
-    if (this.isEmployee()) {
-      return '/employee/dashboard';
-    }
-
-    return '/';
+    return '/dashboard';
   }
 
   getDepartmentGuid(): string | null {

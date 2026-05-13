@@ -1,8 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { AuthService } from '../../../core/auth/auth.service';
 
 @Component({
   selector: 'app-home',
@@ -17,8 +18,16 @@ import { MatIconModule } from '@angular/material/icon';
   styleUrls: ['./home.component.scss'],
 })
 export class HomeComponent {
+  authService = inject(AuthService);
 
-  features = [
+  get isAuthenticated(): boolean {
+    return this.authService.isAuthenticated();
+  }
+
+  get dashboardRoute(): string {
+    return this.authService.getDashboardRoute();
+  }
+
     {
       icon: 'calendar_today',
       title: 'Centralized Planning',

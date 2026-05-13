@@ -109,6 +109,17 @@
                     </div>
                 </div>
 
+                <!-- Category -->
+                <div class="info-item" *ngIf="event.category">
+                    <div class="info-icon">
+                        <mat-icon>category</mat-icon>
+                    </div>
+                    <div class="info-content">
+                        <span class="info-label">Category</span>
+                        <span class="info-value">{{ event.category }}</span>
+                    </div>
+                </div>
+
                 <!-- Organizer -->
                 <div class="info-item" *ngIf="event.createdBy">
                     <div class="info-icon">

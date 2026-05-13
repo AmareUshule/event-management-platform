@@ -18,6 +18,10 @@ namespace EEP.EventManagement.Api.Application.Features.Events.Validators
             RuleFor(x => x.Description)
                 .MaximumLength(2000).WithMessage("Description is too long.");
 
+            RuleFor(x => x.Category)
+                .NotEmpty().WithMessage("Category is required.")
+                .MaximumLength(100).WithMessage("Category cannot exceed 100 characters.");
+
             RuleFor(x => x.StartDate)
                 .NotEmpty().WithMessage("Start date is required.");
 

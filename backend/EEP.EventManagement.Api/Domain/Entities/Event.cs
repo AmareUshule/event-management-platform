@@ -9,6 +9,7 @@ namespace EEP.EventManagement.Api.Domain.Entities
     {
         public string Title { get; set; } = string.Empty;
         public string? Description { get; set; }
+        public string Category { get; set; } = string.Empty;
         public Guid DepartmentId { get; set; }
         public string? EventPlace { get; set; }
         public DateTime StartDate { get; set; }

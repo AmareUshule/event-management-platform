@@ -20,6 +20,10 @@ namespace EEP.EventManagement.Api.Infrastructure.Persistence.Configurations
             builder.Property(e => e.Description)
                 .HasColumnType("text");
 
+            builder.Property(e => e.Category)
+                .HasMaxLength(100)
+                .IsRequired();
+
             builder.Property(e => e.DepartmentId)
                 .IsRequired();
 

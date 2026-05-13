@@ -27,9 +27,13 @@
 
       <!-- Call to Action Buttons -->
       <div class="hero-actions">
-        <a mat-flat-button routerLink="/login" class="btn btn-primary">
+        <a *ngIf="!isAuthenticated" mat-flat-button routerLink="/login" class="btn btn-primary">
           <mat-icon>login</mat-icon>
           Login
+        </a>
+        <a *ngIf="isAuthenticated" mat-flat-button [routerLink]="dashboardRoute" class="btn btn-primary">
+          <mat-icon>dashboard</mat-icon>
+          Go to Dashboard
         </a>
         <a mat-stroked-button routerLink="/events" class="btn btn-secondary">
           <mat-icon>calendar_month</mat-icon>
@@ -61,8 +65,11 @@
   <div class="cta-section">
     <h2 class="cta-title">Enhance Institutional Event Coordination</h2>
     <div class="cta-actions">
-      <a mat-flat-button routerLink="/login" class="btn btn-outline-light">
+      <a *ngIf="!isAuthenticated" mat-flat-button routerLink="/login" class="btn btn-outline-light">
         Get Started
+      </a>
+      <a *ngIf="isAuthenticated" mat-flat-button [routerLink]="dashboardRoute" class="btn btn-outline-light">
+        Go to Dashboard
       </a>
     </div>
   </div>

@@ -1,0 +1,58 @@
+<div class="date-time-picker" [class.is-disabled]="disabled" [class.is-complete]="dateValue && timeValue">
+  <div class="date-time-picker__header">
+    <div class="date-time-picker__title">
+      <span class="date-time-picker__icon">
+        <mat-icon>{{ icon }}</mat-icon>
+      </span>
+      <div>
+        <span class="date-time-picker__label">{{ label }}</span>
+        <strong>{{ previewText }}</strong>
+      </div>
+    </div>
+
+    <button
+      mat-icon-button
+      type="button"
+      class="date-time-picker__clear"
+      [disabled]="disabled || (!dateValue && !timeValue)"
+      (click)="clear()"
+      aria-label="Clear date and time">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <div class="date-time-picker__fields">
+    <mat-form-field appearance="outline">
+      <mat-label>Date</mat-label>
+      <input
+        matInput
+        [matDatepicker]="picker"
+        [value]="dateValue"
+        [required]="required"
+        [disabled]="disabled"
+        (dateChange)="onDateChange($event)"
+        (blur)="markTouched()">
+      <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+      <mat-datepicker #picker></mat-datepicker>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Time</mat-label>
+      <mat-select
+        [value]="timeValue"
+        [required]="required"
+        [disabled]="disabled"
+        (selectionChange)="onTimeChange($event.value)"
+        (closed)="markTouched()">
+        <mat-option *ngFor="let option of timeOptions" [value]="option.value">
+          {{ option.label }}
+        </mat-option>
+      </mat-select>
+      <mat-icon matSuffix>schedule</mat-icon>
+    </mat-form-field>
+  </div>
+
+  <div class="date-time-picker__error" *ngIf="touched && required && (!dateValue || !timeValue)">
+    {{ errorText }}
+  </div>
+</div>

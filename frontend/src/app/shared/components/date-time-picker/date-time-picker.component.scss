@@ -1,0 +1,112 @@
+$green: #1e590c;
+$red: #dd1407;
+$ink: #424242;
+$muted: rgba(66, 66, 66, 0.68);
+$surface: #f7fbf6;
+
+.date-time-picker {
+  border: 1px solid rgba($green, 0.14);
+  border-radius: 14px;
+  padding: 18px;
+  background:
+    linear-gradient(180deg, #ffffff 0%, rgba($surface, 0.95) 100%);
+  box-shadow: 0 12px 28px rgba($green, 0.09);
+  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+
+  &:focus-within {
+    border-color: rgba($green, 0.42);
+    box-shadow: 0 16px 34px rgba($green, 0.14);
+    transform: translateY(-1px);
+  }
+
+  &.is-complete {
+    .date-time-picker__icon {
+      background: linear-gradient(135deg, $green, $red);
+      color: #ffffff;
+    }
+  }
+
+  &.is-disabled {
+    opacity: 0.65;
+  }
+}
+
+.date-time-picker__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.date-time-picker__title {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 12px;
+
+  strong {
+    display: block;
+    color: $ink;
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 1.25;
+  }
+}
+
+.date-time-picker__icon {
+  width: 42px;
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 42px;
+  border-radius: 12px;
+  color: $green;
+  background: rgba($green, 0.1);
+
+  mat-icon {
+    font-size: 22px;
+    width: 22px;
+    height: 22px;
+  }
+}
+
+.date-time-picker__label {
+  display: block;
+  margin-bottom: 3px;
+  color: $muted;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.date-time-picker__clear {
+  flex: 0 0 auto;
+  color: $muted;
+}
+
+.date-time-picker__fields {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 150px;
+  gap: 14px;
+
+  mat-form-field {
+    width: 100%;
+    margin-bottom: -12px;
+  }
+}
+
+.date-time-picker__error {
+  margin-top: 12px;
+  color: $red;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+@media (max-width: 640px) {
+  .date-time-picker__fields {
+    grid-template-columns: 1fr;
+  }
+}
