@@ -1,7 +1,11 @@
 .profile-container {
-    padding: 2rem;
+    padding: 104px 2rem 2rem;
     max-width: 1200px;
     margin: 0 auto;
+
+    @media (max-width: 768px) {
+        padding: 88px 1rem 1.5rem;
+    }
 }
 
 .profile-header-section {

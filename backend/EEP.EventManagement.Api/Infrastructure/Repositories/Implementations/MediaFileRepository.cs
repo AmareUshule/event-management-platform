@@ -29,6 +29,8 @@ namespace EEP.EventManagement.Api.Infrastructure.Repositories.Implementations
         {
             return await _context.MediaFiles
                 .Where(m => m.EventId == eventId)
+                .Include(m => m.Uploader)
+                .OrderByDescending(m => m.CreatedAt)
                 .ToListAsync();
         }
 

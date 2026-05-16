@@ -1,0 +1,44 @@
+// Animation Guidelines
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.animate-fade-in {
+  animation: fadeIn var(--transition-base) forwards;
+}
+
+.animate-slide-up {
+  animation: slideUp var(--transition-base) forwards;
+}
+
+.animate-scale-in {
+  animation: scaleIn var(--transition-base) forwards;
+}
+
+// Micro-interactions
+.hover-lift {
+  transition: transform var(--transition-base), box-shadow var(--transition-base);
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+  }
+}
+
+.hover-glow {
+  transition: box-shadow var(--transition-base);
+  &:hover {
+    box-shadow: 0 0 15px rgba(30, 89, 12, 0.15);
+  }
+}

@@ -32,6 +32,10 @@ $border-color: #E5E7EB;
   position: relative;
   overflow-x: hidden;
 
+  @media (max-width: 768px) {
+    padding-top: 80px;
+  }
+
   &::before {
     content: '';
     position: fixed;

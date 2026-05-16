@@ -1,605 +1,478 @@
 @use "sass:color";
 
-// Neutrals
-$dark-900: #0f172a;
-$dark-800: #1e293b;
-$dark-700: #334155;
-$dark-600: #475569;
-$dark-500: #64748b;
-$dark-400: #94a3b8;
-$dark-300: #cbd5e1;
-$dark-200: #e2e8f0;
-$dark-100: #f1f5f9;
-$dark-50: #f8fafc;
-$white: #ffffff;
-
-// Brand Colors
-$primary-color: #1E590C;   // EEP Green
-$primary-bg:    #F1F8F0;   // Light EEP green
-$accent-color:  #DD1407;   // EEP Red
-$danger-color: #ef4444;
-
-.top-nav {
-  background: rgba(255, 255, 255, 0.9);
-  
-  backdrop-filter: blur(20px);
-  border-bottom: 1px solid #e2e8f0;
-  box-shadow: 0 1px 24px rgba(0, 0, 0, 0.08);
+.header-container {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  z-index: 100;
+  z-index: 1000;
+  padding: var(--space-4) var(--space-6);
+  pointer-events: none; // Allow clicks through the container but not the nav
+
+  @media (max-width: 768px) {
+    padding: var(--space-2) var(--space-3);
+  }
+}
+
+.top-nav {
+  pointer-events: auto;
+  max-width: 1440px;
+  margin: 0 auto;
+  height: 64px;
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: var(--radius-xl);
+  box-shadow: 
+    0 4px 6px -1px rgba(0, 0, 0, 0.05),
+    0 10px 15px -3px rgba(0, 0, 0, 0.05),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-4);
+  transition: var(--transition-base);
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.85);
+    box-shadow: var(--shadow-lg);
+  }
+}
+
+.nav-content {
   width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-6);
+}
+
+// Left Section
+.nav-left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+
+  .mobile-menu-btn {
+    display: none;
+    color: var(--text-secondary);
+    @media (max-width: 1024px) { display: flex; }
+  }
+}
+
+.brand-logo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  cursor: pointer;
   
-  .nav-content {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 0 32px;
-    height: 72px;
+  .logo-wrapper {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    
+    .eep-logo { width: 100%; height: 100%; object-fit: cover; }
+  }
+
+  .brand-name {
+    font-size: var(--text-lg);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin: 0;
+    color: var(--text-main);
+    
+    .highlight {
+      color: var(--brand-green-500);
+      background: linear-gradient(135deg, var(--brand-green-500) 0%, var(--brand-red-500) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .brand-text { display: none; }
+  }
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+
+  @media (max-width: 1024px) { display: none; }
+
+  .nav-link {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    
-    .nav-left {
-      display: flex;
-      align-items: center;
-      gap: 20px;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-medium);
+    text-decoration: none;
+    transition: var(--transition-fast);
 
-      .mobile-menu-btn {
-        display: none;
-        color: $dark-600;
+    mat-icon { font-size: 20px; width: 20px; height: 20px; }
 
-        @media (max-width: 992px) {
-          display: block;
-        }
-      }
-      
-      .brand-logo {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        cursor: pointer;
-        
-        .logo-icon {
-          width: 40px;
-          height: 40px;
-          background: linear-gradient(135deg, $primary-color 0%, $accent-color 100%);
-          border-radius: 12px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          
-          .eep-logo {
-            width: 40px;
-            height: 40px;
-            object-fit: contain;
-          }
-        }
-        
-        .brand-name {
-          font-size: 22px;
-          font-weight: 700;
-          background: linear-gradient(135deg, $primary-color 0%, $accent-color 100%);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-          margin: 0;
-          letter-spacing: -0.5px;
-
-          @media (max-width: 480px) {
-            display: none;
-          }
-        }
-      }
-      
-      .nav-tabs {
-        display: flex;
-        gap: 4px;
-        background: #f1f5f9;
-        padding: 4px;
-        border-radius: 12px;
-        border: 1px solid #e2e8f0;
-
-        @media (max-width: 992px) {
-          display: none;
-        }
-
-        .nav-tab {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          padding: 8px 20px;
-          background: transparent;
-          border: none;
-          border-radius: 8px;
-          color: #475569;
-          font-weight: 500;
-          font-size: 14px;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          
-          &:hover {
-            background: #ffffff;
-            color: $primary-color;
-          }
-          
-          &.active {
-            background: #ffffff;
-            color: $primary-color;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            
-            mat-icon {
-              color: $primary-color;
-            }
-          }
-
-          mat-icon {
-            font-size: 18px;
-            width: 18px;
-            height: 18px;
-          }
-
-          &.external-link {
-            text-decoration: none;
-            position: relative;
-            
-            .external-icon {
-              font-size: 12px;
-              width: 12px;
-              height: 12px;
-              margin-left: -4px;
-              margin-top: -8px;
-              opacity: 0.6;
-            }
-          }
-        }
-      }
+    &:hover {
+      background: var(--brand-green-50);
+      color: var(--brand-green-700);
     }
 
-    .nav-right {
-      display: flex;
-      align-items: center;
-      gap: 20px;
-      
-      .notification-wrapper {
-        position: relative;
-        
-        .notification-badge {
-          position: absolute;
-          top: 4px;
-          right: 4px;
-          width: 8px;
-          height: 8px;
-          background: $primary-color; // EEP Brand Green
-          border-radius: 50%;
-          border: 2px solid $white;
-        }
-      }
-
-      .nav-icon-btn {
-        width: 40px;
-        height: 40px;
-        border-radius: 10px;
-        background: $dark-100;
-        color: $dark-600;
-        transition: all 0.3s ease;
-        
-        &:hover {
-          background: $white;
-          color: $primary-color;
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba($primary-color, 0.15);
-        }
-      }
-      
-      .user-profile {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 6px 12px 6px 6px;
-        border-radius: 40px;
-        transition: all 0.3s ease;
-        cursor: pointer;
-        background: $white;
-        border: 1px solid $dark-200;
-        
-        &:hover {
-          background: $primary-bg;
-          border-color: $primary-color;
-        }
-        
-        .user-avatar {
-          width: 36px;
-          height: 36px;
-          background: linear-gradient(135deg, $primary-color 0%, $accent-color 100%);
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          
-          mat-icon {
-            color: $white;
-            font-size: 20px;
-          }
-        }
-        
-        .user-info {
-          display: flex;
-          flex-direction: column;
-
-          @media (max-width: 600px) {
-            display: none;
-          }
-          
-          .user-name {
-            font-size: 14px;
-            font-weight: 600;
-            color: $dark-900;
-          }
-          
-          .user-role {
-            font-size: 11px;
-            color: $primary-color;
-            background: rgba($primary-color, 0.1);
-            padding: 2px 8px;
-            border-radius: 20px;
-            margin-top: 2px;
-          }
-        }
-        
-        .dropdown-icon {
-          color: $dark-400;
-          font-size: 20px;
-        }
-      }
+    &.active {
+      background: var(--brand-green-500);
+      color: white;
+      box-shadow: var(--shadow-sm);
     }
   }
 }
 
-// Mobile Menu Overlay
-.mobile-menu-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba($dark-900, 0.4);
-  backdrop-filter: blur(4px);
-  z-index: 1000;
-  opacity: 0;
-  visibility: hidden;
-  transition: all 0.3s ease;
+// Center Section (Search)
+.nav-center {
+  flex: 1;
+  max-width: 400px;
+  
+  @media (max-width: 768px) { display: none; }
+}
 
-  &.open {
-    opacity: 1;
-    visibility: visible;
+.search-container {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: var(--neutral-100);
+  border: 1px solid var(--border-default);
+  padding: 0 var(--space-3);
+  height: 36px;
+  border-radius: var(--radius-full);
+  transition: var(--transition-base);
 
-    .mobile-menu-content {
-      transform: translateX(0);
+  &:focus-within {
+    background: white;
+    border-color: var(--brand-green-500);
+    box-shadow: 0 0 0 3px rgba(30, 89, 12, 0.1);
+    
+    .search-icon { color: var(--brand-green-500); }
+  }
+
+  .search-icon { color: var(--text-muted); font-size: 18px; width: 18px; height: 18px; }
+  
+  .search-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    font-size: var(--text-sm);
+    color: var(--text-main);
+    outline: none;
+    &::placeholder { color: var(--text-muted); }
+  }
+
+  .search-shortcut {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-muted);
+    padding: 2px 4px;
+    background: var(--neutral-200);
+    border-radius: 4px;
+  }
+}
+
+// Right Section
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.nav-action-btn {
+  position: relative;
+  color: var(--text-secondary);
+  transition: var(--transition-fast);
+
+  &:hover {
+    color: var(--brand-green-500);
+    background: var(--brand-green-50);
+  }
+
+  .notification-indicator {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 8px;
+    height: 8px;
+    background: var(--brand-red-500);
+    border: 2px solid white;
+    border-radius: 50%;
+    animation: pulse-red 2s infinite;
+  }
+}
+
+@keyframes pulse-red {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(221, 20, 7, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(221, 20, 7, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(221, 20, 7, 0); }
+}
+
+.user-profile-trigger {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-1) var(--space-2) var(--space-1) var(--space-1);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: var(--transition-fast);
+  border: 1px solid transparent;
+
+  &:hover {
+    background: var(--bg-subtle);
+    border-color: var(--border-default);
+  }
+
+  .user-avatar-premium {
+    width: 36px;
+    height: 36px;
+    background: var(--brand-green-500);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: var(--text-sm);
+    position: relative;
+    box-shadow: var(--shadow-sm);
+
+    .online-dot {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      width: 10px;
+      height: 10px;
+      background: #10b981;
+      border: 2px solid white;
+      border-radius: 50%;
     }
   }
 
-  .mobile-menu-content {
-    position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    width: 280px;
-    background: $white;
-    transform: translateX(-100%);
-    transition: transform 0.3s ease;
+  .user-meta {
     display: flex;
     flex-direction: column;
+    @media (max-width: 640px) { display: none; }
 
-    .mobile-menu-header {
-      padding: 20px;
-      border-bottom: 1px solid $dark-200;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-
-      .brand-logo {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-
-        .logo-icon {
-          width: 32px;
-          height: 32px;
-          .eep-logo { width: 32px; height: 32px; }
-        }
-
-        .brand-name {
-          font-size: 18px;
-          font-weight: 700;
-          color: $primary-color;
-        }
-      }
+    .user-display-name {
+      font-size: var(--text-sm);
+      font-weight: 600;
+      color: var(--text-main);
+      line-height: 1.2;
     }
-
-    .mobile-nav-items {
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-
-      .mobile-nav-item {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 12px 16px;
-        background: transparent;
-        border: none;
-        border-radius: 10px;
-        color: $dark-600;
-        font-weight: 500;
-        font-size: 15px;
-        cursor: pointer;
-        text-align: left;
-
-        &:hover {
-          background: $dark-50;
-          color: $primary-color;
-        }
-
-        &.active {
-          background: $primary-bg;
-          color: $primary-color;
-        }
-
-        mat-icon {
-          font-size: 20px;
-          width: 20px;
-          height: 20px;
-        }
-
-        &.external-link {
-          text-decoration: none;
-          
-          .external-icon-sm {
-            font-size: 14px;
-            width: 14px;
-            height: 14px;
-            margin-left: 4px;
-            opacity: 0.6;
-          }
-        }
-      }
+    .user-display-role {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
   }
+
+  .chevron-icon { color: var(--text-muted); font-size: 20px; width: 20px; height: 20px; }
 }
 
-::ng-deep .enhanced-user-menu {
-  min-width: 280px !important;
-  border-radius: 16px !important;
-  overflow: hidden !important;
-  margin-top: 8px !important;
-  background: $white !important;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2) !important;
+// Premium Menus
+::ng-deep .premium-menu {
+  &.mat-mdc-menu-panel {
+    border-radius: var(--radius-lg) !important;
+    margin-top: var(--space-2) !important;
+    background: white !important;
+    box-shadow: var(--shadow-premium) !important;
+    border: 1px solid var(--border-default) !important;
+    min-width: 320px !important;
+  }
 
-  .menu-user-header {
-    padding: 20px 16px;
-    background: linear-gradient(135deg, rgba($primary-color, 0.05) 0%, rgba($accent-color, 0.05) 100%);
+  .menu-header {
+    padding: var(--space-4);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .header-content {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      h3 { font-size: var(--text-base); font-weight: 700; margin: 0; }
+    }
+
+    .badge {
+      background: var(--brand-green-500);
+      color: white;
+      padding: 2px 8px;
+      border-radius: var(--radius-full);
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .text-btn {
+      background: none;
+      border: none;
+      color: var(--brand-green-500);
+      font-size: var(--text-xs);
+      font-weight: 600;
+      cursor: pointer;
+      &:hover { text-decoration: underline; }
+    }
+  }
+
+  .notification-item-premium {
+    padding: var(--space-4);
+    display: flex;
+    gap: var(--space-3);
+    cursor: pointer;
+    transition: var(--transition-fast);
+    border-bottom: 1px solid var(--border-subtle);
+    position: relative;
+
+    &:hover { background: var(--bg-subtle); }
+    &.unread { background: rgba(30, 89, 12, 0.02); }
+
+    .notif-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--neutral-100);
+      color: var(--text-secondary);
+
+      &.Announcement { background: var(--brand-green-50); color: var(--brand-green-600); }
+      &.Event { background: #eff6ff; color: #1e40af; }
+    }
+
+    .notif-content {
+      flex: 1;
+      .notif-title { font-weight: 700; font-size: var(--text-sm); margin-bottom: 2px; }
+      .notif-text { font-size: var(--text-xs); color: var(--text-secondary); line-height: 1.4; margin-bottom: 4px; }
+      .notif-time { font-size: 10px; color: var(--text-muted); }
+    }
+
+    .unread-mark {
+      width: 8px;
+      height: 8px;
+      background: var(--brand-green-500);
+      border-radius: 50%;
+      margin-top: 4px;
+    }
+  }
+
+  .user-menu-header {
+    padding: var(--space-6) var(--space-4);
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: var(--space-4);
+    background: linear-gradient(to bottom right, var(--brand-green-50), white);
 
-    .menu-user-avatar {
-      width: 56px;
-      height: 56px;
-      background: linear-gradient(135deg, $primary-color 0%, $accent-color 100%);
+    .u-avatar {
+      width: 48px;
+      height: 48px;
+      background: var(--brand-green-500);
+      color: white;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 24px;
-      font-weight: 600;
-      color: $white;
+      font-size: var(--text-lg);
+      font-weight: 700;
     }
 
-    .menu-user-info {
-      flex: 1;
-      .menu-user-name { font-weight: 700; font-size: 18px; color: $dark-900; margin-bottom: 4px; }
-      
-      .menu-user-dept { 
-        display: flex; 
-        align-items: center; 
-        gap: 6px; 
-        font-size: 13px; 
-        font-weight: 600; 
-        color: $primary-color; 
-        margin-bottom: 2px;
-
-        mat-icon {
-          font-size: 16px;
-          width: 16px;
-          height: 16px;
-          color: $primary-color;
-        }
-      }
-
-      .menu-user-email { font-size: 12px; color: $dark-500; margin-bottom: 8px; }
-      .menu-user-role-badge { 
-        display: inline-block;
-        padding: 4px 10px;
-        background: rgba($primary-color, 0.1);
-        border-radius: 20px;
-        font-size: 11px;
-        font-weight: 600;
-        color: $primary-color;
-        text-transform: uppercase;
-      }
-    }
+    .u-name { font-weight: 700; font-size: var(--text-base); color: var(--text-main); }
+    .u-dept { font-size: var(--text-xs); color: var(--text-secondary); }
   }
 
   .mat-mdc-menu-item {
-    .mat-icon {
-      margin-right: 16px;
-      color: $dark-500;
+    font-size: var(--text-sm) !important;
+    height: 44px !important;
+    .mat-icon { margin-right: var(--space-3) !important; color: var(--text-secondary) !important; }
+    
+    &:hover {
+      background: var(--bg-subtle) !important;
+      .mat-icon { color: var(--brand-green-500) !important; }
     }
   }
 
-  .logout-menu-item {
-    color: $danger-color !important;
-    .mat-icon { color: $danger-color !important; }
+  .logout-item {
+    color: var(--brand-red-500) !important;
+    .mat-icon { color: var(--brand-red-500) !important; }
+    &:hover { background: var(--brand-red-50) !important; }
   }
 }
 
-::ng-deep .notification-menu {
-  width: 380px !important;
-  max-width: 380px !important;
-  border-radius: 24px !important;
-  margin-top: 12px !important;
-  background: #ffffff !important; // Explicitly solid white
-  box-shadow: 0 25px 60px rgba(15, 23, 42, 0.25) !important; // Stronger, deeper shadow for elevation
-  border: 1px solid rgba(30, 89, 12, 0.15) !important; // Brand-colored subtle border
-  overflow: hidden !important;
-  z-index: 1000 !important;
+// Mobile Nav Sheet
+.mobile-nav-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(8px);
+  z-index: 2000;
+  opacity: 0;
+  visibility: hidden;
+  transition: var(--transition-base);
 
-  .notification-header {
-    padding: 20px 24px;
-    background: #f8fafc;
-    border-bottom: 2px solid #f1f5f9; // Thicker separator
+  &.active {
+    opacity: 1;
+    visibility: visible;
+    .mobile-nav-sheet { transform: translateX(0); }
+  }
+}
 
-    .header-top {
+.mobile-nav-sheet {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 85%;
+  max-width: 320px;
+  background: white;
+  transform: translateX(-100%);
+  transition: transform var(--transition-base) cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-6);
+
+  .sheet-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-8);
+
+    .brand-logo {
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      margin-bottom: 8px;
-
-      h3 {
-        margin: 0;
-        font-size: 18px;
-        font-weight: 700;
-        color: $dark-900;
-      }
-
-      .unread-count {
-        font-size: 11px;
-        font-weight: 700;
-        background: $primary-color;
-        color: $white;
-        padding: 2px 8px;
-        border-radius: 12px;
-      }
-    }
-
-    .mark-all-btn {
-      background: transparent;
-      border: none;
-      color: $primary-color;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      padding: 0;
-      
-      &:hover {
-        text-decoration: underline;
-      }
+      gap: var(--space-3);
+      .eep-logo { width: 32px; height: 32px; border-radius: 8px; }
+      .brand-name { font-weight: 800; font-size: var(--text-lg); }
     }
   }
 
-  .notification-list {
-    max-height: 400px;
-    overflow-y: auto;
+  .sheet-links {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
 
-    .loading-notifications {
-      padding: 40px;
+    .sheet-link {
       display: flex;
-      justify-content: center;
       align-items: center;
-    }
+      gap: var(--space-4);
+      padding: var(--space-4);
+      border-radius: var(--radius-lg);
+      text-decoration: none;
+      color: var(--text-secondary);
+      font-weight: var(--weight-medium);
+      transition: var(--transition-fast);
 
-    .empty-notifications {
-      padding: 40px 20px;
-      text-align: center;
-      color: $dark-400;
-
-      mat-icon {
-        font-size: 48px;
-        width: 48px;
-        height: 48px;
-        margin-bottom: 12px;
+      &:hover, &.active {
+        background: var(--brand-green-50);
+        color: var(--brand-green-700);
       }
-      p { margin: 0; font-weight: 500; }
-    }
-
-    .notification-item {
-      padding: 16px 20px;
-      display: flex;
-      gap: 14px;
-      cursor: pointer;
-      position: relative;
-      transition: background 0.2s ease;
-      border-bottom: 1px solid $dark-50;
-
-      &:hover {
-        background: $dark-50;
-      }
-
-      &.unread {
-        background: rgba($primary-color, 0.03);
-        
-        &:hover {
-          background: rgba($primary-color, 0.06);
-        }
-      }
-
-      .status-indicator {
-        width: 4px;
-        height: 40px;
-        border-radius: 4px;
-        flex-shrink: 0;
-        background: $primary-color; // Unified EEP Brand Green
-      }
-
-      .notification-content {
-        flex: 1;
-        min-width: 0;
-
-        .notification-title {
-          font-weight: 700;
-          font-size: 14px;
-          color: $dark-900;
-          margin-bottom: 4px;
-        }
-
-        .notification-message {
-          font-size: 13px;
-          color: $dark-600;
-          line-height: 1.4;
-          margin-bottom: 6px;
-          display: -webkit-box;
-          -webkit-line-clamp: 2;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
-        }
-
-        .notification-time {
-          font-size: 11px;
-          color: $dark-400;
-          font-weight: 600;
-        }
-      }
-
-      .unread-dot {
-        width: 8px;
-        height: 8px;
-        background: $primary-color;
-        border-radius: 50%;
-        margin-top: 4px;
-        flex-shrink: 0;
-      }
-    }
-  }
-
-  .notification-footer {
-    padding: 8px;
-    text-align: center;
-    background: $white;
-
-    button {
-      width: 100%;
-      font-weight: 700;
-      font-size: 13px;
     }
   }
 }

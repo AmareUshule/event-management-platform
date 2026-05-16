@@ -1,0 +1,99 @@
+// Design Tokens - Primitives
+
+:root {
+  // Brand Colors - Red (#DD1407)
+  --brand-red-50: #FFF1F0;
+  --brand-red-100: #FFE1DF;
+  --brand-red-200: #FFC7C3;
+  --brand-red-300: #FFA29B;
+  --brand-red-400: #FF7066;
+  --brand-red-500: #DD1407; // Base
+  --brand-red-600: #C21106;
+  --brand-red-700: #A30D04;
+  --brand-red-800: #850A03;
+  --brand-red-900: #6B0802;
+
+  // Brand Colors - Green (#1E590C)
+  --brand-green-50: #F1F8F0;
+  --brand-green-100: #E2F0E1;
+  --brand-green-200: #C5E1C3;
+  --brand-green-300: #9DC79A;
+  --brand-green-400: #6BA367;
+  --brand-green-500: #1E590C; // Base
+  --brand-green-600: #18470A;
+  --brand-green-700: #133808;
+  --brand-green-800: #0E2A06;
+  --brand-green-900: #0A1C04;
+
+  // Neutral Colors (Slate)
+  --neutral-0: #FFFFFF;
+  --neutral-50: #F8FAFC;
+  --neutral-100: #F1F5F9;
+  --neutral-200: #E2E8F0;
+  --neutral-300: #CBD5E1;
+  --neutral-400: #94A3B8;
+  --neutral-500: #64748B;
+  --neutral-600: #475569;
+  --neutral-700: #334155;
+  --neutral-800: #1E293B;
+  --neutral-900: #0F172A;
+  --neutral-950: #020617;
+
+  // Spacing System
+  --space-1: 0.25rem; // 4px
+  --space-2: 0.5rem;  // 8px
+  --space-3: 0.75rem; // 12px
+  --space-4: 1rem;    // 16px
+  --space-5: 1.25rem; // 20px
+  --space-6: 1.5rem;  // 24px
+  --space-8: 2rem;    // 32px
+  --space-10: 2.5rem; // 40px
+  --space-12: 3rem;   // 48px
+  --space-16: 4rem;   // 64px
+
+  // Border Radius
+  --radius-xs: 0.25rem; // 4px
+  --radius-sm: 0.375rem; // 6px
+  --radius-md: 0.5rem; // 8px
+  --radius-lg: 0.75rem; // 12px
+  --radius-xl: 1rem; // 16px
+  --radius-2xl: 1.5rem; // 24px
+  --radius-full: 9999px;
+
+  // Typography
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+  --text-4xl: 2.25rem;
+
+  // Weights
+  --weight-normal: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  // Shadows (Linear/Vercel style)
+  --shadow-border: 0 0 0 1px rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-premium: 0 0 0 1px rgba(0, 0, 0, 0.05), 0 2px 4px rgba(0, 0, 0, 0.02), 0 10px 20px rgba(0, 0, 0, 0.04);
+  
+  // Transitions
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  // Chart Colors
+  --chart-1: var(--brand-green-500);
+  --chart-2: var(--brand-red-500);
+  --chart-3: #6366f1; // Indigo
+  --chart-4: #f59e0b; // Amber
+  --chart-5: #06b6d4; // Cyan
+  --chart-6: #8b5cf6; // Violet
+  --chart-7: #ec4899; // Pink
+}

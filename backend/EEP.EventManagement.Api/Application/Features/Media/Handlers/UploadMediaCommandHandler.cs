@@ -67,13 +67,15 @@ namespace EEP.EventManagement.Api.Application.Features.Media.Handlers
             var mediaFile = new MediaFile
             {
                 EventId = ev.Id,
-                FileType = request.UploadMediaDto.FileType
+                FileType = request.UploadMediaDto.FileType,
+                UploadedBy = currentUserId
             };
 
             if (request.UploadMediaDto.FileType == MediaType.Link)
             {
                 mediaFile.FilePath = request.UploadMediaDto.ExternalUrl;
                 mediaFile.FileName = "External Link";
+                mediaFile.FileSize = 0;
             }
             else
             {
@@ -87,6 +89,14 @@ namespace EEP.EventManagement.Api.Application.Features.Media.Handlers
                     var filePath = await _storageService.SaveFileAsync(stream, request.UploadMediaDto.File.FileName, $"uploads/events/{ev.Id}");
                     mediaFile.FileName = request.UploadMediaDto.File.FileName;
                     mediaFile.FilePath = filePath;
+                    mediaFile.FileSize = request.UploadMediaDto.File.Length;
+
+                    // Generate thumbnail for images
+                    if (request.UploadMediaDto.FileType == MediaType.Image)
+                    {
+                        // TODO: Implement thumbnail generation
+                        // mediaFile.ThumbnailPath = await _storageService.GenerateThumbnailAsync(stream, request.UploadMediaDto.File.FileName, $"uploads/events/{ev.Id}/thumbnails");
+                    }
                 }
             }
 

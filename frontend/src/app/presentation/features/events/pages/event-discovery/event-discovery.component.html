@@ -1,0 +1,659 @@
+<div class="discovery-container animate-fade-in">
+  <app-page-header
+    title="Event Intelligence Discovery"
+    subtitle="Access and explore the collective operational intelligence across the ecosystem."
+  >
+    <div actions>
+      <button class="btn-premium primary shadow-glow" routerLink="/events/create">
+        <mat-icon>add_task</mat-icon>
+        Initialize Operation
+      </button>
+    </div>
+  </app-page-header>
+
+  <!-- Premium Intelligence Search Hero -->
+  <section class="search-hero">
+    <div class="premium-search-container">
+      <!-- Main Search Bar -->
+      <div class="search-bar-wrapper" [class.focused]="isSearchFocused()">
+        <div class="search-input-container">
+          <mat-icon class="search-icon" [class.animated]="isSearchFocused()">hub</mat-icon>
+          <input
+            #searchInput
+            type="text"
+            [formControl]="searchControl"
+            placeholder="Query operational data, locations, or intelligence categories..."
+            class="premium-search-input"
+            (focus)="onSearchFocus()"
+            (blur)="onSearchBlur()"
+            autocomplete="off"
+          >
+          <div class="search-hints" *ngIf="!isSearchFocused()">
+            <span class="kbd">⌘</span>
+            <span class="kbd">K</span>
+          </div>
+          <button
+            *ngIf="searchControl.value"
+            class="clear-search"
+            (click)="searchControl.setValue(''); searchTerm.set('')"
+            mat-icon-button
+          >
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+
+        <!-- Intelligence Suggestions Dropdown -->
+        <div class="search-suggestions" *ngIf="showSuggestions()" [@slideInOut]>
+          <!-- Recent Queries -->
+          <div class="suggestions-section" *ngIf="recentSearches().length > 0">
+            <div class="section-header">
+              <mat-icon>history</mat-icon>
+              <span>Recent Queries</span>
+              <button class="clear-all" (click)="clearRecentSearches()">Clear Log</button>
+            </div>
+            <div class="suggestion-item" *ngFor="let search of recentSearches()" (click)="selectSuggestion(search)">
+              <mat-icon>search</mat-icon>
+              <span>{{ search }}</span>
+            </div>
+          </div>
+
+          <!-- Suggested Intelligence -->
+          <div class="suggestions-section">
+            <div class="section-header">
+              <mat-icon>insights</mat-icon>
+              <span>Intelligence Recommendations</span>
+            </div>
+            <div class="suggestion-item" *ngFor="let suggestion of searchSuggestions()" (click)="selectSuggestion(suggestion)">
+              <mat-icon>terminal</mat-icon>
+              <span>{{ suggestion }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Operational Status Pills -->
+      <div class="quick-filters" *ngIf="showQuickFilters()">
+        <span class="filter-label">Quick telemetry:</span>
+        <button
+          class="quick-filter-pill"
+          *ngFor="let status of ['Scheduled', 'Ongoing', 'Archived']"
+          (click)="quickFilterByStatus(status)"
+          [class.active]="activeFilters().status.includes(status)"
+        >
+          {{ status }}
+        </button>
+        <button
+          class="quick-filter-pill"
+          *ngFor="let category of ['Project Launch', 'Workshop', 'Board Meeting']"
+          (click)="quickFilterByCategory(category)"
+          [class.active]="activeFilters().category.includes(category)"
+        >
+          {{ category }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Active Filters Display -->
+    <div class="active-filters-display" *ngIf="hasActiveFilters()" [@slideInOut]>
+      <div class="filters-header">
+        <span class="filter-count">{{ activeFilterCount() }} active parameter{{ activeFilterCount() !== 1 ? 's' : '' }}</span>
+        <button class="clear-all-filters" (click)="clearFilters()">
+          <mat-icon>refresh</mat-icon>
+          Reset Parameters
+        </button>
+      </div>
+
+      <div class="filter-chips">
+        <div class="filter-chip" *ngFor="let cat of activeFilters().category">
+          <span>{{ cat }}</span>
+          <button type="button" aria-label="Remove category filter" (click)="removeFilter('category', cat)">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+
+        <div class="filter-chip status-chip" *ngFor="let stat of activeFilters().status" [ngClass]="getStatusClass(stat)">
+          <span>{{ stat }}</span>
+          <button type="button" aria-label="Remove status filter" (click)="removeFilter('status', stat)">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+
+        <div class="filter-chip" *ngFor="let dept of activeFilters().department">
+          <span>{{ dept }}</span>
+          <button type="button" aria-label="Remove department filter" (click)="removeFilter('department', dept)">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+
+        <div class="filter-chip" *ngFor="let loc of activeFilters().location">
+          <span>{{ loc }}</span>
+          <button type="button" aria-label="Remove location filter" (click)="removeFilter('location', loc)">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+
+        <div class="filter-chip priority-chip" *ngFor="let pri of activeFilters().priority" [ngClass]="pri.toLowerCase()">
+          <span>{{ pri }}</span>
+          <button type="button" aria-label="Remove priority filter" (click)="removeFilter('priority', pri)">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Advanced Parameters Panel -->
+  <div class="advanced-filters-panel" *ngIf="showAdvancedFilters()" [@expandCollapse]>
+    <div class="filters-grid">
+      <div class="filter-group">
+        <label>Intelligence Category</label>
+        <mat-form-field appearance="outline" class="premium-field">
+          <mat-label>Select Categories</mat-label>
+          <mat-select
+            [value]="activeFilters().category"
+            multiple
+            (selectionChange)="setMultiFilter('category', $event.value)"
+          >
+            <mat-option *ngFor="let category of categories" [value]="category">
+              {{ category }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <div class="filter-group">
+        <label>Operational Status</label>
+        <mat-form-field appearance="outline" class="premium-field">
+          <mat-label>Select Status</mat-label>
+          <mat-select
+            [value]="activeFilters().status"
+            multiple
+            (selectionChange)="setMultiFilter('status', $event.value)"
+          >
+            <mat-option *ngFor="let status of statuses" [value]="status">
+              {{ status }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <div class="filter-group">
+        <label>Sector / Department</label>
+        <mat-form-field appearance="outline" class="premium-field">
+          <mat-label>Select Department</mat-label>
+          <mat-select
+            [value]="activeFilters().department"
+            multiple
+            (selectionChange)="setMultiFilter('department', $event.value)"
+          >
+            <mat-option *ngFor="let department of departments" [value]="department">
+              {{ department }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <div class="filter-group">
+        <label>Ops Theater / Location</label>
+        <mat-form-field appearance="outline" class="premium-field">
+          <mat-label>Select Location</mat-label>
+          <mat-select
+            [value]="activeFilters().location"
+            multiple
+            (selectionChange)="setMultiFilter('location', $event.value)"
+          >
+            <mat-option *ngFor="let location of locations" [value]="location">
+              {{ location }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <div class="filter-group">
+        <label>Temporal Start</label>
+        <mat-form-field appearance="outline" class="premium-field">
+          <mat-label>Start Date</mat-label>
+          <input
+            matInput
+            [matDatepicker]="startPicker"
+            [value]="activeFilters().dateRange.start"
+            (dateChange)="setDateRange($event.value, activeFilters().dateRange.end)"
+          />
+          <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+          <mat-datepicker #startPicker></mat-datepicker>
+        </mat-form-field>
+      </div>
+
+      <div class="filter-group">
+        <label>Temporal Conclusion</label>
+        <mat-form-field appearance="outline" class="premium-field">
+          <mat-label>End Date</mat-label>
+          <input
+            matInput
+            [matDatepicker]="endPicker"
+            [value]="activeFilters().dateRange.end"
+            (dateChange)="setDateRange(activeFilters().dateRange.start, $event.value)"
+          />
+          <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
+          <mat-datepicker #endPicker></mat-datepicker>
+        </mat-form-field>
+      </div>
+    </div>
+  </div>
+
+  <!-- Operational Controls Bar -->
+  <div class="filter-controls-bar">
+    <div class="left-controls">
+      <button
+        class="filter-toggle-btn"
+        [class.active]="showAdvancedFilters()"
+        (click)="toggleAdvancedFilters()"
+        mat-stroked-button
+      >
+        <mat-icon>tune</mat-icon>
+        Operational Parameters
+        <span class="filter-badge" *ngIf="activeFilterCount() > 0">{{ activeFilterCount() }}</span>
+      </button>
+    </div>
+
+    <div class="center-controls">
+      <!-- View Mode Toggle -->
+      <div class="view-mode-toggle">
+        <button
+          class="view-mode-btn"
+          [class.active]="viewMode() === 'table'"
+          (click)="setViewMode('table')"
+          mat-icon-button
+          matTooltip="Operational Log (Table)"
+        >
+          <mat-icon>terminal</mat-icon>
+        </button>
+        <button
+          class="view-mode-btn"
+          [class.active]="viewMode() === 'card'"
+          (click)="setViewMode('card')"
+          mat-icon-button
+          matTooltip="Intelligence Cards"
+        >
+          <mat-icon>grid_view</mat-icon>
+        </button>
+        <button
+          class="view-mode-btn"
+          [class.active]="viewMode() === 'compact'"
+          (click)="setViewMode('compact')"
+          mat-icon-button
+          matTooltip="Condensed View"
+        >
+          <mat-icon>list</mat-icon>
+        </button>
+        <button
+          class="view-mode-btn"
+          [class.active]="viewMode() === 'timeline'"
+          (click)="setViewMode('timeline')"
+          mat-icon-button
+          matTooltip="Sequential Timeline"
+        >
+          <mat-icon>history_toggle_off</mat-icon>
+        </button>
+      </div>
+
+      <!-- Column Visibility (Table View Only) -->
+      <div class="column-controls" *ngIf="viewMode() === 'table'">
+        <button class="column-toggle-btn" mat-button [matMenuTriggerFor]="columnMenu">
+          <mat-icon>visibility</mat-icon>
+          Telemetry Columns
+        </button>
+        <mat-menu #columnMenu="matMenu">
+          <button mat-menu-item (click)="toggleColumnVisibility('title')">
+            <mat-checkbox [checked]="isColumnVisible('title')" (click)="$event.stopPropagation()"></mat-checkbox>
+            <span>Descriptor</span>
+          </button>
+          <button mat-menu-item (click)="toggleColumnVisibility('category')">
+            <mat-checkbox [checked]="isColumnVisible('category')" (click)="$event.stopPropagation()"></mat-checkbox>
+            <span>Intelligence Type</span>
+          </button>
+          <button mat-menu-item (click)="toggleColumnVisibility('status')">
+            <mat-checkbox [checked]="isColumnVisible('status')" (click)="$event.stopPropagation()"></mat-checkbox>
+            <span>Ops Status</span>
+          </button>
+          <button mat-menu-item (click)="toggleColumnVisibility('department')">
+            <mat-checkbox [checked]="isColumnVisible('department')" (click)="$event.stopPropagation()"></mat-checkbox>
+            <span>Department</span>
+          </button>
+          <button mat-menu-item (click)="toggleColumnVisibility('location')">
+            <mat-checkbox [checked]="isColumnVisible('location')" (click)="$event.stopPropagation()"></mat-checkbox>
+            <span>Theater</span>
+          </button>
+          <button mat-menu-item (click)="toggleColumnVisibility('startDate')">
+            <mat-checkbox [checked]="isColumnVisible('startDate')" (click)="$event.stopPropagation()"></mat-checkbox>
+            <span>Timestamp</span>
+          </button>
+          <button mat-menu-item (click)="toggleColumnVisibility('participants')">
+            <mat-checkbox [checked]="isColumnVisible('participants')" (click)="$event.stopPropagation()"></mat-checkbox>
+            <span>Personnel</span>
+          </button>
+        </mat-menu>
+      </div>
+    </div>
+
+    <div class="right-controls">
+      <span class="results-count">
+        {{ filteredEvents().length }} operation{{ filteredEvents().length !== 1 ? 's' : '' }} synchronized
+      </span>
+
+      <!-- Batch Intelligence Actions -->
+      <div class="batch-actions" *ngIf="selectedEvents().length > 0">
+        <span class="selection-count">{{ selectedEvents().length }} units selected</span>
+        <button class="batch-btn" (click)="batchArchive()" mat-stroked-button>
+          <mat-icon>inventory_2</mat-icon>
+          Finalize
+        </button>
+        <button class="batch-btn" (click)="batchExport()" mat-stroked-button>
+          <mat-icon>ios_share</mat-icon>
+          Extract
+        </button>
+        <button class="batch-btn clear" (click)="clearSelection()" mat-icon-button>
+          <mat-icon>block</mat-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Operational Intelligence Results -->
+  <div class="discovery-results">
+    <!-- Loading State -->
+    <div *ngIf="isLoading()" class="loading-state">
+      <div *ngIf="viewMode() === 'card'" class="loading-grid">
+        <div *ngFor="let i of [1,2,3,4,5,6,7,8]" class="skeleton-card">
+          <p-skeleton width="100%" height="200px" styleClass="skeleton-banner"></p-skeleton>
+          <div class="skeleton-content">
+            <p-skeleton width="80%" height="24px" styleClass="skeleton-title"></p-skeleton>
+            <p-skeleton width="60%" height="16px" styleClass="skeleton-text"></p-skeleton>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table View -->
+    <div *ngIf="!isLoading() && viewMode() === 'table'" class="table-view">
+      <div class="premium-table-container">
+        <table mat-table [dataSource]="paginatedEvents()" class="premium-table" matSort>
+          <!-- Selection Column -->
+          <ng-container matColumnDef="select" *ngIf="isColumnVisible('select')">
+            <th mat-header-cell *matHeaderCellDef>
+              <mat-checkbox
+                [checked]="selectedEvents().length === paginatedEvents().length && paginatedEvents().length > 0"
+                [indeterminate]="selectedEvents().length > 0 && selectedEvents().length < paginatedEvents().length"
+                (change)="selectedEvents().length === paginatedEvents().length ? clearSelection() : selectAllEvents()"
+              ></mat-checkbox>
+            </th>
+            <td mat-cell *matCellDef="let event">
+              <mat-checkbox
+                [checked]="isEventSelected(event.id || '')"
+                (change)="toggleEventSelection(event.id || '')"
+                (click)="$event.stopPropagation()"
+              ></mat-checkbox>
+            </td>
+          </ng-container>
+
+          <!-- Title Column -->
+          <ng-container matColumnDef="title" *ngIf="isColumnVisible('title')">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header="title" class="sortable-header">
+              Descriptor
+            </th>
+            <td mat-cell *matCellDef="let event" class="title-cell">
+              <div class="event-title-info">
+                <div class="title-text">{{ event.title }}</div>
+                <div class="title-meta" *ngIf="event.description">
+                  {{ event.description | slice:0:80 }}...
+                </div>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Category Column -->
+          <ng-container matColumnDef="category" *ngIf="isColumnVisible('category')">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header="category">
+              Type
+            </th>
+            <td mat-cell *matCellDef="let event">
+              <span class="category-chip">{{ event.category }}</span>
+            </td>
+          </ng-container>
+
+          <!-- Status Column -->
+          <ng-container matColumnDef="status" *ngIf="isColumnVisible('status')">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header="status">
+              Status
+            </th>
+            <td mat-cell *matCellDef="let event">
+              <div class="status-indicator" [ngClass]="getStatusClass(event.status)">
+                <div class="status-dot" [style.background-color]="getStatusColor(event.status)"></div>
+                <span class="status-text">{{ event.status }}</span>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Department Column -->
+          <ng-container matColumnDef="department" *ngIf="isColumnVisible('department')">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header="department">
+              Sector
+            </th>
+            <td mat-cell *matCellDef="let event">
+              <div class="department-info">
+                <mat-icon>business</mat-icon>
+                <span>{{ event.department.name }}</span>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Location Column -->
+          <ng-container matColumnDef="location" *ngIf="isColumnVisible('location')">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header="eventPlace">
+              Theater
+            </th>
+            <td mat-cell *matCellDef="let event">
+              <div class="location-info">
+                <mat-icon>place</mat-icon>
+                <span>{{ event.eventPlace }}</span>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Date Column -->
+          <ng-container matColumnDef="startDate" *ngIf="isColumnVisible('startDate')">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header="startDate" class="sortable-header">
+              Timestamp
+            </th>
+            <td mat-cell *matCellDef="let event">
+              <div class="date-info">
+                <div class="date-primary">{{ event.startDate | date:'MMM d, y' }}</div>
+                <div class="date-secondary">{{ event.startDate | date:'h:mm a' }}</div>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Participants Column -->
+          <ng-container matColumnDef="participants" *ngIf="isColumnVisible('participants')">
+            <th mat-header-cell *matHeaderCellDef>
+              Units
+            </th>
+            <td mat-cell *matCellDef="let event">
+              <div class="participants-info">
+                <mat-icon>person</mat-icon>
+                <span>{{ getAssignmentCount(event) }}</span>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Actions Column -->
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef></th>
+            <td mat-cell *matCellDef="let event">
+              <button mat-icon-button (click)="$event.stopPropagation(); viewEvent(event.id)">
+                <mat-icon>terminal</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="visibleColumns()"></tr>
+          <tr
+            mat-row
+            *matRowDef="let event; columns: visibleColumns();"
+            class="premium-table-row"
+            [class.selected]="isEventSelected(event.id || '')"
+            (click)="viewEvent(event.id)"
+          ></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- Card View -->
+    <div *ngIf="!isLoading() && viewMode() === 'card'" class="events-grid animate-slide-up">
+      <div
+        *ngFor="let event of paginatedEvents(); trackBy: trackByEventId"
+        class="event-card-premium"
+        (click)="viewEvent(event.id)"
+        [@cardEnter]
+      >
+        <!-- Card Banner -->
+        <div class="card-banner" [style.background]="getEventBannerGradient(event)">
+          <div class="card-badges">
+            <span class="category-badge">{{ event.category }}</span>
+            <span class="status-badge" [style.background-color]="getStatusColor(event.status)">
+              {{ event.status }}
+            </span>
+          </div>
+
+          <div class="card-overlay">
+            <div class="view-indicator" [class.archived]="event.status === 'Archived'">
+              <span>{{ event.status === 'Archived' ? 'Open Archive' : 'Access Intelligence' }}</span>
+              <mat-icon>{{ event.status === 'Archived' ? 'inventory_2' : 'arrow_forward' }}</mat-icon>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card Content -->
+        <div class="card-content">
+          <div class="event-header">
+            <h3 class="event-title">{{ event.title }}</h3>
+          </div>
+
+          <p class="event-description">
+            {{ event.description || 'Operational data point with no further narrative.' }}
+          </p>
+
+          <div class="event-meta">
+            <div class="meta-item">
+              <mat-icon>place</mat-icon>
+              <span>{{ event.eventPlace }}</span>
+            </div>
+            <div class="meta-item">
+              <mat-icon>calendar_today</mat-icon>
+              <span>{{ event.startDate | date:'MMM d, y' }}</span>
+            </div>
+          </div>
+
+          <div class="event-footer">
+            <div class="department-tag">
+              <mat-icon>business</mat-icon>
+              <span>{{ event.department.name }}</span>
+            </div>
+            <div class="event-stats">
+              <span class="stat-item">
+                <mat-icon>person</mat-icon>
+                {{ getAssignmentCount(event) }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Compact View -->
+    <div *ngIf="!isLoading() && viewMode() === 'compact'" class="compact-view">
+      <div class="compact-list">
+        <div
+          *ngFor="let event of paginatedEvents(); trackBy: trackByEventId"
+          class="compact-row"
+          (click)="viewEvent(event.id)"
+        >
+          <div class="compact-content">
+            <div class="compact-header">
+              <h4 class="compact-title">{{ event.title }}</h4>
+              <div class="compact-badges">
+                <span class="status-indicator compact" [ngClass]="getStatusClass(event.status)">
+                  <div class="status-dot" [style.background-color]="getStatusColor(event.status)"></div>
+                  <span class="status-text">{{ event.status }}</span>
+                </span>
+              </div>
+            </div>
+
+            <div class="compact-meta">
+              <span class="meta-item">
+                <mat-icon>business</mat-icon>
+                {{ event.department.name }}
+              </span>
+              <span class="meta-item">
+                <mat-icon>place</mat-icon>
+                {{ event.eventPlace }}
+              </span>
+              <span class="meta-item">
+                <mat-icon>calendar_today</mat-icon>
+                {{ event.startDate | date:'MMM d, y' }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Timeline View -->
+    <div *ngIf="!isLoading() && viewMode() === 'timeline'" class="timeline-view">
+      <div class="timeline-container">
+        <div *ngFor="let event of paginatedEvents(); trackBy: trackByEventId" class="timeline-item">
+          <div class="timeline-marker" [style.background-color]="getStatusColor(event.status)"></div>
+          <div class="timeline-content">
+            <div class="timeline-header">
+              <h4 class="timeline-title">{{ event.title }}</h4>
+              <div class="timeline-date">{{ event.startDate | date:'MMM d, y' }}</div>
+            </div>
+            <div class="timeline-meta">
+              <span class="timeline-category">{{ event.category }}</span>
+              <span class="timeline-location">{{ event.eventPlace }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="grid-pagination" *ngIf="!isLoading() && viewMode() !== 'table' && totalPages() > 1">
+      <button class="pagination-btn" [disabled]="currentPage() === 0" (click)="setPage(currentPage() - 1)">
+        <mat-icon>west</mat-icon>
+      </button>
+      <span class="pagination-info">Sync Page {{ currentPage() + 1 }} / {{ totalPages() }}</span>
+      <button class="pagination-btn" [disabled]="currentPage() >= totalPages() - 1" (click)="setPage(currentPage() + 1)">
+        <mat-icon>east</mat-icon>
+      </button>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!isLoading() && filteredEvents().length === 0" class="empty-state">
+      <div class="empty-illustration">
+        <mat-icon>satellite_alt</mat-icon>
+      </div>
+
+      <div class="empty-content">
+        <h3>Zero Signal Detected</h3>
+        <p>No operational data matches the current synchronization parameters.</p>
+
+        <div class="empty-actions">
+          <button class="btn-premium primary" (click)="clearFilters()" *ngIf="hasActiveFilters()">
+            Reset Synchronization
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

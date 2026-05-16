@@ -4,77 +4,132 @@ import { HomeComponent } from './presentation/features/home/home.component';
 import { LoginComponent } from './presentation/features/login/login.component';
 import { authGuard } from './core/guards/auth.guard';
 import { roleGuard } from './core/guards/role.guard';
+import { MainLayoutComponent } from './presentation/layouts/main-layout.component';
 
 export const appRoutes: Routes = [
-  { path: '', component: HomeComponent },
+  // Public Routes
+  { path: '', component: HomeComponent, pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
    
-  // Events module - protected by auth
-  { 
-    path: 'events', 
-    loadChildren: () => import('./presentation/features/events/events.routes')
-      .then(m => m.eventsRoutes),
-    canActivate: [authGuard],
-  },
-  
-  // Internal Announcements module
-  { 
-    path: 'internal-announcements', 
-    loadChildren: () => import('./presentation/features/internal-announcements/internal-announcements.routes')
-      .then(m => m.announcementsRoutes),
-    canActivate: [authGuard],
-  },
-   // Specific event detail route - using lazy loading for the standalone component
-  { 
-    path: 'events/:id', 
-    loadComponent: () => import('./presentation/features/events/pages/event-details/event-detail-page.component')
-      .then(m => m.EventDetailPageComponent),
-    canActivate: [authGuard]
-  },
-  
-  // Resource Planning / Staff Workload
-  {
-    path: 'staff-workload',
-    loadComponent: () => import('./presentation/features/reports/pages/staff-workload/staff-workload.component')
-      .then(m => m.StaffWorkloadComponent),
-    canActivate: [authGuard, roleGuard],
-    data: { roles: ['Admin', 'Manager'] }
-  },
-  
-  // Regular user dashboard
+  // Protected Routes with Main Layout
   {
     path: 'dashboard',
-    loadComponent: () => import('./presentation/features/dashboard/dashboard.component')
-      .then(m => m.DashboardComponent)
+    component: MainLayoutComponent,
+    canActivate: [authGuard],
+    children: [
+      { 
+        path: '', 
+        loadComponent: () => import('./presentation/features/dashboard/dashboard.component')
+          .then(m => m.DashboardComponent)
+      }
+    ]
   },
-  
-  // Admin dashboard
+
+  {
+    path: 'home',
+    component: MainLayoutComponent,
+    canActivate: [authGuard],
+    children: [
+      { 
+        path: '', 
+        component: HomeComponent
+      }
+    ]
+  },
+
+  {
+    path: 'events',
+    component: MainLayoutComponent,
+    canActivate: [authGuard],
+    children: [
+      { 
+        path: '', 
+        loadChildren: () => import('./presentation/features/events/events.routes')
+          .then(m => m.eventsRoutes)
+      }
+    ]
+  },
+
+  {
+    path: 'internal-announcements',
+    component: MainLayoutComponent,
+    canActivate: [authGuard],
+    children: [
+      { 
+        path: '', 
+        loadChildren: () => import('./presentation/features/internal-announcements/internal-announcements.routes')
+          .then(m => m.announcementsRoutes)
+      }
+    ]
+  },
+
+  {
+    path: 'staff-workload',
+    component: MainLayoutComponent,
+    canActivate: [authGuard],
+    children: [
+      {
+        path: '',
+        loadComponent: () => import('./presentation/features/reports/pages/staff-workload/staff-workload.component')
+          .then(m => m.StaffWorkloadComponent),
+        canActivate: [roleGuard],
+        data: { roles: ['Admin', 'Manager'] }
+      }
+    ]
+  },
+
   {
     path: 'admin/dashboard',
-    loadComponent: () => import('./presentation/features/dashboard/dashboard.component')
-      .then(m => m.DashboardComponent),
-    canActivate: [authGuard, roleGuard],
-    data: { roles: ['Admin'] }
+    component: MainLayoutComponent,
+    canActivate: [authGuard],
+    children: [
+      {
+        path: '',
+        loadComponent: () => import('./presentation/features/dashboard/dashboard.component')
+          .then(m => m.DashboardComponent),
+        canActivate: [roleGuard],
+        data: { roles: ['Admin'] }
+      }
+    ]
   },
-  
+
   {
     path: 'register',
-    loadComponent: () => import('./presentation/features/register/register.component')
-      .then(m => m.RegistrationComponent)
+    component: MainLayoutComponent,
+    canActivate: [authGuard],
+    children: [
+      {
+        path: '',
+        loadComponent: () => import('./presentation/features/register/register.component')
+          .then(m => m.RegistrationComponent)
+      }
+    ]
   },
-  
+
   {
     path: 'profile',
-    loadComponent: () => import('./presentation/features/profile/pages/profile-page/profile-page.component')
-      .then(m => m.ProfilePageComponent),
-    canActivate: [authGuard]
+    component: MainLayoutComponent,
+    canActivate: [authGuard],
+    children: [
+      {
+        path: '',
+        loadComponent: () => import('./presentation/features/profile/pages/profile-page/profile-page.component')
+          .then(m => m.ProfilePageComponent)
+      }
+    ]
   },
-  
+
   {
     path: 'calendar',
-    loadComponent: () => import('./presentation/features/calendar/pages/calendar-page/calendar-page.component')
-      .then(m => m.CalendarPageComponent),
-    canActivate: [authGuard]
+    component: MainLayoutComponent,
+    canActivate: [authGuard],
+    children: [
+      {
+        path: '',
+        loadComponent: () => import('./presentation/features/calendar/pages/calendar-page/calendar-page.component')
+          .then(m => m.CalendarPageComponent)
+      }
+    ]
   },
 
   { path: '**', redirectTo: '' }

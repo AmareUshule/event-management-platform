@@ -12,6 +12,33 @@ $dark-500: #64748b;
 $dark-100: #f1f5f9;
 $white: #ffffff;
 
+$neutral-bg: #F5F7FA;
+$border-color: #E5E7EB;
+
+.dashboard-container {
+  min-height: 100vh;
+  padding-top: 72px;
+  background: $neutral-bg;
+  position: relative;
+  overflow-x: hidden;
+
+  @media (max-width: 768px) {
+    padding-top: 80px;
+  }
+}
+
+.dashboard-main {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 32px;
+  position: relative;
+  z-index: 1;
+
+  @media (max-width: 768px) {
+    padding: 16px;
+  }
+}
+
 /* Header */
 
 .section-title {

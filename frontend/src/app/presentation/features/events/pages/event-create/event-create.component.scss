@@ -12,7 +12,7 @@ $eep-light-bg: #F1F8F0;
 .event-creation-wrapper {
   min-height: 100vh;
   background: linear-gradient(135deg, $eep-light-bg 0%, #ffffff 100%);
-  padding: 20px;
+  padding: 104px 20px 32px;
 }
 
 // Loading container
@@ -474,7 +474,7 @@ $eep-light-bg: #F1F8F0;
 
 @media (max-width: 768px) {
   .event-creation-wrapper {
-    padding: 0;
+    padding: 88px 0 0;
   }
   
   .wizard-container {

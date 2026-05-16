@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, ChangeDetectorRef, PLATFORM_ID, OnDestroy } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef, PLATFORM_ID, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
@@ -13,6 +13,8 @@ import { AuthUser } from '../../../core/models/auth-user.model';
 import { NotificationService, Notification } from '../../../core/services/notification.service';
 import { Subscription } from 'rxjs';
 
+import { SearchOverlayComponent } from '../../../shared/components/search-overlay/search-overlay.component';
+
 @Component({
   selector: 'app-header',
   standalone: true,
@@ -25,7 +27,8 @@ import { Subscription } from 'rxjs';
     MatDividerModule,
     MatTooltipModule,
     MatBadgeModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    SearchOverlayComponent
   ],
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.scss']
@@ -42,8 +45,20 @@ export class HeaderComponent implements OnInit, OnDestroy {
   isLoadingNotifications = false;
   unreadCount = 0;
   notifications: Notification[] = [];
+  isSearchOpen = false;
   
   private subscriptions = new Subscription();
+
+  @HostListener('document:keydown.meta.k')
+  @HostListener('document:keydown.ctrl.k')
+  onCommandK(): void {
+    this.toggleSearch();
+  }
+
+  toggleSearch(): void {
+    this.isSearchOpen = !this.isSearchOpen;
+    this.cdr.detectChanges();
+  }
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {

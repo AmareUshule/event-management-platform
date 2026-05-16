@@ -1,0 +1,28 @@
+@import '../../../styles/_tokens.scss';
+@import '../../../styles/_utilities.scss';
+
+.event-search-discovery-container {
+  padding: var(--spacing-xl);
+  background-color: var(--color-background-secondary);
+  min-height: 100vh;
+}
+
+h1 {
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-lg);
+}
+
+.main-content-layout {
+  display: flex;
+  gap: var(--spacing-xl);
+  align-items: flex-start; /* Aligns items to the start of the cross axis */
+
+  @media (max-width: 992px) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+.search-results-area {
+  flex-grow: 1;
+}

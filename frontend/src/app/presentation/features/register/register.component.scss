@@ -16,9 +16,13 @@ $white: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px;
+  padding: 104px 24px 48px;
   background: radial-gradient(circle at top right, #f1f5f9, #ffffff);
   font-family: 'Inter', system-ui, sans-serif;
+
+  @media (max-width: 768px) {
+    padding-top: 88px;
+  }
 }
 
 // ========== MAIN WRAPPER ==========

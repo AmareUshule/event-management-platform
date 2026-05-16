@@ -1,0 +1,70 @@
+// Semantic Design Tokens
+
+:root {
+  // Surface
+  --bg-app: var(--neutral-50);
+  --bg-surface: var(--neutral-0);
+  --bg-subtle: var(--neutral-50);
+  
+  // Text
+  --text-main: var(--neutral-900);
+  --text-secondary: var(--neutral-600);
+  --text-muted: var(--neutral-400);
+  --text-on-brand: var(--neutral-0);
+
+  // Border
+  --border-default: var(--neutral-200);
+  --border-subtle: var(--neutral-100);
+  --border-strong: var(--neutral-300);
+
+  // Interaction
+  --brand-primary: var(--brand-green-500);
+  --brand-primary-hover: var(--brand-green-600);
+  --brand-accent: var(--brand-red-500);
+  --brand-accent-hover: var(--brand-red-600);
+
+  // Status
+  --status-success-bg: #ecfdf5;
+  --status-success-text: #065f46;
+  --status-success-border: #a7f3d0;
+  
+  --status-error-bg: #fef2f2;
+  --status-error-text: #991b1b;
+  --status-error-border: #fecaca;
+
+  --status-warning-bg: #fffbeb;
+  --status-warning-text: #92400e;
+  --status-warning-border: #fde68a;
+
+  --status-info-bg: #eff6ff;
+  --status-info-text: #1e40af;
+  --status-info-border: #bfdbfe;
+
+  --status-archived-bg: #f1f5f9;
+  --status-archived-text: #475569;
+  --status-archived-border: #e2e8f0;
+}
+
+[data-theme='dark'] {
+  --bg-app: var(--neutral-950);
+  --bg-surface: var(--neutral-900);
+  --bg-subtle: var(--neutral-800);
+
+  --text-main: var(--neutral-50);
+  --text-secondary: var(--neutral-400);
+  --text-muted: var(--neutral-500);
+
+  --border-default: var(--neutral-800);
+  --border-subtle: var(--neutral-900);
+  --border-strong: var(--neutral-700);
+
+  --status-success-bg: rgba(16, 185, 129, 0.1);
+  --status-success-text: #34d399;
+  --status-success-border: rgba(16, 185, 129, 0.2);
+
+  --status-error-bg: rgba(239, 68, 68, 0.1);
+  --status-error-text: #f87171;
+  --status-error-border: rgba(239, 68, 68, 0.2);
+
+  // ... and so on for dark mode
+}

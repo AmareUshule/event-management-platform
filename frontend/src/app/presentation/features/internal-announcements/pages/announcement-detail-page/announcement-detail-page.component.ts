@@ -27,7 +27,6 @@ import { SafeUrlPipe } from '../../../../../shared/pipes/safe-url.pipe';
     MatDialogModule,
     MatTooltipModule,
     RouterModule,
-    HeaderComponent,
     MatTableModule, // Add MatTableModule
     MatCardModule, // Add MatCardModule
     SafeUrlPipe

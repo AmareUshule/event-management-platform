@@ -23,7 +23,6 @@ namespace EEP.EventManagement.Api.Controllers
         }
 
         [HttpPost("upload")]
-        [Authorize(Roles = "Admin,Expert,Cameraman")]
         public async Task<ActionResult<MediaFileDto>> UploadMedia([FromForm] UploadMediaDto uploadMediaDto)
         {
             var command = new UploadMediaCommand { UploadMediaDto = uploadMediaDto };
@@ -37,6 +36,14 @@ namespace EEP.EventManagement.Api.Controllers
             var query = new GetMediaByEventQuery { EventId = eventId };
             var result = await _mediator.Send(query);
             return Ok(result);
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteMedia(Guid id)
+        {
+            var command = new DeleteMediaCommand { MediaId = id };
+            await _mediator.Send(command);
+            return NoContent();
         }
     }
 }

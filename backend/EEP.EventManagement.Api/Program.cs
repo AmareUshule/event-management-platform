@@ -65,6 +65,18 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
 
+// Configure Form Options for large file uploads (25MB+)
+builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = 100 * 1024 * 1024; // 100MB limit
+});
+
+// Configure Kestrel limits
+builder.WebHost.ConfigureKestrel(serverOptions =>
+{
+    serverOptions.Limits.MaxRequestBodySize = 100 * 1024 * 1024; // 100MB
+});
+
 
 
 // DbContext - Database configuration (using PostgreSQL)
@@ -208,7 +220,15 @@ if (app.Environment.IsDevelopment())
 }
 
 // Enable HTTPS redirection
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
+
+// -----------------------------
+// ENABLE CORS
+// -----------------------------
+app.UseCors("AllowAngularApp");
 
 // -----------------------------
 // SERVE STATIC FILES (For Uploads)
@@ -224,11 +244,6 @@ app.UseStaticFiles(new StaticFileOptions
     FileProvider = new PhysicalFileProvider(uploadsPath),
     RequestPath = "/uploads"
 });
-
-// -----------------------------
-// ENABLE CORS
-// -----------------------------
-app.UseCors("AllowAngularApp");
 
 
 // -----------------------------

@@ -183,46 +183,143 @@
 
             <!-- Media Section -->
             <div class="media-section" *ngIf="event.status === 'Completed' || event.status === 'Archived'">
-                <h3>Event Media & Documentation</h3>
+                <div class="media-header">
+                    <h3>Event Media & Documentation</h3>
+                    <div class="media-stats" *ngIf="mediaFiles.length > 0">
+                        <span class="stat-item">{{ mediaFiles.length }} files</span>
+                        <span class="stat-item">{{ getTotalFileSize() | fileSize }}</span>
+                    </div>
+                </div>
                 
                 <div class="media-upload-controls" *ngIf="canUploadMedia()">
-                    <input type="file" #fileInput hidden (change)="onFileUpload($event, 'Image')" accept="image/*">
-                    <button class="upload-btn" (click)="fileInput.click()">
-                        <mat-icon>image</mat-icon> Upload Image
-                    </button>
-                    
-                    <input type="file" #videoInput hidden (change)="onFileUpload($event, 'Video')" accept="video/*">
-                    <button class="upload-btn" (click)="videoInput.click()">
-                        <mat-icon>videocam</mat-icon> Upload Video
-                    </button>
-                    
-                    <input type="file" #docInput hidden (change)="onFileUpload($event, 'Document')" accept=".pdf,.doc,.docx">
-                    <button class="upload-btn" (click)="docInput.click()">
-                        <mat-icon>description</mat-icon> Upload Document
-                    </button>
-                    
-                    <button class="upload-btn" (click)="addExternalLink()">
-                        <mat-icon>link</mat-icon> Add Link
-                    </button>
+                    <div class="upload-grid">
+                        <input type="file" #imageInput hidden (change)="onFileUpload($event, 'Image')" accept="image/*">
+                        <button class="upload-btn image-btn" (click)="imageInput.click()" matTooltip="Upload images">
+                            <mat-icon>image</mat-icon>
+                            <span>Images</span>
+                        </button>
+                        
+                        <input type="file" #videoInput hidden (change)="onFileUpload($event, 'Video')" accept="video/*">
+                        <button class="upload-btn video-btn" (click)="videoInput.click()" matTooltip="Upload videos">
+                            <mat-icon>videocam</mat-icon>
+                            <span>Videos</span>
+                        </button>
+                        
+                        <input type="file" #docInput hidden (change)="onFileUpload($event, 'Document')" accept=".pdf,.doc,.docx,.txt">
+                        <button class="upload-btn document-btn" (click)="docInput.click()" matTooltip="Upload documents">
+                            <mat-icon>description</mat-icon>
+                            <span>Docs</span>
+                        </button>
+                        
+                        <button class="upload-btn link-btn" (click)="addExternalLink()" matTooltip="Add external links">
+                            <mat-icon>link</mat-icon>
+                            <span>Links</span>
+                        </button>
+                    </div>
                 </div>
 
-                <div class="media-grid" *ngIf="mediaFiles.length > 0">
-                    <div class="media-card" *ngFor="let m of mediaFiles">
-                        <div class="media-icon">
-                            <mat-icon *ngIf="m.fileType === 'Image'">image</mat-icon>
-                            <mat-icon *ngIf="m.fileType === 'Video'">videocam</mat-icon>
-                            <mat-icon *ngIf="m.fileType === 'Document'">description</mat-icon>
-                            <mat-icon *ngIf="m.fileType === 'Link'">link</mat-icon>
-                        </div>
-                        <div class="media-details">
-                            <span class="media-name">{{ m.fileName }}</span>
-                            <a [href]="m.filePath" target="_blank" class="media-link">View / Download</a>
+                <div class="media-gallery" *ngIf="mediaFiles.length > 0">
+                    <div class="gallery-filters">
+                        <button
+                            class="filter-btn"
+                            [class.active]="selectedFilter === 'all'"
+                            (click)="setFilter('all')">
+                            All ({{ mediaFiles.length }})
+                        </button>
+                        <button
+                            class="filter-btn"
+                            [class.active]="selectedFilter === 'Image'"
+                            (click)="setFilter('Image')">
+                            Images ({{ getMediaCount('Image') }})
+                        </button>
+                        <button
+                            class="filter-btn"
+                            [class.active]="selectedFilter === 'Video'"
+                            (click)="setFilter('Video')">
+                            Videos ({{ getMediaCount('Video') }})
+                        </button>
+                        <button
+                            class="filter-btn"
+                            [class.active]="selectedFilter === 'Document'"
+                            (click)="setFilter('Document')">
+                            Documents ({{ getMediaCount('Document') }})
+                        </button>
+                        <button
+                            class="filter-btn"
+                            [class.active]="selectedFilter === 'Link'"
+                            (click)="setFilter('Link')">
+                            Links ({{ getMediaCount('Link') }})
+                        </button>
+                    </div>
+
+                    <div class="media-grid">
+                        <div
+                            class="media-card"
+                            *ngFor="let media of filteredMedia"
+                            [class]="getMediaCardClass(media)"
+                            (click)="openMediaViewer(media)">
+
+                            <div class="media-preview">
+                                <div class="media-icon" *ngIf="!isImage(media)">
+                                    <mat-icon>{{ getMediaIcon(media.fileType) }}</mat-icon>
+                                </div>
+                                <img
+                                    *ngIf="isImage(media)"
+                                    [src]="getMediaUrl(media)"
+                                    [alt]="media.fileName"
+                                    class="media-thumbnail"
+                                    loading="lazy">
+                                <div class="media-overlay">
+                                    <button class="preview-btn" mat-icon-button>
+                                        <mat-icon>visibility</mat-icon>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="media-info">
+                                <div class="media-title">{{ media.fileName }}</div>
+                                <div class="media-meta">
+                                    <span class="uploader">{{ media.uploaderName || 'Unknown' }}</span>
+                                    <span class="upload-date">{{ media.createdAt | date:'short' }}</span>
+                                    <span class="file-size" *ngIf="media.fileSize > 0">{{ media.fileSize | fileSize }}</span>
+                                </div>
+                            </div>
+
+                            <div class="media-actions">
+                                <a
+                                    mat-icon-button
+                                    [href]="getMediaUrl(media)"
+                                    target="_blank"
+                                    download
+                                    matTooltip="Download">
+                                    <mat-icon>download</mat-icon>
+                                </a>
+                                <button
+                                    mat-icon-button
+                                    color="warn"
+                                    *ngIf="canDeleteMedia(media)"
+                                    (click)="deleteMedia(media, $event)"
+                                    matTooltip="Delete">
+                                    <mat-icon>delete</mat-icon>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="no-media" *ngIf="mediaFiles.length === 0">
-                    <p>No media files uploaded yet.</p>
+                    <div class="empty-state">
+                        <mat-icon class="empty-icon">photo_library</mat-icon>
+                        <h4>No media yet</h4>
+                        <p>Event media and documentation will appear here once uploaded.</p>
+                        <button
+                            class="upload-first-btn"
+                            *ngIf="canUploadMedia()"
+                            (click)="addExternalLink()">
+                            <mat-icon>add</mat-icon>
+                            Add First Item
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

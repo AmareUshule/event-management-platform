@@ -26,8 +26,7 @@ import { ActivatedRoute, Router } from '@angular/router';
     MatProgressSpinnerModule,
     MatDialogModule,
     AnnouncementCardComponent,
-    AnnouncementFormComponent,
-    HeaderComponent
+    AnnouncementFormComponent
   ],
   templateUrl: './announcements-page.component.html',
   styleUrls: ['./announcements-page.component.scss']

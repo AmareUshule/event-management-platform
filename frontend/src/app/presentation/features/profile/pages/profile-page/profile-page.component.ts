@@ -17,8 +17,7 @@ import { Router } from '@angular/router';
     MatCardModule,
     MatIconModule,
     MatButtonModule,
-    MatDividerModule,
-    HeaderComponent
+    MatDividerModule
   ],
   templateUrl: './profile-page.component.html',
   styleUrls: ['./profile-page.component.scss']

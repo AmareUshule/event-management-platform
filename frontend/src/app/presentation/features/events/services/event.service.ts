@@ -13,7 +13,8 @@ import {
   AssignmentPayload,
   EventAssignments,
   AssignmentApiRequest,
-  AssignmentResponse} from '../models/event.model';
+  AssignmentResponse,
+  MediaFile} from '../models/event.model';
 import { environment } from '../../../../../environments/environment';
 import { AuthService } from '../../../../core/auth/auth.service';
 
@@ -536,9 +537,20 @@ assignMultipleEmployees(eventId: string, assignments: AssignmentPayload[]): Obse
   /**
    * Get media for an event
    */
-  getEventMedia(eventId: string): Observable<any[]> {
+  getEventMedia(eventId: string): Observable<MediaFile[]> {
     const url = `${environment.apiUrl}/api/media/event/${eventId}`;
-    return this.http.get<any[]>(url, { headers: this.getHeaders() }).pipe(
+    return this.http.get<MediaFile[]>(url, { headers: this.getHeaders() }).pipe(
+      timeout(this.REQUEST_TIMEOUT),
+      catchError(this.handleError.bind(this))
+    );
+  }
+
+  /**
+   * Delete media file
+   */
+  deleteMedia(mediaId: string): Observable<void> {
+    const url = `${environment.apiUrl}/api/media/${mediaId}`;
+    return this.http.delete<void>(url, { headers: this.getHeaders() }).pipe(
       timeout(this.REQUEST_TIMEOUT),
       catchError(this.handleError.bind(this))
     );

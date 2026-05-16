@@ -22,7 +22,6 @@ import { MatCardModule } from '@angular/material/card';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { DateTimePickerComponent } from '../../../../../shared/components/date-time-picker/date-time-picker.component';
-import { HeaderComponent } from '../../../../layouts/header/header.component';
 
 // Services and Models
 import { EventService } from '../../services/event.service';
@@ -60,8 +59,7 @@ export interface EventCategory {
     MatCardModule,
     MatDividerModule,
     MatTooltipModule,
-    DateTimePickerComponent,
-    HeaderComponent
+    DateTimePickerComponent
   ],
   templateUrl: './event-create.component.html',
   styleUrls: ['./event-create.component.scss']

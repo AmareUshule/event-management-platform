@@ -1,0 +1,64 @@
+<div class="search-overlay-backdrop" (click)="closeOverlay()">
+  <div class="search-modal" (click)="$event.stopPropagation()">
+    <header class="search-header">
+      <mat-icon>search</mat-icon>
+      <input 
+        #searchInput
+        type="text" 
+        placeholder="Type to search events, departments, organizers..." 
+        [ngModel]="searchQuery()"
+        (ngModelChange)="onSearch($event)"
+        autofocus
+      >
+      <span class="esc-hint">ESC</span>
+    </header>
+
+    <div class="search-body">
+      <!-- Loading State -->
+      <div *ngIf="isLoading()" class="empty-state">
+        <p>Intelligence engine is searching...</p>
+      </div>
+
+      <!-- Search Results -->
+      <div *ngIf="!isLoading() && searchQuery() && results().length > 0">
+        <div class="section-label">Events Found</div>
+        <div *ngFor="let res of results()" class="result-item" (click)="selectResult(res)">
+          <div class="res-icon">
+            <mat-icon>event</mat-icon>
+          </div>
+          <div class="res-info">
+            <div class="res-title">{{ res.title }}</div>
+            <div class="res-meta">{{ res.department.name }} • {{ res.startDate | date:'mediumDate' }}</div>
+          </div>
+          <div class="res-status" [class]="res.status.toLowerCase()">{{ res.status }}</div>
+        </div>
+      </div>
+
+      <!-- Empty Results -->
+      <div *ngIf="!isLoading() && searchQuery() && results().length === 0" class="empty-state">
+        <mat-icon>manage_search</mat-icon>
+        <p>No matches for "{{ searchQuery() }}"</p>
+      </div>
+
+      <!-- Initial / Suggestions State -->
+      <div *ngIf="!searchQuery()">
+        <div class="section-label">Recent Searches</div>
+        <div class="quick-links">
+          <span *ngFor="let s of recentSearches" class="q-link" (click)="onSearch(s)">{{ s }}</span>
+        </div>
+
+        <div class="section-label">Trending Discovery</div>
+        <div *ngFor="let event of trendingEvents()" class="result-item" (click)="selectResult(event)">
+          <div class="res-icon">
+            <mat-icon>insights</mat-icon>
+          </div>
+          <div class="res-info">
+            <div class="res-title">{{ event.title }}</div>
+            <div class="res-meta">{{ event.category }}</div>
+          </div>
+          <div class="res-status ongoing">Popular</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

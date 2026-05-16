@@ -18,7 +18,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { RouterModule } from '@angular/router';
 import { finalize } from 'rxjs';
 
-import { ReportService, StaffWorkload } from '../../../../../core/services/report.service';
+import { ReportService, StaffWorkload, StaffEventSummary } from '../../../../../core/services/report.service';
 import { AuthService } from '../../../../../core/auth/auth.service';
 import { EmployeeService } from '../../../../../core/services/employee.service';
 import { Employee } from '../../../../../core/models/employee.model';
@@ -43,8 +43,7 @@ import { HeaderComponent } from '../../../../layouts/header/header.component';
     MatSelectModule,
     MatExpansionModule,
     MatChipsModule,
-    MatTooltipModule,
-    HeaderComponent
+    MatTooltipModule
   ],
   templateUrl: './staff-workload.component.html',
   styleUrls: ['./staff-workload.component.scss']
@@ -126,6 +125,66 @@ export class StaffWorkloadComponent implements OnInit {
     this.selectedRole = '';
     this.selectedStaffId = '';
     this.loadWorkload();
+  }
+
+  getTotalStaff(): number {
+    return this.staffWorkload.length;
+  }
+
+  getTotalAssignments(): number {
+    return this.staffWorkload.reduce((sum, staff) => sum + staff.totalAssignments, 0);
+  }
+
+  getUtilizationRate(): number {
+    if (this.staffWorkload.length === 0) return 0;
+    const totalUtilization = this.staffWorkload.reduce((sum, staff) => sum + this.getUtilizationPercentage(staff), 0);
+    return Math.round(totalUtilization / this.staffWorkload.length);
+  }
+
+  getInitials(fullName: string): string {
+    return fullName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  }
+
+  getAvailabilityStatus(staff: StaffWorkload): string {
+    const utilization = this.getUtilizationPercentage(staff);
+    if (utilization >= 80) return 'overloaded';
+    if (utilization >= 60) return 'busy';
+    if (utilization >= 30) return 'moderate';
+    return 'available';
+  }
+
+  getRoleClass(role: string): string {
+    switch (role.toLowerCase()) {
+      case 'expert': return 'expert';
+      case 'cameraman': return 'cameraman';
+      default: return 'staff';
+    }
+  }
+
+  getUtilizationPercentage(staff: StaffWorkload): number {
+    // Assuming a baseline of 5 assignments per month as 100% utilization
+    const baseline = 5;
+    const utilization = (staff.totalAssignments / baseline) * 100;
+    return Math.min(Math.round(utilization), 100);
+  }
+
+  getRecentEvents(events: StaffEventSummary[]): StaffEventSummary[] {
+    return events.slice(0, 3);
+  }
+
+  private expandedStaff = new Set<string>();
+
+  toggleExpandedView(staff: StaffWorkload): void {
+    const staffId = staff.staffId;
+    if (this.expandedStaff.has(staffId)) {
+      this.expandedStaff.delete(staffId);
+    } else {
+      this.expandedStaff.add(staffId);
+    }
+  }
+
+  isExpanded(staff: StaffWorkload): boolean {
+    return this.expandedStaff.has(staff.staffId);
   }
 
   getStatusClass(status: string): string {

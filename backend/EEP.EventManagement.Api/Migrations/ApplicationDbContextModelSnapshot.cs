@@ -394,20 +394,36 @@ namespace EEP.EventManagement.Api.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("FileName")
-                        .HasColumnType("text");
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
 
                     b.Property<string>("FilePath")
-                        .HasColumnType("text");
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<long>("FileSize")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasDefaultValue(0L);
 
                     b.Property<int>("FileType")
                         .HasColumnType("integer");
 
+                    b.Property<string>("ThumbnailPath")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UploadedBy")
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
                     b.HasIndex("EventId");
+
+                    b.HasIndex("UploadedBy");
 
                     b.ToTable("MediaFiles");
                 });
@@ -766,12 +782,19 @@ namespace EEP.EventManagement.Api.Migrations
             modelBuilder.Entity("EEP.EventManagement.Api.Domain.Entities.MediaFile", b =>
                 {
                     b.HasOne("EEP.EventManagement.Api.Domain.Entities.Event", "Event")
-                        .WithMany()
+                        .WithMany("MediaFiles")
                         .HasForeignKey("EventId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("EEP.EventManagement.Api.Infrastructure.Security.Identity.ApplicationUser", "Uploader")
+                        .WithMany()
+                        .HasForeignKey("UploadedBy")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.Navigation("Event");
+
+                    b.Navigation("Uploader");
                 });
 
             modelBuilder.Entity("EEP.EventManagement.Api.Domain.Entities.Notification", b =>
@@ -856,6 +879,8 @@ namespace EEP.EventManagement.Api.Migrations
             modelBuilder.Entity("EEP.EventManagement.Api.Domain.Entities.Event", b =>
                 {
                     b.Navigation("Assignments");
+
+                    b.Navigation("MediaFiles");
                 });
 #pragma warning restore 612, 618
         }

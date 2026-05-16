@@ -1,0 +1,196 @@
+// Premium Component Styles
+
+// Buttons
+.btn-premium {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  border-radius: var(--radius-md);
+  transition: var(--transition-base);
+  cursor: pointer;
+  border: 1px solid transparent;
+  gap: var(--space-2);
+
+  &.primary {
+    background: var(--brand-primary);
+    color: var(--text-on-brand);
+    box-shadow: var(--shadow-sm);
+    &:hover {
+      background: var(--brand-primary-hover);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-md);
+    }
+  }
+
+  &.secondary {
+    background: var(--bg-surface);
+    color: var(--text-main);
+    border-color: var(--border-default);
+    box-shadow: var(--shadow-sm);
+    &:hover {
+      background: var(--bg-subtle);
+      border-color: var(--border-strong);
+    }
+  }
+
+  &.accent {
+    background: var(--brand-accent);
+    color: var(--text-on-brand);
+    &:hover {
+      background: var(--brand-accent-hover);
+    }
+  }
+
+  &.ghost {
+    background: transparent;
+    color: var(--text-secondary);
+    &:hover {
+      background: var(--bg-subtle);
+      color: var(--text-main);
+    }
+  }
+}
+
+// Cards
+.card-premium {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-premium);
+  overflow: hidden;
+  transition: var(--transition-base);
+
+  &.hoverable:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--brand-primary);
+  }
+
+  .card-header {
+    padding: var(--space-4) var(--space-6);
+    border-bottom: 1px solid var(--border-subtle);
+    font-weight: var(--weight-semibold);
+  }
+
+  .card-body {
+    padding: var(--space-6);
+  }
+
+  .card-footer {
+    padding: var(--space-4) var(--space-6);
+    background: var(--bg-subtle);
+    border-top: 1px solid var(--border-subtle);
+  }
+}
+
+// Inputs
+.input-premium {
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-sm);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-default);
+  background: var(--bg-surface);
+  color: var(--text-main);
+  transition: var(--transition-fast);
+
+  &:focus {
+    outline: none;
+    border-color: var(--brand-primary);
+    box-shadow: 0 0 0 3px rgba(30, 89, 12, 0.1);
+  }
+
+  &::placeholder {
+    color: var(--text-muted);
+  }
+}
+
+// Tables
+.table-premium {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+
+  th {
+    text-align: left;
+    padding: var(--space-3) var(--space-4);
+    background: var(--bg-subtle);
+    color: var(--text-secondary);
+    font-weight: var(--weight-semibold);
+    border-bottom: 1px solid var(--border-default);
+  }
+
+  td {
+    padding: var(--space-4);
+    border-bottom: 1px solid var(--border-subtle);
+    color: var(--text-main);
+  }
+
+  tr:hover td {
+    background: var(--bg-subtle);
+  }
+}
+
+// Badges
+.badge-premium {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.625rem;
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  border: 1px solid transparent;
+
+  &.success {
+    background: var(--status-success-bg);
+    color: var(--status-success-text);
+    border-color: var(--status-success-border);
+  }
+
+  &.error {
+    background: var(--status-error-bg);
+    color: var(--status-error-text);
+    border-color: var(--status-error-border);
+  }
+
+  &.warning {
+    background: var(--status-warning-bg);
+    color: var(--status-warning-text);
+    border-color: var(--status-warning-border);
+  }
+
+  &.info {
+    background: var(--status-info-bg);
+    color: var(--status-info-text);
+    border-color: var(--status-info-border);
+  }
+}
+
+// PrimeNG Overrides
+.p-button {
+  @extend .btn-premium;
+  &.p-button-primary { @extend .primary; }
+  &.p-button-secondary { @extend .secondary; }
+  &.p-button-danger { @extend .accent; }
+}
+
+.p-card {
+  @extend .card-premium;
+  .p-card-content { padding: 0; }
+  background: var(--bg-surface) !important;
+}
+
+.p-inputtext {
+  @extend .input-premium;
+}
+
+.p-datatable {
+  @extend .table-premium;
+  .p-datatable-thead > tr > th {
+    background: var(--bg-subtle);
+    color: var(--text-secondary);
+  }
+}

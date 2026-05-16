@@ -17,7 +17,14 @@ namespace EEP.EventManagement.Api.Application.Features.Media.DTOs
         public Guid Id { get; set; }
         public string? FileName { get; set; }
         public string? FilePath { get; set; }
+        public string? ThumbnailPath { get; set; }
         public MediaType FileType { get; set; }
+        public long FileSize { get; set; }
         public Guid EventId { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public Guid UploadedBy { get; set; }
+        public string? UploaderName { get; set; }
+        public string? UploaderFirstName { get; set; }
+        public string? UploaderLastName { get; set; }
     }
 }

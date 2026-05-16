@@ -1,0 +1,15 @@
+<div class="event-search-discovery-container">
+  <h1>Event Search & Discovery</h1>
+  <app-search-bar (search)="onSearch($event)"></app-search-bar>
+
+  <div class="main-content-layout">
+    <app-filter-panel
+      (filtersChanged)="onFiltersChanged($event)"
+      (clearAllFilters)="onClearAllFilters()">
+    </app-filter-panel>
+    <!-- Search Results Component will go here -->
+    <div class="search-results-area">
+      <p>Search results will appear here...</p>
+    </div>
+  </div>
+</div>

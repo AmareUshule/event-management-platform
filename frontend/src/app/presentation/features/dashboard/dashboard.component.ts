@@ -4,7 +4,7 @@ import { Component, OnInit, inject, OnDestroy, ChangeDetectorRef, PLATFORM_ID } 
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { Subject, takeUntil, finalize } from 'rxjs';
+import { Subject, takeUntil, finalize, interval, Subscription } from 'rxjs';
 
 // Material imports
 import { MatCardModule } from '@angular/material/card';
@@ -36,6 +36,13 @@ import { AnnouncementService } from '../internal-announcements/services/announce
 import { Event, EventFormData, EventStatus, AssignmentResponse } from '../events/models/event.model';
 import { AuthUser } from '../../../core/models/auth-user.model';
 import { Announcement } from '../internal-announcements/models/announcement.model';
+
+// Carousel interface
+interface CarouselImage {
+  src: string;
+  alt: string;
+  title: string;
+}
 
 // Interface for table display
 export interface TableEvent {
@@ -113,7 +120,39 @@ export class DashboardComponent implements OnInit, OnDestroy {
   activeTab: string = 'all';
   searchTerm: string = '';
   isMobileMenuOpen = false;
-    
+  heroActionSelected = '';
+
+  // ===== CAROUSEL STATE =======
+  currentSlideIndex = 0;
+  private carouselSubscription?: Subscription;
+  
+  carouselImages: CarouselImage[] = [
+    {
+      src: 'assets/images/substation.png',
+      alt: 'Electrical Substation',
+      title: 'Substations'
+    },
+    {
+      src: 'assets/images/transmission-tower.jpg',
+      alt: 'Transmission Line Tower',
+      title: 'Transmission Towers'
+    },
+    {
+      src: 'assets/images/dam.jpg',
+      alt: 'Grand Ethiopian Renaissance Dam',
+      title: 'Grand Ethiopian Renaissance Dam'
+    },
+    {
+      src: 'assets/images/asella.png',
+      alt: 'Assela Wind Power Plant',
+      title: 'Assela Wind Power Plant'
+    },
+    {
+      src: 'assets/images/Ayisha.png',
+      alt: 'Ayisha Wind Power Plant',
+      title: 'Ayisha Wind Power Plant'
+    }
+  ];
 
   // ======== TABLE CONFIGURATION ============
   displayedColumns: string[] = ['id', 'eventName', 'location', 'date', 'actions'];
@@ -165,12 +204,16 @@ export class DashboardComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       this.initializeComponent();
+      this.startCarousel();
     }
   }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+    if (this.carouselSubscription) {
+      this.carouselSubscription.unsubscribe();
+    }
   }
 
   // ==================== INITIALIZATION ====================
@@ -222,6 +265,156 @@ export class DashboardComponent implements OnInit, OnDestroy {
         icon: 'business'
       }
     ];
+  }
+
+  // ==================== CAROUSEL METHODS ====================
+
+  startCarousel(): void {
+    this.carouselSubscription = interval(5000).subscribe(() => {
+      this.nextSlide();
+    });
+  }
+
+  nextSlide(): void {
+    this.currentSlideIndex = (this.currentSlideIndex + 1) % this.carouselImages.length;
+  }
+
+  prevSlide(): void {
+    this.currentSlideIndex = (this.currentSlideIndex - 1 + this.carouselImages.length) % this.carouselImages.length;
+  }
+
+  goToSlide(index: number): void {
+    this.currentSlideIndex = index;
+  }
+
+  // ==================== HERO / ROLE SUMMARY ====================
+
+  get heroGreeting(): string {
+    const hour = new Date().getHours();
+    const period = hour < 12 ? 'Morning' : hour < 17 ? 'Afternoon' : 'Evening';
+    const name = this.user?.fullName?.split(' ')[0] || 'Team';
+    return `Good ${period}, ${name}`;
+  }
+
+  get heroRoleLabel(): string {
+    if (this.authService.isAdmin()) return 'Administrator';
+    if (this.authService.isCommunicationManager()) return 'Communication Manager';
+    if (this.authService.isManager()) return 'Department Manager';
+    if (this.authService.isStaff()) return 'Assigned Staff';
+    return 'Employee';
+  }
+
+  get heroAlertTitle(): string {
+    if (this.canApproveEvents() && this.pendingApprovalCount > 0) {
+      return 'Approval queue';
+    }
+
+    if (this.isStaff() && this.pendingAssignmentsCount > 0) {
+      return 'Pending invitations';
+    }
+
+    if (this.ongoingEvents > 0) {
+      return 'Live events in progress';
+    }
+
+    if (this.upcomingEventsCount > 0) {
+      return 'Upcoming events this week';
+    }
+
+    return 'Operational status';
+  }
+
+  get heroAlertText(): string {
+    if (this.canApproveEvents() && this.pendingApprovalCount > 0) {
+      return `You have ${this.pendingApprovalCount} draft event${this.pendingApprovalCount === 1 ? '' : 's'} requiring review.`;
+    }
+
+    if (this.isStaff() && this.pendingAssignmentsCount > 0) {
+      return `You have ${this.pendingAssignmentsCount} pending invitation${this.pendingAssignmentsCount === 1 ? '' : 's'} waiting response.`;
+    }
+
+    if (this.ongoingEvents > 0) {
+      return `There are ${this.ongoingEvents} active event${this.ongoingEvents === 1 ? '' : 's'} right now.`;
+    }
+
+    if (this.upcomingEventsCount > 0) {
+      return `You have ${this.upcomingEventsCount} events scheduled in the next 7 days.`;
+    }
+
+    return 'All systems are nominal. No urgent action items detected.';
+  }
+
+  get heroMetrics(): Array<{ label: string; value: number; description: string;}> {
+    if (this.authService.isAdmin() || this.authService.isManager() || this.authService.isCommunicationManager()) {
+      return [
+        { label: this.isStaff() ? 'My Assignments' : 'Total Events', value: this.isStaff() ? this.assignedEventsCount : this.totalEvents, description: this.isStaff() ? 'Assigned to you' : 'Visible events' },
+        { label: this.canApproveEvents() ? 'Pending Approvals' : 'Scheduled', value: this.pendingApprovalCount, description: 'Draft items needing review' },
+        { label: 'Live events', value: this.ongoingEvents, description: 'Currently active' },
+        { label: 'In 7 days', value: this.upcomingEventsCount, description: 'Upcoming schedule' }
+      ];
+    }
+
+    if (this.isStaff()) {
+      return [
+        { label: 'My assignments', value: this.assignedEventsCount, description: 'Total assigned events' },
+        { label: 'Pending invites', value: this.pendingAssignmentsCount, description: 'Awaiting your response' },
+        { label: 'Live events', value: this.ongoingEvents, description: 'In progress' },
+        { label: 'Upcoming', value: this.upcomingEventsCount, description: 'Next 7 days' }
+      ];
+    }
+
+    return [
+      { label: 'Ongoing events', value: this.ongoingEvents, description: 'Active now' },
+      { label: 'Upcoming', value: this.upcomingEventsCount, description: 'Within 7 days' },
+      { label: 'Past events', value: this.pastEventsCount, description: 'Completed or archived' },
+      { label: 'Announcements', value: this.latestAnnouncements.length, description: 'Recent updates' }
+    ];
+  }
+
+  get heroActionButtons(): Array<{ label: string; icon: string; visible: boolean; click: () => void; description: string }> {
+    return [
+      {
+        label: 'Create Event',
+        icon: 'add',
+        visible: this.authService.canCreateEvents(),
+        click: () => this.navigateToCreateEvent(),
+        description: 'Start a new event workflow'
+      },
+      {
+        label: 'Review Approvals',
+        icon: 'edit_note',
+        visible: this.canApproveEvents(),
+        click: () => this.onStatCardClick('draft'),
+        description: 'Open drafts awaiting review'
+      },
+      {
+        label: 'My Assignments',
+        icon: 'assignment',
+        visible: this.isStaff(),
+        click: () => this.onStatCardClick('assignments'),
+        description: 'View pending events and invites'
+      },
+      {
+        label: 'Export Report',
+        icon: 'download',
+        visible: this.authService.isAdmin() || this.authService.isManager(),
+        click: () => this.exportData(),
+        description: 'Download current event summary'
+      }
+    ];
+  }
+
+  get heroSubText(): string {
+    if (this.canApproveEvents() && this.pendingApprovalCount > 0) {
+      return 'Approve drafts quickly to keep the event pipeline moving.';
+    }
+    if (this.isStaff() && this.pendingAssignmentsCount > 0) {
+      return 'Respond to assignment invitations to keep your schedule clear.';
+    }
+    if (this.ongoingEvents > 0) {
+      return 'Monitor live operations and verify current event progress.';
+    }
+    return 'Use this dashboard to manage your event workflow with confidence.';
   }
 
   // ==================== DATA LOADING ====================

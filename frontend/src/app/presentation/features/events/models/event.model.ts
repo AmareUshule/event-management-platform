@@ -162,6 +162,34 @@ export interface Event {
 }
 
 /* -----------------------------
+   Media Types
+--------------------------------*/
+export enum MediaType {
+  IMAGE = 'Image',
+  VIDEO = 'Video',
+  DOCUMENT = 'Document',
+  LINK = 'Link'
+}
+
+/* -----------------------------
+   Media File
+--------------------------------*/
+export interface MediaFile {
+  id: string;
+  fileName: string;
+  filePath: string;
+  thumbnailPath?: string;
+  fileType: MediaType;
+  fileSize: number;
+  eventId: string;
+  createdAt: string;
+  uploadedBy: string;
+  uploaderName?: string;
+  uploaderFirstName?: string;
+  uploaderLastName?: string;
+}
+
+/* -----------------------------
    Create Event Request
 --------------------------------*/
 export interface CreateEventRequest {

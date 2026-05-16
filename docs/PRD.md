@@ -32,7 +32,7 @@ The **EEP Event Management System (EEMS)** is a centralized digital platform for
 ## 3. Core Modules
 
 ### 3.1 Event Management
-- **Lifecycle**: `Draft` → `Submitted` → `Approved` → `Scheduled` → `Ongoing` → `Completed` → `Archived`.
+- **Lifecycle**: `Draft`  → `Scheduled` → `Ongoing` → `Completed` → `Archived` → `Canceled`.
 - **Approval Workflow**: Events must be approved by the Communication team. Approval requires the assignment of at least one Cameraman or Expert.
 - **Assignment System**: Assigned staff receive notifications and must `Accept` or `Decline` (with reason) the assignment.
 

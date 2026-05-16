@@ -18,6 +18,58 @@
           </button>
         </div>
 
+        <!-- Dashboard Hero -->
+        <section class="dashboard-hero">
+          <div class="hero-copy">
+            <span class="hero-tag">Operational command center</span>
+            <h1>{{ heroGreeting }}</h1>
+            <p class="hero-role">
+              {{ heroRoleLabel }}<span *ngIf="departmentName"> • {{ departmentName }}</span>
+            </p>
+            <div class="hero-alert-card">
+              <div class="alert-badge">{{ heroAlertTitle }}</div>
+              <p>{{ heroAlertText }}</p>
+            </div>
+            <p class="hero-subtext">{{ heroSubText }}</p>
+          </div>
+
+          <div class="hero-sidebar">
+            <div class="hero-carousel">
+              <div class="carousel-container">
+                <div class="carousel-viewer">
+                  <div class="carousel-image-wrapper">
+                    <img 
+                      [src]="carouselImages[currentSlideIndex].src" 
+                      [alt]="carouselImages[currentSlideIndex].alt"
+                      class="carousel-image"
+                    >
+                    <div class="carousel-title">
+                      {{ carouselImages[currentSlideIndex].title }}
+                    </div>
+                  </div>
+
+                  <button class="carousel-nav carousel-nav-prev" (click)="prevSlide()" [attr.aria-label]="'Previous image'">
+                    <mat-icon>chevron_left</mat-icon>
+                  </button>
+                  <button class="carousel-nav carousel-nav-next" (click)="nextSlide()" [attr.aria-label]="'Next image'">
+                    <mat-icon>chevron_right</mat-icon>
+                  </button>
+                </div>
+
+                <div class="carousel-indicators">
+                  <button 
+                    *ngFor="let image of carouselImages; let i = index"
+                    class="indicator-dot"
+                    [class.active]="i === currentSlideIndex"
+                    (click)="goToSlide(i)"
+                    [attr.aria-label]="'Go to slide ' + (i + 1)"
+                  ></button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <!-- Stats Cards -->
         <div class="stats-cards">
           <!-- Skeleton Stats -->

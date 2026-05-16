@@ -16,6 +16,8 @@ import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatExpansionModule } from '@angular/material/expansion';
 
+import { FileSizePipe } from '../../../../../shared/pipes/file-size.pipe';
+
 import {
   Event,
   EventStatus,
@@ -23,13 +25,15 @@ import {
   EventAssignments,
   AssignmentPayload,
   ASSIGNMENT_ROLES,
-  AssignmentUser
+  AssignmentUser,
+  MediaFile,
+  MediaType
 } from '../../models/event.model';
 
 import { EventService } from '../../services/event.service';
-import { AuthService } from '../../../../../core/auth/auth.service';
-import { AssignmentDialogComponent } from './assignment-dialog.component';
+import { AuthService } from '../../../../../core/auth/auth.service';import { environment } from '../../../../../../environments/environment';import { AssignmentDialogComponent } from './assignment-dialog.component';
 import { ConfirmationDialogComponent, ConfirmationDialogData } from '../../../confirmation-dialog.component';
+import { ImageLightboxComponent } from '../../../internal-announcements/components/image-lightbox/image-lightbox.component';
 
 
 @Component({
@@ -47,7 +51,9 @@ import { ConfirmationDialogComponent, ConfirmationDialogData } from '../../../co
     MatTabsModule,
     MatCardModule,
     MatChipsModule,
-    MatExpansionModule
+    MatExpansionModule,
+    FileSizePipe,
+    ImageLightboxComponent
   ],
   templateUrl: './event-detail-page.component.html',
   styleUrls: ['./event-detail-page.component.scss']
@@ -66,7 +72,8 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
   event: Event | null = null;
   loading = true;
   isLoading = false; 
-  mediaFiles: any[] = [];
+  mediaFiles: MediaFile[] = [];
+  selectedFilter: string = 'all';
   isSubscribed = true;
 
   // Available roles for assignment - using the exported roles
@@ -585,5 +592,127 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
     this.loading = false;
     this.showError('Event not found');
     this.cdr.detectChanges();
+  }
+
+  // Media filtering and display methods
+  get filteredMedia(): MediaFile[] {
+    if (this.selectedFilter === 'all') {
+      return this.mediaFiles;
+    }
+    return this.mediaFiles.filter(m => m.fileType === this.selectedFilter);
+  }
+
+  setFilter(filter: string): void {
+    this.selectedFilter = filter;
+  }
+
+  getMediaCount(type: string): number {
+    return this.mediaFiles.filter(m => m.fileType === type).length;
+  }
+
+  getTotalFileSize(): number {
+    return this.mediaFiles.reduce((total, media) => total + (media.fileSize || 0), 0);
+  }
+
+  isImage(media: MediaFile): boolean {
+    if (!media || !media.fileType) return false;
+    return media.fileType.toString().toLowerCase() === 'image';
+  }
+
+  getMediaIcon(type: MediaType | string): string {
+    if (!type) return 'insert_drive_file';
+    const t = type.toString().toLowerCase();
+    switch (t) {
+      case 'image': return 'image';
+      case 'video': return 'videocam';
+      case 'document': return 'description';
+      case 'link': return 'link';
+      default: return 'insert_drive_file';
+    }
+  }
+
+  getMediaCardClass(media: MediaFile): string {
+    const type = media.fileType?.toString().toLowerCase() || 'unknown';
+    return `media-card-${type}`;
+  }
+
+  canDeleteMedia(media: MediaFile): boolean {
+    if (!media) return false;
+    
+    // Admin can delete any media
+    if (this.authService.isAdmin()) return true;
+    
+    // User can delete their own uploads
+    const currentUser = this.authService.getCurrentUser();
+    return currentUser?.adObjectId === media.uploadedBy;
+  }
+
+  deleteMedia(media: MediaFile, event?: MouseEvent): void {
+    if (event) {
+      event.stopPropagation();
+    }
+
+    if (!confirm(`Are you sure you want to delete "${media.fileName}"?`)) {
+      return;
+    }
+
+    this.eventService.deleteMedia(media.id).subscribe({
+      next: () => {
+        this.showSuccess('Media deleted successfully');
+        this.mediaFiles = this.mediaFiles.filter(m => m.id !== media.id);
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('Error deleting media:', error);
+        this.showError('Failed to delete media');
+      }
+    });
+  }
+
+  getMediaUrl(media: MediaFile): string {
+    if (!media || !media.filePath) return '';
+    
+    const type = media.fileType?.toString().toLowerCase();
+    if (type === 'link') {
+      return media.filePath;
+    }
+    
+    if (media.filePath.startsWith('http')) {
+      return media.filePath;
+    }
+
+    // Ensure environment.apiUrl exists and handle potential missing slashes
+    const apiBase = environment.apiUrl || '';
+    const baseUrl = apiBase.endsWith('/') ? apiBase : `${apiBase}/`;
+    const filePath = media.filePath.startsWith('/') ? media.filePath.substring(1) : media.filePath;
+    
+    return `${baseUrl}${filePath}`;
+  }
+
+  openMediaViewer(media: MediaFile): void {
+    if (media.fileType === MediaType.IMAGE) {
+      // Open image in lightbox
+      this.openImageLightbox(media);
+    } else {
+      // For other types, open in new tab
+      window.open(this.getMediaUrl(media), '_blank');
+    }
+  }
+
+  private openImageLightbox(media: MediaFile): void {
+    this.dialog.open(ImageLightboxComponent, {
+      data: {
+        imageUrl: this.getMediaUrl(media),
+        title: media.fileName,
+        fileName: media.fileName
+      },
+      panelClass: 'lightbox-dialog',
+      maxWidth: '100vw',
+      maxHeight: '100vh',
+      height: '100%',
+      width: '100%',
+      hasBackdrop: true,
+      backdropClass: 'lightbox-backdrop'
+    });
   }
 }
