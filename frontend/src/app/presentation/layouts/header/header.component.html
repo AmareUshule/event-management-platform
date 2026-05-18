@@ -24,6 +24,10 @@
             <mat-icon>explore</mat-icon>
             <span>Discovery</span>
           </a>
+          <a class="nav-link" routerLink="/staff-workload" [routerLinkActive]="['active']" *ngIf="isAdmin() || isInCommunicationDepartment()">
+            <mat-icon>analytics</mat-icon>
+            <span>Workload</span>
+          </a>
           <a class="nav-link" routerLink="/internal-announcements" [routerLinkActive]="['active']">
             <mat-icon>campaign</mat-icon>
             <span>Announcements</span>
@@ -31,10 +35,6 @@
           <a class="nav-link" routerLink="/calendar" [routerLinkActive]="['active']">
             <mat-icon>calendar_today</mat-icon>
             <span>Calendar</span>
-          </a>
-          <a class="nav-link" routerLink="/staff-workload" [routerLinkActive]="['active']" *ngIf="isAdmin() || isInCommunicationDepartment()">
-            <mat-icon>analytics</mat-icon>
-            <span>Resource Planning</span>
           </a>
         </div>
       </div>
@@ -159,6 +159,10 @@
         <mat-icon>explore</mat-icon>
         Discovery
       </a>
+      <a class="sheet-link" routerLink="/staff-workload" *ngIf="isAdmin() || isInCommunicationDepartment()" (click)="toggleMobileMenu()">
+        <mat-icon>analytics</mat-icon>
+        Workload
+      </a>
       <a class="sheet-link" routerLink="/internal-announcements" (click)="toggleMobileMenu()">
         <mat-icon>campaign</mat-icon>
         Announcements
@@ -166,10 +170,6 @@
       <a class="sheet-link" routerLink="/calendar" (click)="toggleMobileMenu()">
         <mat-icon>calendar_today</mat-icon>
         Calendar
-      </a>
-      <a class="sheet-link" routerLink="/staff-workload" *ngIf="isAdmin() || isInCommunicationDepartment()" (click)="toggleMobileMenu()">
-        <mat-icon>analytics</mat-icon>
-        Resource Planning
       </a>
     </div>
   </div>

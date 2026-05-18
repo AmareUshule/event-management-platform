@@ -104,3 +104,11 @@ h4 { font-size: var(--text-xl); }
   @extend .btn-premium;
   @extend .primary;
 }
+// Global gradient text styling
+.gradient-strip {
+  background-image: linear-gradient(90deg, #1E590C 0%, #DD1407 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}

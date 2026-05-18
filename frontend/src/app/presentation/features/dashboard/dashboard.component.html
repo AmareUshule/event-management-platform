@@ -9,7 +9,7 @@
       <div class="dashboard-header">
         <div class="header-content">
           <div class="section-title">
-            <h3>Event Management</h3>
+            <h3 class="gradient-strip">Event Management</h3>
           </div>
 
           <button class="create-event-btn" *ngIf="authService.canCreateEvents()" (click)="navigateToCreateEvent()">
@@ -22,7 +22,7 @@
         <section class="dashboard-hero">
           <div class="hero-copy">
             <span class="hero-tag">Operational command center</span>
-            <h1>{{ heroGreeting }}</h1>
+            <h1 class="gradient-strip">{{ heroGreeting }}</h1>
             <p class="hero-role">
               {{ heroRoleLabel }}<span *ngIf="departmentName"> • {{ departmentName }}</span>
             </p>
