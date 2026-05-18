@@ -149,6 +149,7 @@ export interface Event {
   startDate: string;
   endDate: string;
   eventPlace: string;
+  coverImageUrl?: string;
   status: EventStatus | string;
   timeStatus?: 'Past' | 'Ongoing' | 'Upcoming';
   createdAt?: string;
@@ -157,6 +158,8 @@ export interface Event {
   department: Department;
   createdBy: User;
   approvedBy?: User;
+  finalizedBy?: User;
+  closureComment?: string;
 
   assignments?: EventAssignments;
 }
@@ -199,6 +202,8 @@ export interface CreateEventRequest {
   startDate: string;
   endDate: string;
   eventPlace: string;
+  coverImageUrl?: string;
+  departmentId?: string;
 }
 
 /* -----------------------------
@@ -214,4 +219,5 @@ export interface EventFormData {
   address: string;
   meetingLink: string;
   departmentId: number | string;
+  coverImageUrl?: string;
 }

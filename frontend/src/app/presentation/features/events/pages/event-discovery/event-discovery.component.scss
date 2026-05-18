@@ -3,25 +3,66 @@
   min-height: calc(100vh - 200px);
   display: flex;
   flex-direction: column;
-  gap: var(--space-8);
+  gap: var(--space-6);
   padding: 104px var(--space-6) var(--space-12);
   max-width: 1400px;
   margin: 0 auto;
+  color: #1E590C;
+}
+
+.discovery-container .page-header,
+.discovery-container .page-header .breadcrumb,
+.discovery-container .page-header .page-subtitle,
+.discovery-container .search-bar-wrapper,
+.discovery-container .quick-filters,
+.discovery-container .active-filters-display,
+.discovery-container .suggestion-item,
+.discovery-container .filter-label,
+.discovery-container .filter-chip,
+.discovery-container .quick-filter-pill {
+  color: #1E590C;
+}
+
+.discovery-container .premium-search-input {
+  color: #1E590C;
 }
 
 // Search Hero Section
 .search-hero {
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
-  margin-bottom: var(--space-8);
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
 }
 
 // Premium Search Container
 .premium-search-container {
   display: flex;
   flex-direction: column;
+  gap: var(--space-3);
+}
+
+.search-action-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.search-action-row .search-bar-wrapper {
+  flex: 1 1 0;
+  max-width: 100%;
+}
+
+.advanced-search-btn {
+  min-width: 240px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-lg);
 }
 
 // Search Bar Wrapper
@@ -998,6 +1039,24 @@
     height: 200px;
     position: relative;
     overflow: hidden;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+
+    &.has-cover {
+      background-attachment: local;
+    }
+
+    &:before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.3) 100%);
+      z-index: 1;
+    }
 
     .card-badges {
       position: absolute;

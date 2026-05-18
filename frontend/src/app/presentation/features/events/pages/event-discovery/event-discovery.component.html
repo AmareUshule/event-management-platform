@@ -1,12 +1,17 @@
 <div class="discovery-container animate-fade-in">
   <app-page-header
     title="Event Intelligence Discovery"
-    subtitle="Access and explore the collective operational intelligence across the ecosystem."
+    [titleClass]="'gradient-strip'"
+    subtitle="Access and explore the collective event intelligence across the portal."
   >
     <div actions>
-      <button class="btn-premium primary shadow-glow" routerLink="/events/create">
+      <button
+        *ngIf="canCreateEvents"
+        class="btn-premium primary shadow-glow"
+        routerLink="/events/create"
+      >
         <mat-icon>add_task</mat-icon>
-        Initialize Operation
+        Create Event
       </button>
     </div>
   </app-page-header>
@@ -14,20 +19,21 @@
   <!-- Premium Intelligence Search Hero -->
   <section class="search-hero">
     <div class="premium-search-container">
-      <!-- Main Search Bar -->
-      <div class="search-bar-wrapper" [class.focused]="isSearchFocused()">
-        <div class="search-input-container">
-          <mat-icon class="search-icon" [class.animated]="isSearchFocused()">hub</mat-icon>
-          <input
-            #searchInput
-            type="text"
-            [formControl]="searchControl"
-            placeholder="Query operational data, locations, or intelligence categories..."
-            class="premium-search-input"
-            (focus)="onSearchFocus()"
-            (blur)="onSearchBlur()"
-            autocomplete="off"
-          >
+      <div class="search-action-row">
+        <!-- Main Search Bar -->
+        <div class="search-bar-wrapper" [class.focused]="isSearchFocused()">
+          <div class="search-input-container">
+            <mat-icon class="search-icon" [class.animated]="isSearchFocused()">hub</mat-icon>
+            <input
+              #searchInput
+              type="text"
+              [formControl]="searchControl"
+              placeholder="Query event data, locations, or event categories..."
+              class="premium-search-input"
+              (focus)="onSearchFocus()"
+              (blur)="onSearchBlur()"
+              autocomplete="off"
+            >
           <div class="search-hints" *ngIf="!isSearchFocused()">
             <span class="kbd">⌘</span>
             <span class="kbd">K</span>
@@ -61,7 +67,7 @@
           <div class="suggestions-section">
             <div class="section-header">
               <mat-icon>insights</mat-icon>
-              <span>Intelligence Recommendations</span>
+              <span>Event Recommendations</span>
             </div>
             <div class="suggestion-item" *ngFor="let suggestion of searchSuggestions()" (click)="selectSuggestion(suggestion)">
               <mat-icon>terminal</mat-icon>
@@ -71,9 +77,20 @@
         </div>
       </div>
 
-      <!-- Operational Status Pills -->
+      <button
+        class="advanced-search-btn filter-toggle-btn"
+        [class.active]="showAdvancedFilters()"
+        (click)="toggleAdvancedFilters()"
+        mat-stroked-button
+      >
+        <mat-icon>tune</mat-icon>
+       Advanced Search
+        <span class="filter-badge" *ngIf="activeFilterCount() > 0">{{ activeFilterCount() }}</span>
+      </button>
+
+      <!-- Event Status Pills -->
       <div class="quick-filters" *ngIf="showQuickFilters()">
-        <span class="filter-label">Quick telemetry:</span>
+        <span class="filter-label">Quick event telemetry:</span>
         <button
           class="quick-filter-pill"
           *ngFor="let status of ['Scheduled', 'Ongoing', 'Archived']"
@@ -84,7 +101,7 @@
         </button>
         <button
           class="quick-filter-pill"
-          *ngFor="let category of ['Project Launch', 'Workshop', 'Board Meeting']"
+          *ngFor="let category of ['Project Launch', 'Workshop']"
           (click)="quickFilterByCategory(category)"
           [class.active]="activeFilters().category.includes(category)"
         >
@@ -92,6 +109,7 @@
         </button>
       </div>
     </div>
+  </div>
 
     <!-- Active Filters Display -->
     <div class="active-filters-display" *ngIf="hasActiveFilters()" [@slideInOut]>
@@ -162,7 +180,7 @@
       </div>
 
       <div class="filter-group">
-        <label>Operational Status</label>
+        <label>Event Status</label>
         <mat-form-field appearance="outline" class="premium-field">
           <mat-label>Select Status</mat-label>
           <mat-select
@@ -241,21 +259,8 @@
     </div>
   </div>
 
-  <!-- Operational Controls Bar -->
+  <!-- Event Controls Bar -->
   <div class="filter-controls-bar">
-    <div class="left-controls">
-      <button
-        class="filter-toggle-btn"
-        [class.active]="showAdvancedFilters()"
-        (click)="toggleAdvancedFilters()"
-        mat-stroked-button
-      >
-        <mat-icon>tune</mat-icon>
-        Operational Parameters
-        <span class="filter-badge" *ngIf="activeFilterCount() > 0">{{ activeFilterCount() }}</span>
-      </button>
-    </div>
-
     <div class="center-controls">
       <!-- View Mode Toggle -->
       <div class="view-mode-toggle">
@@ -264,7 +269,7 @@
           [class.active]="viewMode() === 'table'"
           (click)="setViewMode('table')"
           mat-icon-button
-          matTooltip="Operational Log (Table)"
+          matTooltip="Event Log (Table)"
         >
           <mat-icon>terminal</mat-icon>
         </button>
@@ -301,7 +306,7 @@
       <div class="column-controls" *ngIf="viewMode() === 'table'">
         <button class="column-toggle-btn" mat-button [matMenuTriggerFor]="columnMenu">
           <mat-icon>visibility</mat-icon>
-          Telemetry Columns
+          Event Columns
         </button>
         <mat-menu #columnMenu="matMenu">
           <button mat-menu-item (click)="toggleColumnVisibility('title')">
@@ -338,7 +343,7 @@
 
     <div class="right-controls">
       <span class="results-count">
-        {{ filteredEvents().length }} operation{{ filteredEvents().length !== 1 ? 's' : '' }} synchronized
+        {{ filteredEvents().length }} event{{ filteredEvents().length !== 1 ? 's' : '' }} synchronized
       </span>
 
       <!-- Batch Intelligence Actions -->
@@ -359,7 +364,7 @@
     </div>
   </div>
 
-  <!-- Operational Intelligence Results -->
+  <!-- Event Intelligence Results -->
   <div class="discovery-results">
     <!-- Loading State -->
     <div *ngIf="isLoading()" class="loading-state">
@@ -517,7 +522,9 @@
         [@cardEnter]
       >
         <!-- Card Banner -->
-        <div class="card-banner" [style.background]="getEventBannerGradient(event)">
+        <div class="card-banner" 
+             [style.background]="getEventBannerGradient(event)"
+             [class.has-cover]="event.coverImageUrl">
           <div class="card-badges">
             <span class="category-badge">{{ event.category }}</span>
             <span class="status-badge" [style.background-color]="getStatusColor(event.status)">
@@ -540,7 +547,7 @@
           </div>
 
           <p class="event-description">
-            {{ event.description || 'Operational data point with no further narrative.' }}
+            {{ event.description || 'Event data point with no further narrative.' }}
           </p>
 
           <div class="event-meta">
@@ -646,7 +653,7 @@
 
       <div class="empty-content">
         <h3>Zero Signal Detected</h3>
-        <p>No operational data matches the current synchronization parameters.</p>
+        <p>No event data matches the current synchronization parameters.</p>
 
         <div class="empty-actions">
           <button class="btn-premium primary" (click)="clearFilters()" *ngIf="hasActiveFilters()">

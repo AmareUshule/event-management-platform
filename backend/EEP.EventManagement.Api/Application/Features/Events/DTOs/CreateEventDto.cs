@@ -22,5 +22,7 @@ namespace EEP.EventManagement.Api.Application.Features.Events.DTOs
         public DateTime EndDate { get; set; }
 
         public string? EventPlace { get; set; }
+        public string? CoverImageUrl { get; set; }
+        public Guid? DepartmentId { get; set; }
     }
 }

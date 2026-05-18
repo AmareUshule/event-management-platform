@@ -19,19 +19,28 @@ namespace EEP.EventManagement.Api.Application.Mappings
                 .ForMember(dest => dest.TimeStatus, opt => opt.MapFrom(src => 
                     DateTime.UtcNow < src.StartDate ? "Upcoming" :
                     DateTime.UtcNow > src.EndDate ? "Past" : "Ongoing"))
+                .ForMember(dest => dest.CoverImageUrl, opt => opt.MapFrom(src => src.CoverImageUrl))
                 .ForMember(dest => dest.Department, opt => opt.MapFrom(src => src.Department))
                 .ForMember(dest => dest.CreatedBy, opt => opt.MapFrom(src => src.CreatedByUser))
                 .ForMember(dest => dest.ApprovedBy, opt => opt.MapFrom(src => src.ApprovedByUser))
+                .ForMember(dest => dest.FinalizedBy, opt => opt.MapFrom(src => src.FinalizedByUser))
+                .ForMember(dest => dest.ClosureComment, opt => opt.MapFrom(src => src.ClosureComment))
                 .ForMember(dest => dest.Assignments, opt => opt.MapFrom(src => src.Assignments));
 
             // Simplified Mappings
             CreateMap<Department, SimplifiedDepartmentDto>();
 
             CreateMap<ApplicationUser, SimplifiedUserDto>()
-                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => $"{src.FirstName} {src.LastName}"));
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => $"{src.FirstName} {src.LastName}"))
+                .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.FirstName))
+                .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.LastName))
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
+                .ForMember(dest => dest.DepartmentId, opt => opt.MapFrom(src => src.DepartmentId));
 
             CreateMap<ApplicationUser, AssignedByDto>()
-                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => $"{src.FirstName} {src.LastName}"));
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => $"{src.FirstName} {src.LastName}"))
+                .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.FirstName))
+                .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.LastName));
 
             CreateMap<Assignment, SimplifiedAssignmentDto>()
                 .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Employee != null ? $"{src.Employee.FirstName} {src.Employee.LastName}" : string.Empty))

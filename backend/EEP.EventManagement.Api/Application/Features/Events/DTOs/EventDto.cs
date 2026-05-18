@@ -12,6 +12,7 @@ namespace EEP.EventManagement.Api.Application.Features.Events.DTOs
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public string? EventPlace { get; set; }
+        public string? CoverImageUrl { get; set; }
         public string Status { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
@@ -20,6 +21,8 @@ namespace EEP.EventManagement.Api.Application.Features.Events.DTOs
         public SimplifiedDepartmentDto? Department { get; set; }
         public SimplifiedUserDto? CreatedBy { get; set; }
         public SimplifiedUserDto? ApprovedBy { get; set; }
+        public SimplifiedUserDto? FinalizedBy { get; set; }
+        public string? ClosureComment { get; set; }
         public GroupedAssignmentsDto? Assignments { get; set; }
     }
 }

@@ -7,5 +7,6 @@ namespace EEP.EventManagement.Api.Application.Features.Events.Commands
     public class ArchiveEventCommand : IRequest<EventDto>
     {
         public Guid EventId { get; set; }
+        public string ClosureComment { get; set; } = string.Empty;
     }
 }

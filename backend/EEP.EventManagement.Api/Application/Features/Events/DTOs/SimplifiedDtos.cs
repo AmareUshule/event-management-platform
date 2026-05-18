@@ -14,6 +14,11 @@ namespace EEP.EventManagement.Api.Application.Features.Events.DTOs
         public Guid Id { get; set; }
         public string EmployeeId { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
+        public string FirstName { get; set; } = string.Empty;
+        public string LastName { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string Role { get; set; } = string.Empty;
+        public Guid? DepartmentId { get; set; }
     }
 
     public class SimplifiedAssignmentDto
@@ -29,6 +34,8 @@ namespace EEP.EventManagement.Api.Application.Features.Events.DTOs
     {
         public Guid Id { get; set; }
         public string Name { get; set; } = string.Empty;
+        public string FirstName { get; set; } = string.Empty;
+        public string LastName { get; set; } = string.Empty;
     }
 
     public class GroupedAssignmentsDto

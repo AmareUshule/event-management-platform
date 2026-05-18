@@ -15,13 +15,20 @@ namespace EEP.EventManagement.Api.Application.Features.Events.Handlers
     public class CreateEventCommandHandler : IRequestHandler<CreateEventCommand, EventDto>
     {
         private readonly IEventRepository _eventRepository;
+        private readonly IDepartmentRepository _departmentRepository; // Added IDepartmentRepository
         private readonly IMapper _mapper;
         private readonly IUserContext _userContext;
         private readonly UserManager<ApplicationUser> _userManager; // Injected UserManager
 
-        public CreateEventCommandHandler(IEventRepository eventRepository, IMapper mapper, IUserContext userContext, UserManager<ApplicationUser> userManager)
+        public CreateEventCommandHandler(
+            IEventRepository eventRepository, 
+            IDepartmentRepository departmentRepository,
+            IMapper mapper, 
+            IUserContext userContext, 
+            UserManager<ApplicationUser> userManager)
         {
             _eventRepository = eventRepository;
+            _departmentRepository = departmentRepository;
             _mapper = mapper;
             _userContext = userContext;
             _userManager = userManager; // Initialized UserManager
@@ -41,7 +48,21 @@ namespace EEP.EventManagement.Api.Application.Features.Events.Handlers
             
             @event.CreatedAt = DateTime.UtcNow;
             @event.CreatedBy = userId;
-            @event.DepartmentId = user.DepartmentId.Value; // Assign creator's departmentId
+            
+            // If department ID is provided in DTO, use it; otherwise, use creator's department
+            if (request.CreateEventDto.DepartmentId.HasValue && request.CreateEventDto.DepartmentId.Value != Guid.Empty)
+            {
+                var department = await _departmentRepository.GetByIdAsync(request.CreateEventDto.DepartmentId.Value);
+                if (department == null)
+                {
+                    throw new BadRequestException($"Unknown department id: {request.CreateEventDto.DepartmentId}");
+                }
+                @event.DepartmentId = request.CreateEventDto.DepartmentId.Value;
+            }
+            else
+            {
+                @event.DepartmentId = user.DepartmentId.Value; // Assign creator's departmentId
+            }
 
             @event = await _eventRepository.AddAsync(@event);
 

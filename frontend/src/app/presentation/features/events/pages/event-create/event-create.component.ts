@@ -1,6 +1,6 @@
 // src/app/presentation/features/events/pages/event-create/event-create.component.ts
 
-import { Component, OnInit, inject, OnDestroy } from '@angular/core';
+import { Component, OnInit, inject, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -25,12 +25,13 @@ import { DateTimePickerComponent } from '../../../../../shared/components/date-t
 
 // Services and Models
 import { EventService } from '../../services/event.service';
-import { EventStatus, EventType, EventFormData, Event } from '../../models/event.model';
+import { DepartmentService } from '../../../internal-announcements/services/department.service';
+import { EventStatus, EventType, EventFormData, Event as EventModel } from '../../models/event.model';
 import { AuthService } from '../../../../../core/auth/auth.service';
 import { AuthUser } from '../../../../../core/models/auth-user.model';
 
 export interface Department {
-  id: number;
+  id: string;
   name: string;
 }
 
@@ -76,7 +77,7 @@ export class EventCreateComponent implements OnInit, OnDestroy {
   isEditMode = false;
   eventId: string | null = null;
   loadingEvent = false;
-  originalEvent: Event | null = null;
+  originalEvent: EventModel | null = null;
 
   steps = [
     { label: 'Basic Details', icon: 'info', description: 'Event title, category, and summary' },
@@ -85,15 +86,7 @@ export class EventCreateComponent implements OnInit, OnDestroy {
     { label: 'Host Department', icon: 'groups', description: 'Department information' }
   ];
 
-  departments: Department[] = [
-    { id: 1, name: 'Information Technology' },
-    { id: 2, name: 'Human Resources' },
-    { id: 3, name: 'Finance' },
-    { id: 4, name: 'Marketing' },
-    { id: 5, name: 'Operations' },
-    { id: 6, name: 'Communication' },
-    { id: 7, name: 'General Staff' }
-  ];
+  departments: Department[] = [];
 
   eventCategories: EventCategory[] = [
     { id: 1, name: 'Project Launch' },
@@ -107,6 +100,8 @@ export class EventCreateComponent implements OnInit, OnDestroy {
   ];
 
   eventForm!: FormGroup;
+  coverImageFile: File | null = null;
+  coverImagePreviewUrl: string | null = null;
 
   private stepValidators: Record<number, string[]> = {
     0: ['title', 'eventCategoryId'],
@@ -118,15 +113,18 @@ export class EventCreateComponent implements OnInit, OnDestroy {
 
   private fb = inject(FormBuilder);
   private eventService = inject(EventService);
+  private departmentService = inject(DepartmentService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private authService = inject(AuthService);
   private snackBar = inject(MatSnackBar);
+  private cdr = inject(ChangeDetectorRef);
 
   // ==== LIFECYCLE ====
 
   ngOnInit(): void {
     this.initializeComponent();
+    this.cdr.detectChanges();
   }
 
   ngOnDestroy(): void {
@@ -182,7 +180,7 @@ export class EventCreateComponent implements OnInit, OnDestroy {
     return 'Invalid field';
   }
 
-  getDepartmentName(id: number): string {
+  getDepartmentName(id: string): string {
     const dept = this.departments.find(d => d.id === id);
     return dept ? dept.name : 'Unknown Department';
   }
@@ -234,6 +232,7 @@ export class EventCreateComponent implements OnInit, OnDestroy {
 
     this.setupEventTypeValidation();
     this.setupDateValidation();
+    this.loadDepartments();
     
     this.route.paramMap.pipe(takeUntil(this.destroy$)).subscribe(params => {
       this.eventId = params.get('id');
@@ -248,6 +247,19 @@ export class EventCreateComponent implements OnInit, OnDestroy {
     this.updateProgress();
   }
 
+  private loadDepartments(): void {
+    this.departmentService.getAllDepartments().pipe(takeUntil(this.destroy$)).subscribe({
+      next: (depts) => {
+        this.departments = depts;
+        // Re-run auto-fill in case departments loaded after auth check
+        if (!this.isEditMode) {
+          this.autoFillUserDepartment();
+        }
+      },
+      error: (err) => console.error('Failed to load departments', err)
+    });
+  }
+
   private initForm(): void {
     this.eventForm = this.fb.group({
       title: ['', [Validators.required, Validators.maxLength(120)]],
@@ -258,7 +270,8 @@ export class EventCreateComponent implements OnInit, OnDestroy {
       eventType: [EventType.PHYSICAL, Validators.required],
       address: [''],
       meetingLink: [''],
-      departmentId: [null, Validators.required]
+      departmentId: [null, Validators.required],
+      coverImageUrl: ['']
     });
   }
 
@@ -279,11 +292,10 @@ export class EventCreateComponent implements OnInit, OnDestroy {
     });
   }
 
-  private populateFormWithEvent(event: Event): void {
+  private populateFormWithEvent(event: EventModel): void {
     const isVirtual = event.eventPlace?.startsWith('http');
     const type = isVirtual ? EventType.VIRTUAL : EventType.PHYSICAL;
 
-    const departmentId = this.departments.find(d => d.name === event.department.name)?.id || 1;
     const eventCategoryId = this.eventCategories.find(c => c.name === event.category)?.id || 1;
 
     this.eventForm.patchValue({
@@ -295,8 +307,11 @@ export class EventCreateComponent implements OnInit, OnDestroy {
       eventType: type,
       address: !isVirtual ? event.eventPlace : '',
       meetingLink: isVirtual ? event.eventPlace : '',
-      departmentId: departmentId
+      departmentId: event.department.id,
+      coverImageUrl: event.coverImageUrl || ''
     });
+
+    this.coverImagePreviewUrl = event.coverImageUrl ? this.resolveAssetUrl(event.coverImageUrl) : null;
 
     this.updateLocationValidators(type);
   }
@@ -380,12 +395,15 @@ export class EventCreateComponent implements OnInit, OnDestroy {
     this.isSubmitting = true;
     const formData = { ...this.eventForm.value };
 
-    if (this.isEditMode && this.originalEvent) {
-      formData.departmentId = this.originalEvent.department.id;
-    } else {
-      const userDeptGuid = this.authService.getCurrentUser()?.departmentGuid;
-      if (userDeptGuid) {
-        formData.departmentId = userDeptGuid;
+    // Use departmentId from form if available, otherwise fallback to current user's department
+    if (!formData.departmentId) {
+      if (this.isEditMode && this.originalEvent) {
+        formData.departmentId = this.originalEvent.department.id;
+      } else {
+        const userDeptGuid = this.authService.getCurrentUser()?.departmentGuid;
+        if (userDeptGuid) {
+          formData.departmentId = userDeptGuid;
+        }
       }
     }
 
@@ -395,16 +413,33 @@ export class EventCreateComponent implements OnInit, OnDestroy {
 
     request$.subscribe({
       next: (response) => {
-        this.isSubmitting = false;
-        const message = this.isEditMode 
-          ? 'Event updated successfully!' 
-          : (status === EventStatus.DRAFT ? 'Event submitted for approval!' : 'Draft saved successfully!');
+        const finalizeSubmission = (message: string) => {
+          this.isSubmitting = false;
+          this.showSuccess(message);
+          setTimeout(() => {
+            const redirectUrl = this.authService.getDashboardRoute();
+            this.router.navigate([redirectUrl]);
+          }, 1500);
+        };
 
-        this.showSuccess(message);
-        setTimeout(() => {
-          const redirectUrl = this.authService.getDashboardRoute();
-          this.router.navigate([redirectUrl]);
-        }, 1500);
+        if (this.coverImageFile && response.id) {
+          this.eventService.uploadEventCoverImage(response.id, this.coverImageFile).subscribe({
+            next: () => {
+              finalizeSubmission(this.isEditMode
+                ? 'Event updated successfully with cover image!'
+                : 'Event created successfully with cover image!');
+            },
+            error: (uploadError) => {
+              this.isSubmitting = false;
+              console.error('Cover upload error:', uploadError);
+              this.showError(uploadError.message || 'Event saved but cover image upload failed');
+            }
+          });
+        } else {
+          finalizeSubmission(this.isEditMode
+            ? 'Event updated successfully!'
+            : (status === EventStatus.DRAFT ? 'Event submitted for approval!' : 'Draft saved successfully!'));
+        }
       },
       error: (error) => {
         this.isSubmitting = false;
@@ -433,9 +468,9 @@ export class EventCreateComponent implements OnInit, OnDestroy {
   }
 
   private autoFillUserDepartment(): void {
-    const userDeptId = this.authService.getCurrentUser()?.departmentId;
-    if (userDeptId && this.departments.some(d => d.id === userDeptId)) {
-      this.eventForm.patchValue({ departmentId: userDeptId });
+    const userDeptGuid = this.authService.getCurrentUser()?.departmentGuid;
+    if (userDeptGuid && this.departments.some(d => d.id === userDeptGuid)) {
+      this.eventForm.patchValue({ departmentId: userDeptGuid });
     }
   }
 
@@ -446,6 +481,52 @@ export class EventCreateComponent implements OnInit, OnDestroy {
         this.markFormGroupTouched(control);
       }
     });
+  }
+
+  onCoverImageSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      this.showError('Cover image must be smaller than 5MB');
+      return;
+    }
+
+    if (!file.type.startsWith('image/')) {
+      this.showError('Please upload a valid image file');
+      return;
+    }
+
+    this.coverImageFile = file;
+    this.coverImagePreviewUrl = URL.createObjectURL(file);
+  }
+
+  onCoverImageDragOver(event: DragEvent): void {
+    event.preventDefault();
+  }
+
+  onCoverImageDrop(event: DragEvent): void {
+    event.preventDefault();
+    const file = event.dataTransfer?.files?.[0];
+    if (!file) {
+      return;
+    }
+    this.onCoverImageSelected({ target: { files: event.dataTransfer.files } } as unknown as Event);
+  }
+
+  removeCoverImage(event: MouseEvent): void {
+    event.stopPropagation();
+    this.coverImageFile = null;
+    this.coverImagePreviewUrl = null;
+    this.eventForm.patchValue({ coverImageUrl: '' });
+  }
+
+  private resolveAssetUrl(path: string): string {
+    if (!path) return '';
+    return path.startsWith('http') ? path : `${window.location.origin}/${path.replace(/^\/+/, '')}`;
   }
 
   private showSuccess(message: string): void {

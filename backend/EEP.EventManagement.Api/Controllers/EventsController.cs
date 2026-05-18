@@ -208,6 +208,39 @@ namespace EEP.EventManagement.Api.Controllers
             return NoContent();
         }
 
+        [HttpPost("{id}/cover-image")]
+        public async Task<ActionResult<string>> UploadCoverImage(Guid id)
+        {
+            var eventDto = await _mediator.Send(new GetEventByIdQuery { Id = id });
+            if (eventDto == null)
+            {
+                return NotFound();
+            }
+
+            if (!Request.HasFormContentType || Request.Form.Files.Count == 0)
+            {
+                return BadRequest(new { message = "A cover image file is required." });
+            }
+
+            var file = Request.Form.Files[0];
+            if (file.Length == 0)
+            {
+                return BadRequest(new { message = "Uploaded file is empty." });
+            }
+
+            using var stream = file.OpenReadStream();
+            var command = new UploadEventCoverImageCommand
+            {
+                EventId = id,
+                FileStream = stream,
+                FileName = file.FileName,
+                ContentType = file.ContentType
+            };
+
+            var filePath = await _mediator.Send(command);
+            return Ok(new { url = filePath });
+        }
+
         [HttpPost("{id}/approve")]
         [Authorize(Policy = EEP.EventManagement.Api.Infrastructure.Security.Authorization.AuthorizationPolicies.CanApproveAndAssign)]
         public async Task<ActionResult<EventDto>> ApproveEvent(Guid id)
@@ -219,11 +252,25 @@ namespace EEP.EventManagement.Api.Controllers
 
         [HttpPost("{id}/archive")]
         [Authorize(Policy = EEP.EventManagement.Api.Infrastructure.Security.Authorization.AuthorizationPolicies.CanApproveAndAssign)]
-        public async Task<ActionResult<EventDto>> ArchiveEvent(Guid id)
+        public async Task<ActionResult<EventDto>> ArchiveEvent(Guid id, [FromBody] ClosureCommentRequest request)
         {
-            var command = new ArchiveEventCommand { EventId = id };
+            var command = new ArchiveEventCommand { EventId = id, ClosureComment = request.Comment };
             var result = await _mediator.Send(command);
             return Ok(result);
+        }
+
+        [HttpPost("{id}/cancel")]
+        [Authorize(Policy = EEP.EventManagement.Api.Infrastructure.Security.Authorization.AuthorizationPolicies.CanApproveAndAssign)]
+        public async Task<ActionResult<EventDto>> CancelEvent(Guid id, [FromBody] ClosureCommentRequest request)
+        {
+            var command = new CancelEventCommand { EventId = id, ClosureComment = request.Comment };
+            var result = await _mediator.Send(command);
+            return Ok(result);
+        }
+
+        public class ClosureCommentRequest
+        {
+            public string Comment { get; set; } = string.Empty;
         }
     }
 }

@@ -120,7 +120,9 @@ export class EventService {
       category: this.getCategoryName(formData.eventCategoryId),
       startDate: this.formatDateToISO(formData.startDateTime),
       endDate: this.formatDateToISO(formData.endDateTime),
-      eventPlace: eventPlace?.trim() || ''
+      eventPlace: eventPlace?.trim() || '',
+      coverImageUrl: formData.coverImageUrl?.trim() || undefined,
+      departmentId: formData.departmentId?.toString()
     };
   }
 
@@ -266,23 +268,11 @@ export class EventService {
     }
     
     if (formData.departmentId) {
-      // Find the department GUID for the numeric ID if possible, 
-      // or use the current user's department GUID if it matches the name.
-      // For now, let's try to pass the department ID as a GUID.
-      // Backend expects a Guid for DepartmentId.
-      
-      // If the form has a numeric departmentId, we might need a mapping.
-      // But usually, the form's departmentId should already be the GUID if we loaded it from the event.
-      // Wait, in populateFormWithEvent, I set it to a number.
-      
-      // Let's assume we can use the GUID from the currentUser if they are editing their own dept event.
-      // Actually, if they are editing, we should probably keep the original department unless they change it.
-      
-      // I'll try to find the department GUID from AuthService.
-      const deptGuid = this.authService.getDepartmentGuid(); 
-      if (deptGuid) {
-        requestData.departmentId = deptGuid;
-      }
+      requestData.departmentId = formData.departmentId.toString();
+    }
+
+    if (formData.coverImageUrl) {
+      requestData.coverImageUrl = formData.coverImageUrl.trim();
     }
 
     return this.http.put<Event>(
@@ -295,6 +285,25 @@ export class EventService {
     ).pipe(
       timeout(this.REQUEST_TIMEOUT),
       retry(1),
+      catchError(this.handleError.bind(this))
+    );
+  }
+
+  /**
+   * Upload cover image for an event
+   */
+  uploadEventCoverImage(eventId: string, file: File): Observable<string> {
+    const url = `${this.API_URL}/${eventId}/cover-image`;
+    const formData = new FormData();
+    formData.append('File', file, file.name);
+
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${this.authService.getToken()}`
+    });
+
+    return this.http.post<{url: string}>(url, formData, { headers }).pipe(
+      timeout(this.REQUEST_TIMEOUT),
+      map(response => response.url),
       catchError(this.handleError.bind(this))
     );
   }
@@ -494,10 +503,28 @@ assignMultipleEmployees(eventId: string, assignments: AssignmentPayload[]): Obse
   /**
    * Archive event
    */
-  archiveEvent(eventId: string): Observable<Event> {
+  archiveEvent(eventId: string, comment: string): Observable<Event> {
     return this.http.post<Event>(
       `${this.API_URL}/${eventId}/archive`,
-      {},
+      { comment },
+      {
+        headers: this.getHeaders(),
+        responseType: 'json'
+      }
+    ).pipe(
+      timeout(this.REQUEST_TIMEOUT),
+      retry(1),
+      catchError(this.handleError.bind(this))
+    );
+  }
+
+  /**
+   * Cancel event
+   */
+  cancelEvent(eventId: string, comment: string): Observable<Event> {
+    return this.http.post<Event>(
+      `${this.API_URL}/${eventId}/cancel`,
+      { comment },
       {
         headers: this.getHeaders(),
         responseType: 'json'

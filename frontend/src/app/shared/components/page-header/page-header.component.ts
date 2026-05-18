@@ -20,7 +20,7 @@ import { RouterModule } from '@angular/router';
       
       <div class="header-main">
         <div class="title-section">
-          <h1 class="page-title">{{ title }}</h1>
+          <h1 class="page-title" [ngClass]="titleClass">{{ title }}</h1>
           <p class="page-subtitle" *ngIf="subtitle">{{ subtitle }}</p>
         </div>
         
@@ -69,6 +69,15 @@ import { RouterModule } from '@angular/router';
       font-weight: 800;
       letter-spacing: -0.03em;
       color: var(--text-main);
+      transition: all 0.3s ease;
+    }
+
+    .gradient-strip {
+      background-image: linear-gradient(90deg, #1E590C 0%, #DD1407 100%);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      -webkit-text-fill-color: transparent;
     }
     .page-subtitle {
       margin: var(--space-1) 0 0 0;
@@ -98,4 +107,5 @@ export class PageHeaderComponent {
   @Input() title: string = '';
   @Input() subtitle?: string;
   @Input() breadcrumb?: { label: string, link?: string }[];
+  @Input() titleClass?: string;
 }

@@ -15,11 +15,13 @@ namespace EEP.EventManagement.Api.Application.Features.Events.Handlers
     {
         private readonly IEventRepository _eventRepository;
         private readonly IMapper _mapper;
+        private readonly EEP.EventManagement.Api.Infrastructure.Security.Claims.IUserContext _userContext;
 
-        public ArchiveEventCommandHandler(IEventRepository eventRepository, IMapper mapper)
+        public ArchiveEventCommandHandler(IEventRepository eventRepository, IMapper mapper, EEP.EventManagement.Api.Infrastructure.Security.Claims.IUserContext userContext)
         {
             _eventRepository = eventRepository;
             _mapper = mapper;
+            _userContext = userContext;
         }
 
         public async Task<EventDto> Handle(ArchiveEventCommand request, CancellationToken cancellationToken)
@@ -36,11 +38,16 @@ namespace EEP.EventManagement.Api.Application.Features.Events.Handlers
             }
 
             ev.Status = EventStatus.Archived;
+            ev.ClosureComment = request.ClosureComment;
+            ev.FinalizedBy = _userContext.GetUserId();
             ev.UpdatedAt = DateTime.UtcNow;
 
             await _eventRepository.UpdateAsync(ev);
 
-            return _mapper.Map<EventDto>(ev)!;
+            // Re-fetch to include navigation properties (like FinalizedByUser)
+            var updatedEv = await _eventRepository.GetByIdAsync(ev.Id);
+
+            return _mapper.Map<EventDto>(updatedEv)!;
         }
     }
 }

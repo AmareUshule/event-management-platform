@@ -46,6 +46,9 @@ namespace EEP.EventManagement.Api.Infrastructure.Persistence.Configurations
             builder.Property(e => e.EventPlace)
                 .HasMaxLength(255);
 
+            builder.Property(e => e.CoverImageUrl)
+                .HasColumnType("text");
+
             builder.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("now()");
 

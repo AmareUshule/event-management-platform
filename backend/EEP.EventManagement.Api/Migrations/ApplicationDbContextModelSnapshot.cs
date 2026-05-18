@@ -256,6 +256,12 @@ namespace EEP.EventManagement.Api.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<string>("ClosureComment")
+                        .HasColumnType("text");
+
+                    b.Property<string>("CoverImageUrl")
+                        .HasColumnType("text");
+
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -276,6 +282,9 @@ namespace EEP.EventManagement.Api.Migrations
                     b.Property<string>("EventPlace")
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
+
+                    b.Property<Guid?>("FinalizedBy")
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("timestamp with time zone");
@@ -302,6 +311,8 @@ namespace EEP.EventManagement.Api.Migrations
                     b.HasIndex("CreatedBy");
 
                     b.HasIndex("DepartmentId");
+
+                    b.HasIndex("FinalizedBy");
 
                     b.ToTable("Events", (string)null);
                 });
@@ -761,11 +772,17 @@ namespace EEP.EventManagement.Api.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("EEP.EventManagement.Api.Infrastructure.Security.Identity.ApplicationUser", "FinalizedByUser")
+                        .WithMany()
+                        .HasForeignKey("FinalizedBy");
+
                     b.Navigation("ApprovedByUser");
 
                     b.Navigation("CreatedByUser");
 
                     b.Navigation("Department");
+
+                    b.Navigation("FinalizedByUser");
                 });
 
             modelBuilder.Entity("EEP.EventManagement.Api.Domain.Entities.JobVacancy", b =>

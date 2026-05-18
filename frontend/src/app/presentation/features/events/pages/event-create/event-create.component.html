@@ -88,6 +88,36 @@
               <mat-error>{{ getFieldError('eventCategoryId') }}</mat-error>
             </mat-form-field>
 
+            <!-- Cover Image Upload -->
+            <div class="cover-image-section full-width">
+              <label class="section-label">Cover Image</label>
+              <div class="cover-image-container" 
+                   (dragover)="onCoverImageDragOver($event)"
+                   (drop)="onCoverImageDrop($event)">
+                <input #coverImageInput type="file" 
+                       hidden 
+                       accept="image/*"
+                       (change)="onCoverImageSelected($event)">
+                
+                <ng-container *ngIf="coverImagePreviewUrl; else noCoverImage">
+                  <div class="cover-preview">
+                    <img [src]="coverImagePreviewUrl" alt="Cover preview" />
+                    <button type="button" class="remove-btn" (click)="removeCoverImage($event)">
+                      <mat-icon>close</mat-icon>
+                    </button>
+                  </div>
+                </ng-container>
+
+                <ng-template #noCoverImage>
+                  <div class="upload-area" (click)="coverImageInput.click()">
+                    <mat-icon>image</mat-icon>
+                    <p>Click to upload or drag and drop</p>
+                    <span>PNG, JPG, WebP up to 5MB</span>
+                  </div>
+                </ng-template>
+              </div>
+            </div>
+
           </div>
         </div>
 
@@ -158,6 +188,10 @@
             <div>
               <span>Category</span>
               <strong>{{ getEventCategoryName(eventForm.get('eventCategoryId')?.value) }}</strong>
+            </div>
+            <div>
+              <span>Host Department</span>
+              <strong>{{ getDepartmentName(eventForm.get('departmentId')?.value) }}</strong>
             </div>
             <div>
               <span>Location type</span>

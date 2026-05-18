@@ -189,8 +189,15 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
 
   archiveEvent(): void {
     if (!this.event?.id) return;
+    
+    const comment = prompt('Enter final archive comment (mandatory):');
+    if (!comment || comment.trim() === '') {
+      this.showError('Archive comment is required');
+      return;
+    }
+
     this.isLoading = true;
-    this.eventService.archiveEvent(this.event.id).subscribe({
+    this.eventService.archiveEvent(this.event.id, comment).subscribe({
       next: (updatedEvent) => {
         this.isLoading = false;
         this.event = updatedEvent;
@@ -200,6 +207,30 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
       error: (error) => {
         this.isLoading = false;
         this.showError(error.message || 'Failed to archive event');
+      }
+    });
+  }
+
+  cancelEvent(): void {
+    if (!this.event?.id) return;
+    
+    const comment = prompt('Enter cancellation reason (mandatory):');
+    if (!comment || comment.trim() === '') {
+      this.showError('Cancellation reason is required');
+      return;
+    }
+
+    this.isLoading = true;
+    this.eventService.cancelEvent(this.event.id, comment).subscribe({
+      next: (updatedEvent) => {
+        this.isLoading = false;
+        this.event = updatedEvent;
+        this.showSuccess('Event cancelled successfully');
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        this.isLoading = false;
+        this.showError(error.message || 'Failed to cancel event');
       }
     });
   }
@@ -530,6 +561,25 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
     return this.getAssignmentUserDisplayName(assignment.assignedBy) || 'Unknown';
   }
 
+  getCountdown(): string {
+    if (!this.event) return '';
+    const start = new Date(this.event.startDate).getTime();
+    const now = new Date().getTime();
+    const diff = start - now;
+    
+    if (diff <= 0) {
+      const end = new Date(this.event.endDate).getTime();
+      if (now < end) return 'Currently Ongoing';
+      return 'Event Concluded';
+    }
+    
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    
+    if (days > 0) return `Starts in ${days}d ${hours}h`;
+    return `Starts in ${hours}h`;
+  }
+
   getAssignmentUserDisplayName(user?: AssignmentUser): string {
     if (!user) return '';
     if (user.name) return user.name;
@@ -669,7 +719,7 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
     });
   }
 
-  getMediaUrl(media: MediaFile): string {
+  getMediaUrl(media: any): string {
     if (!media || !media.filePath) return '';
     
     const type = media.fileType?.toString().toLowerCase();

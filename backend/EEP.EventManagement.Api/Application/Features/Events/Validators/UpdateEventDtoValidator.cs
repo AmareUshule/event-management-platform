@@ -32,6 +32,9 @@ namespace EEP.EventManagement.Api.Application.Features.Events.Validators
             RuleFor(x => x.EventPlace)
                 .MaximumLength(255).WithMessage("Event place cannot exceed 255 characters.");
 
+            RuleFor(x => x.CoverImageUrl)
+                .MaximumLength(500).WithMessage("Cover image URL cannot exceed 500 characters.");
+
             RuleFor(x => x.DepartmentId)
                 .NotEmpty().WithMessage("Department is required.");
 

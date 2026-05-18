@@ -8,338 +8,478 @@
             </button>
             <h1>Event Details</h1>
         </div>
-
-        <div class="header-actions" *ngIf="event">
-            <!-- Approve button - for Draft status -->
-            <button
-                class="action-btn"
-                *ngIf="canApprove()"
-                (click)="approveEvent()"
-                matTooltip="Approve and schedule this event">
-                <mat-icon>check_circle</mat-icon>
-                <span>Approve</span>
-            </button>
-
-            <!-- Archive button - for Completed status -->
-            <button
-                class="action-btn"
-                *ngIf="canArchive()"
-                (click)="archiveEvent()"
-                matTooltip="Archive this event">
-                <mat-icon>archive</mat-icon>
-                <span>Archive</span>
-            </button>
-
-            <!-- Edit button - only for Admin or department manager of this event -->
-            <button
-                class="action-btn"
-                *ngIf="(event.status === 'Draft') && (authService.isAdmin() || (authService.isManager() && authService.getDepartmentGuid() === event.department?.id))"
-                (click)="editEvent()"
-                matTooltip="Edit event">
-                <mat-icon>edit</mat-icon>
-                <span>Edit</span>
-            </button>
-
-            <button class="action-btn" *ngIf="(!isCompleted() && !isArchived())" (click)="downloadICS()" matTooltip="Add to calendar">
-                <mat-icon>calendar_month</mat-icon>
-                <span>Add to Calendar</span>
-            </button>
-        </div>
     </div>
 
     <!-- Update the loading state condition -->
     <div class="loading-state" *ngIf="loading && !event">
         <mat-spinner diameter="40"></mat-spinner>
-        <p>Loading event details...</p>
+        <p>Loading event data...</p>
     </div>
 
     <!-- Event details content -->
     <div class="detail-content" *ngIf="!loading && event">
-        <!-- Main event info card -->
-        <div class="event-info-card">
-            <div class="event-title-section">
-                <h2>{{ event.title }}</h2>
-                <!-- Status banner moved inside the card after title -->
-                <div class="status-banner" [class]="event.status.toLowerCase()">
-                    <mat-icon>
-                        {{ event.status === 'Approved' ? 'check_circle' :
-                        event.status === 'Draft' ? 'drafts' :
-                        event.status === 'Completed' ? 'task_alt' : 'pending' }}
-                    </mat-icon>
-                    <span>{{ event.status }}</span>
-                </div>
-
-            <!-- Assign Employee Button - only for Admin or Communication Manager while event is active -->
-            <button
-                class="assign-employee-btn"
-                *ngIf="canAssignEmployees()"
-                (click)="assignEmployee()"
-                matTooltip="Assign employee to event">
-                    <mat-icon>person_add</mat-icon>
-                    <span>Assign Expert</span>
-                </button>
-            </div>
-
-            <div class="info-grid">
-                <!-- Date & Time -->
-                <div class="info-item">
-                    <div class="info-icon">
-                        <mat-icon>event</mat-icon>
+        <!-- Hero Banner Section with Cover Image -->
+        <div class="hero-section" [class.cancelled]="event.status === 'Cancelled'" *ngIf="event.coverImageUrl; else fallbackHero">
+            <img [src]="getMediaUrl({ filePath: event.coverImageUrl })" 
+                 alt="Event cover" 
+                 class="hero-image">
+            <div class="hero-overlay"></div>
+            <div class="hero-metadata">
+                <div class="hero-metadata-left">
+                    <div class="status-badge-hero" [class]="event.status.toLowerCase()">
+                        <mat-icon>
+                            {{ event.status === 'Approved' || event.status === 'Scheduled' ? 'check_circle' :
+                            event.status === 'Draft' ? 'drafts' :
+                            event.status === 'Completed' ? 'task_alt' : 
+                            event.status === 'Cancelled' ? 'cancel' : 'pending' }}
+                        </mat-icon>
+                        <span>{{ event.status }}</span>
                     </div>
-                    <div class="info-content">
-                        <span class="info-label">Date</span>
-                        <span class="info-value">{{ event.startDate | date:'fullDate' }}</span>
-                        <span class="info-subvalue">
-                            {{ event.startDate | date:'shortTime' }} - {{ event.endDate | date:'shortTime' }}
-                        </span>
-                    </div>
-                </div>
-
-                <!-- Location -->
-                <div class="info-item">
-                    <div class="info-icon">
-                        <mat-icon>location_on</mat-icon>
-                    </div>
-                    <div class="info-content">
-                        <span class="info-label">Location</span>
-                        <span class="info-value">{{ event.eventPlace }}</span>
-                        <button class="map-link" (click)="openInMaps()">
-                            View on map
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Category -->
-                <div class="info-item" *ngIf="event.category">
-                    <div class="info-icon">
-                        <mat-icon>category</mat-icon>
-                    </div>
-                    <div class="info-content">
-                        <span class="info-label">Category</span>
-                        <span class="info-value">{{ event.category }}</span>
-                    </div>
-                </div>
-
-                <!-- Organizer -->
-                <div class="info-item" *ngIf="event.createdBy">
-                    <div class="info-icon">
-                        <mat-icon>person</mat-icon>
-                    </div>
-                    <div class="info-content">
-                        <span class="info-label">Organizer</span>
-                        <span class="info-value">{{ event.createdBy.firstName }} {{ event.createdBy.lastName }}</span>
-                    </div>
-                </div>
-
-                <!-- Department -->
-                <div class="info-item" *ngIf="event.department">
-                    <div class="info-icon">
-                        <mat-icon>business</mat-icon>
-                    </div>
-                    <div class="info-content">
-                        <span class="info-label">Department</span>
-                        <span class="info-value">{{ event.department.name }}</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Assignments Section -->
-            <div class="assignments-section" *ngIf="getTotalAssignments() > 0">
-                <h3>Assigned Personnel</h3>
-                <div class="assignments-grid">
-                    <ng-container *ngFor="let role of getActiveRoles()">
-                        <div class="role-group">
-                            <h4 class="role-title">{{ formatRoleName(role) }}</h4>
-                            <div class="assignment-list">
-                                <div class="assignment-item" *ngFor="let assignment of getAssignmentsByRole(role)">
-                                    <div class="assignee-info">
-                                        <div class="assignee-avatar">
-                                            <mat-icon>person</mat-icon>
-                                        </div>
-                                        <div class="assignee-details">
-                                            <span class="assignee-name">{{ getAssigneeName(role, assignment.id)
-                                                }}</span>
-                                            <span class="assigned-by" *ngIf="assignment.assignedBy">
-                                                Assigned by: {{ getAssignedByName(role, assignment.id) }}
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <button mat-icon-button color="warn" class="remove-btn" *ngIf="canAssignEmployees()"
-                                        (click)="removeAssignment(role, assignment.id)" matTooltip="Remove assignment">
-                                        <mat-icon>person_remove</mat-icon>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </ng-container>
-                </div>
-            </div>
-
-            <!-- Description -->
-            <div class="description-section" *ngIf="event.description">
-                <h3>About this event</h3>
-                <p>{{ event.description }}</p>
-            </div>
-
-            <!-- Media Section -->
-            <div class="media-section" *ngIf="event.status === 'Completed' || event.status === 'Archived'">
-                <div class="media-header">
-                    <h3>Event Media & Documentation</h3>
-                    <div class="media-stats" *ngIf="mediaFiles.length > 0">
-                        <span class="stat-item">{{ mediaFiles.length }} files</span>
-                        <span class="stat-item">{{ getTotalFileSize() | fileSize }}</span>
-                    </div>
-                </div>
-                
-                <div class="media-upload-controls" *ngIf="canUploadMedia()">
-                    <div class="upload-grid">
-                        <input type="file" #imageInput hidden (change)="onFileUpload($event, 'Image')" accept="image/*">
-                        <button class="upload-btn image-btn" (click)="imageInput.click()" matTooltip="Upload images">
-                            <mat-icon>image</mat-icon>
-                            <span>Images</span>
-                        </button>
-                        
-                        <input type="file" #videoInput hidden (change)="onFileUpload($event, 'Video')" accept="video/*">
-                        <button class="upload-btn video-btn" (click)="videoInput.click()" matTooltip="Upload videos">
-                            <mat-icon>videocam</mat-icon>
-                            <span>Videos</span>
-                        </button>
-                        
-                        <input type="file" #docInput hidden (change)="onFileUpload($event, 'Document')" accept=".pdf,.doc,.docx,.txt">
-                        <button class="upload-btn document-btn" (click)="docInput.click()" matTooltip="Upload documents">
-                            <mat-icon>description</mat-icon>
-                            <span>Docs</span>
-                        </button>
-                        
-                        <button class="upload-btn link-btn" (click)="addExternalLink()" matTooltip="Add external links">
-                            <mat-icon>link</mat-icon>
-                            <span>Links</span>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="media-gallery" *ngIf="mediaFiles.length > 0">
-                    <div class="gallery-filters">
-                        <button
-                            class="filter-btn"
-                            [class.active]="selectedFilter === 'all'"
-                            (click)="setFilter('all')">
-                            All ({{ mediaFiles.length }})
-                        </button>
-                        <button
-                            class="filter-btn"
-                            [class.active]="selectedFilter === 'Image'"
-                            (click)="setFilter('Image')">
-                            Images ({{ getMediaCount('Image') }})
-                        </button>
-                        <button
-                            class="filter-btn"
-                            [class.active]="selectedFilter === 'Video'"
-                            (click)="setFilter('Video')">
-                            Videos ({{ getMediaCount('Video') }})
-                        </button>
-                        <button
-                            class="filter-btn"
-                            [class.active]="selectedFilter === 'Document'"
-                            (click)="setFilter('Document')">
-                            Documents ({{ getMediaCount('Document') }})
-                        </button>
-                        <button
-                            class="filter-btn"
-                            [class.active]="selectedFilter === 'Link'"
-                            (click)="setFilter('Link')">
-                            Links ({{ getMediaCount('Link') }})
-                        </button>
-                    </div>
-
-                    <div class="media-grid">
-                        <div
-                            class="media-card"
-                            *ngFor="let media of filteredMedia"
-                            [class]="getMediaCardClass(media)"
-                            (click)="openMediaViewer(media)">
-
-                            <div class="media-preview">
-                                <div class="media-icon" *ngIf="!isImage(media)">
-                                    <mat-icon>{{ getMediaIcon(media.fileType) }}</mat-icon>
-                                </div>
-                                <img
-                                    *ngIf="isImage(media)"
-                                    [src]="getMediaUrl(media)"
-                                    [alt]="media.fileName"
-                                    class="media-thumbnail"
-                                    loading="lazy">
-                                <div class="media-overlay">
-                                    <button class="preview-btn" mat-icon-button>
-                                        <mat-icon>visibility</mat-icon>
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div class="media-info">
-                                <div class="media-title">{{ media.fileName }}</div>
-                                <div class="media-meta">
-                                    <span class="uploader">{{ media.uploaderName || 'Unknown' }}</span>
-                                    <span class="upload-date">{{ media.createdAt | date:'short' }}</span>
-                                    <span class="file-size" *ngIf="media.fileSize > 0">{{ media.fileSize | fileSize }}</span>
-                                </div>
-                            </div>
-
-                            <div class="media-actions">
-                                <a
-                                    mat-icon-button
-                                    [href]="getMediaUrl(media)"
-                                    target="_blank"
-                                    download
-                                    matTooltip="Download">
-                                    <mat-icon>download</mat-icon>
-                                </a>
-                                <button
-                                    mat-icon-button
-                                    color="warn"
-                                    *ngIf="canDeleteMedia(media)"
-                                    (click)="deleteMedia(media, $event)"
-                                    matTooltip="Delete">
-                                    <mat-icon>delete</mat-icon>
-                                </button>
-                            </div>
+                    <div class="hero-title-overlay">
+                        <h2>{{ event.title }}</h2>
+                        <div class="hero-subtitle">
+                            <mat-icon>location_on</mat-icon>
+                            {{ event.eventPlace }}
                         </div>
                     </div>
                 </div>
-
-                <div class="no-media" *ngIf="mediaFiles.length === 0">
-                    <div class="empty-state">
-                        <mat-icon class="empty-icon">photo_library</mat-icon>
-                        <h4>No media yet</h4>
-                        <p>Event media and documentation will appear here once uploaded.</p>
-                        <button
-                            class="upload-first-btn"
-                            *ngIf="canUploadMedia()"
-                            (click)="addExternalLink()">
-                            <mat-icon>add</mat-icon>
-                            Add First Item
-                        </button>
+                <div class="hero-metadata-right">
+                    <div class="telemetry-bar">
+                        <div class="telemetry-item">
+                            <mat-icon>schedule</mat-icon>
+                            <div class="telemetry-content">
+                                <span class="telemetry-label">Timeline</span>
+                                <span class="telemetry-value">{{ getCountdown() }}</span>
+                            </div>
+                        </div>
+                        <div class="telemetry-divider"></div>
+                        <div class="telemetry-item">
+                            <mat-icon>calendar_today</mat-icon>
+                            <div class="telemetry-content">
+                                <span class="telemetry-label">Date</span>
+                                <span class="telemetry-value">{{ event.startDate | date:'MMM d, y' }}</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
+        <ng-template #fallbackHero>
+            <div class="hero-section fallback" [class.cancelled]="event.status === 'Cancelled'">
+                <div class="hero-overlay fallback-gradient"></div>
+                <div class="hero-metadata">
+                    <div class="hero-metadata-left">
+                        <div class="status-badge-hero" [class]="event.status.toLowerCase()">
+                            <mat-icon>
+                                {{ event.status === 'Approved' || event.status === 'Scheduled' ? 'check_circle' :
+                                event.status === 'Draft' ? 'drafts' :
+                                event.status === 'Completed' ? 'task_alt' : 
+                                event.status === 'Cancelled' ? 'cancel' : 'pending' }}
+                            </mat-icon>
+                            <span>{{ event.status }}</span>
+                        </div>
+                        <div class="hero-title-overlay">
+                            <h2>{{ event.title }}</h2>
+                            <div class="hero-subtitle">
+                                <mat-icon>location_on</mat-icon>
+                                {{ event.eventPlace }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="hero-metadata-right">
+                        <div class="telemetry-bar">
+                            <div class="telemetry-item">
+                                <mat-icon>schedule</mat-icon>
+                                <div class="telemetry-content">
+                                    <span class="telemetry-label">Timeline</span>
+                                    <span class="telemetry-value">{{ getCountdown() }}</span>
+                                </div>
+                            </div>
+                            <div class="telemetry-divider"></div>
+                            <div class="telemetry-item">
+                                <mat-icon>calendar_today</mat-icon>
+                                <div class="telemetry-content">
+                                    <span class="telemetry-label">Date</span>
+                                    <span class="telemetry-value">{{ event.startDate | date:'MMM d, y' }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </ng-template>
 
+        <!-- Main Dashboard Layout (70/30) -->
+        <div class="premium-dashboard-grid">
+            <!-- Left Column: Main Content -->
+            <div class="main-intelligence-column">
+                <mat-tab-group class="premium-tabs" animationDuration="0ms">
+                    <!-- Tab 1: Overview -->
+                    <mat-tab>
+                        <ng-template mat-tab-label>
+                            <mat-icon class="tab-icon">analytics</mat-icon>
+                            <span>Overview</span>
+                        </ng-template>
+                        
+                        <div class="tab-content">
+                            <!-- Event Lifecycle -->
+                            <div class="operational-timeline-card">
+                                <h3>Event Lifecycle</h3>
+                                <div class="timeline-visual four-nodes">
+                                    <!-- Stage 1: Created -->
+                                    <div class="timeline-node" [class.completed]="true">
+                                        <div class="node-icon"><mat-icon>add</mat-icon></div>
+                                        <div class="node-content">
+                                            <span class="node-label">Created</span>
+                                            <span class="node-date">{{ event.createdAt | date:'shortDate' }}</span>
+                                            <span class="node-meta">by {{ event.createdBy.firstName }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="timeline-connector" [class.active]="event.approvedBy || isScheduled() || isCompleted() || isArchived() || event.status === 'Cancelled'"></div>
+                                    
+                                    <!-- Stage 2: Approved -->
+                                    <div class="timeline-node" 
+                                         [class.completed]="event.approvedBy || isScheduled() || isCompleted() || isArchived()"
+                                         [class.skipped]="event.status === 'Cancelled'">
+                                        <div class="node-icon">
+                                            <mat-icon>{{ event.status === 'Cancelled' ? 'block' : 'verified' }}</mat-icon>
+                                        </div>
+                                        <div class="node-content">
+                                            <span class="node-label">Approved</span>
+                                            <span class="node-date" *ngIf="event.approvedBy">{{ event.updatedAt | date:'shortDate' }}</span>
+                                            <span class="node-meta" *ngIf="event.approvedBy">by {{ event.approvedBy.firstName }}</span>
+                                            <span class="node-meta" *ngIf="!event.approvedBy && (isScheduled() || isCompleted() || isArchived())">Approved</span>
+                                            <span class="node-meta" *ngIf="!event.approvedBy && event.status === 'Draft'">Pending</span>
+                                            <span class="node-meta" *ngIf="event.status === 'Cancelled'">Cancelled</span>
+                                        </div>
+                                    </div>
+                                    <div class="timeline-connector" [class.active]="isCompleted() || isArchived()"></div>
+                                    
+                                    <!-- Stage 3: Concluded -->
+                                    <div class="timeline-node" 
+                                         [class.completed]="isCompleted() || isArchived()"
+                                         [class.skipped]="event.status === 'Cancelled'">
+                                        <div class="node-icon"><mat-icon>task_alt</mat-icon></div>
+                                        <div class="node-content">
+                                            <span class="node-label">Concluded</span>
+                                            <span class="node-date" *ngIf="isCompleted() || isArchived()">{{ event.updatedAt | date:'shortDate' }}</span>
+                                            <span class="node-meta" *ngIf="!isCompleted() && !isArchived() && event.status !== 'Cancelled'">Awaiting</span>
+                                            <span class="node-meta" *ngIf="event.status === 'Cancelled'">Cancelled</span>
+                                        </div>
+                                    </div>
+                                    <div class="timeline-connector" [class.active]="isArchived() || event.status === 'Cancelled'"></div>
 
-        <!-- Quick actions -->
-        <div class="quick-actions">
-            <button class="quick-action-btn" (click)="shareEvent()">
-                <mat-icon>share</mat-icon>
-                <span>Share</span>
-            </button>
-            <button class="quick-action-btn" *ngIf="(!isCompleted() && !isArchived())" (click)="downloadICS()">
-                <mat-icon>download</mat-icon>
-                <span>Save to calendar</span>
-            </button>
-            <button class="quick-action-btn" (click)="getDirections()">
-                <mat-icon>directions</mat-icon>
-                <span>Directions</span>
-            </button>
+                                    <!-- Stage 4: Archived -->
+                                    <div class="timeline-node" 
+                                         [class.completed]="isArchived() || event.status === 'Cancelled'"
+                                         [class.cancelled-node]="event.status === 'Cancelled'">
+                                        <div class="node-icon">
+                                            <mat-icon>{{ event.status === 'Cancelled' ? 'cancel' : 'inventory_2' }}</mat-icon>
+                                        </div>
+                                        <div class="node-content">
+                                            <span class="node-label">{{ event.status === 'Cancelled' ? 'Cancelled' : 'Archived' }}</span>
+                                            <span class="node-date" *ngIf="isArchived() || event.status === 'Cancelled'">{{ event.updatedAt | date:'shortDate' }}</span>
+                                            <span class="node-meta" *ngIf="event.finalizedBy">by {{ event.finalizedBy.firstName }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Closure Comment Display -->
+                                <div class="closure-comment-box" *ngIf="event.closureComment">
+                                    <div class="comment-header">
+                                        <mat-icon>{{ event.status === 'Cancelled' ? 'report_problem' : 'assignment_turned_in' }}</mat-icon>
+                                        <span>Final Closure Comment</span>
+                                    </div>
+                                    <p class="comment-text">"{{ event.closureComment }}"</p>
+                                    <div class="comment-footer" *ngIf="event.finalizedBy">
+                                        — {{ event.finalizedBy.firstName }} {{ event.finalizedBy.lastName }}, Administrator
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Description -->
+                            <div class="intelligence-brief">
+                                <h3>Event Description</h3>
+                                <div class="brief-content">
+                                    <p>{{ event.description || 'No detailed description provided for this event.' }}</p>
+                                </div>
+                            </div>
+
+                            <!-- Location Preview -->
+                            <div class="location-intelligence-card">
+                                <h3>Event Location</h3>
+                                <div class="static-map-preview" (click)="openInMaps()">
+                                    <div class="map-overlay">
+                                        <mat-icon>map</mat-icon>
+                                        <span>Open Interactive Map</span>
+                                    </div>
+                                    <div class="map-placeholder-bg"></div>
+                                    <div class="location-pin">
+                                        <mat-icon>location_on</mat-icon>
+                                    </div>
+                                </div>
+                                <div class="location-details">
+                                    <mat-icon>place</mat-icon>
+                                    <span>{{ event.eventPlace }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </mat-tab>
+
+                    <!-- Tab 2: Staff -->
+                    <mat-tab>
+                        <ng-template mat-tab-label>
+                            <mat-icon class="tab-icon">groups</mat-icon>
+                            <span>Staff</span>
+                            <span class="tab-badge" *ngIf="getTotalAssignments() > 0">{{ getTotalAssignments() }}</span>
+                        </ng-template>
+
+                        <div class="tab-content">
+                            <div class="personnel-header">
+                                <h3>Assigned Staff</h3>
+                                <button
+                                    class="assign-btn-premium"
+                                    *ngIf="canAssignEmployees()"
+                                    (click)="assignEmployee()">
+                                    <mat-icon>person_add</mat-icon>
+                                    Assign Staff
+                                </button>
+                            </div>
+
+                            <div class="personnel-grid" *ngIf="getTotalAssignments() > 0; else noPersonnel">
+                                <ng-container *ngFor="let role of getActiveRoles()">
+                                    <div class="unit-group">
+                                        <h4 class="unit-role-title">{{ formatRoleName(role) }} Staff</h4>
+                                        <div class="unit-cards">
+                                            <div class="unit-card" *ngFor="let assignment of getAssignmentsByRole(role)">
+                                                <div class="unit-card-main">
+                                                    <div class="unit-avatar">
+                                                        <mat-icon>account_circle</mat-icon>
+                                                    </div>
+                                                    <div class="unit-info">
+                                                        <span class="unit-name">{{ getAssigneeName(role, assignment.id) }}</span>
+                                                        <span class="unit-status" [class]="assignment.status?.toLowerCase() || 'pending'">
+                                                            {{ assignment.status || 'Pending' }}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div class="unit-card-footer">
+                                                    <span class="assigned-by-brief">By {{ getAssignedByName(role, assignment.id) }}</span>
+                                                    <button mat-icon-button color="warn" class="remove-unit-btn" 
+                                                            *ngIf="canAssignEmployees()"
+                                                            (click)="removeAssignment(role, assignment.id)">
+                                                        <mat-icon>person_remove</mat-icon>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </ng-container>
+                            </div>
+
+                            <ng-template #noPersonnel>
+                                <div class="empty-intelligence-state">
+                                    <mat-icon>person_off</mat-icon>
+                                    <h4>No Staff Assigned</h4>
+                                    <p>Initialize staff assignments to begin event coverage.</p>
+                                </div>
+                            </ng-template>
+                        </div>
+                    </mat-tab>
+
+                    <!-- Tab 3: Media -->
+                    <mat-tab>
+                        <ng-template mat-tab-label>
+                            <mat-icon class="tab-icon">snippet_folder</mat-icon>
+                            <span>Media</span>
+                            <span class="tab-badge" *ngIf="mediaFiles.length > 0">{{ mediaFiles.length }}</span>
+                        </ng-template>
+
+                        <div class="tab-content">
+                            <!-- Media Section -->
+                            <div class="media-section-premium">
+                                <div class="media-header-premium">
+                                    <h3>Event Media & Attachments</h3>
+                                    <div class="media-stats-premium" *ngIf="mediaFiles.length > 0">
+                                        <span>{{ mediaFiles.length }} items</span>
+                                        <span class="dot-separator"></span>
+                                        <span>{{ getTotalFileSize() | fileSize }}</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="media-upload-area" *ngIf="canUploadMedia()">
+                                    <div class="upload-options">
+                                        <input type="file" #imageInput hidden (change)="onFileUpload($event, 'Image')" accept="image/*">
+                                        <button class="upload-option" (click)="imageInput.click()">
+                                            <mat-icon>image</mat-icon>
+                                            <span>Image</span>
+                                        </button>
+                                        
+                                        <input type="file" #videoInput hidden (change)="onFileUpload($event, 'Video')" accept="video/*">
+                                        <button class="upload-option" (click)="videoInput.click()">
+                                            <mat-icon>videocam</mat-icon>
+                                            <span>Video</span>
+                                        </button>
+                                        
+                                        <input type="file" #docInput hidden (change)="onFileUpload($event, 'Document')" accept=".pdf,.doc,.docx,.txt">
+                                        <button class="upload-option" (click)="docInput.click()">
+                                            <mat-icon>description</mat-icon>
+                                            <span>Document</span>
+                                        </button>
+                                        
+                                        <button class="upload-option" (click)="addExternalLink()">
+                                            <mat-icon>link</mat-icon>
+                                            <span>Link</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="media-intelligence-gallery" *ngIf="mediaFiles.length > 0; else noMedia">
+                                    <!-- Filters -->
+                                    <div class="gallery-filters-premium">
+                                        <button [class.active]="selectedFilter === 'all'" (click)="setFilter('all')">All</button>
+                                        <button [class.active]="selectedFilter === 'Image'" (click)="setFilter('Image')">Images</button>
+                                        <button [class.active]="selectedFilter === 'Video'" (click)="setFilter('Video')">Videos</button>
+                                        <button [class.active]="selectedFilter === 'Document'" (click)="setFilter('Document')">Docs</button>
+                                        <button [class.active]="selectedFilter === 'Link'" (click)="setFilter('Link')">Links</button>
+                                    </div>
+
+                                    <div class="intelligence-grid">
+                                        <div class="artifact-card" *ngFor="let media of filteredMedia" 
+                                             [class]="getMediaCardClass(media)" (click)="openMediaViewer(media)">
+                                            <div class="artifact-preview">
+                                                <img *ngIf="isImage(media)" [src]="getMediaUrl(media)" class="artifact-thumb">
+                                                <div *ngIf="!isImage(media)" class="artifact-icon-box">
+                                                    <mat-icon>{{ getMediaIcon(media.fileType) }}</mat-icon>
+                                                </div>
+                                                <div class="artifact-overlay">
+                                                    <mat-icon>visibility</mat-icon>
+                                                </div>
+                                            </div>
+                                            <div class="artifact-info">
+                                                <div class="artifact-name">{{ media.fileName }}</div>
+                                                <div class="artifact-meta">
+                                                    <span>{{ media.createdAt | date:'shortDate' }}</span>
+                                                    <span class="dot"></span>
+                                                    <span>{{ media.fileSize | fileSize }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <ng-template #noMedia>
+                                    <div class="empty-intelligence-state">
+                                        <mat-icon>cloud_off</mat-icon>
+                                        <h4>No Media Uploaded</h4>
+                                        <p>Documentation and media will appear here once uploaded.</p>
+                                    </div>
+                                </ng-template>
+                            </div>
+                        </div>
+                    </mat-tab>
+                </mat-tab-group>
+            </div>
+
+            <!-- Right Column: Event Sidebar -->
+            <div class="operational-sidebar">
+                <!-- Event Controls Card -->
+                <div class="sidebar-card admin-card">
+                    <div class="card-header">
+                        <mat-icon>admin_panel_settings</mat-icon>
+                        <span>Event Controls</span>
+                    </div>
+                    <div class="admin-buttons">
+                        <button class="command-btn primary" *ngIf="canApprove()" (click)="approveEvent()">
+                            <mat-icon>done_all</mat-icon>
+                            Approve Event
+                        </button>
+                        
+                        <button class="command-btn danger" *ngIf="canApprove()" (click)="cancelEvent()">
+                            <mat-icon>cancel</mat-icon>
+                            Cancel Event
+                        </button>
+
+                        <button class="command-btn secondary" *ngIf="isDraft() && (authService.isAdmin() || (authService.isManager() && authService.getDepartmentGuid() === event.department?.id))" (click)="editEvent()">
+                            <mat-icon>edit_note</mat-icon>
+                            Edit Event
+                        </button>
+
+                        <button class="command-btn primary" *ngIf="canAssignEmployees()" (click)="assignEmployee()">
+                            <mat-icon>person_add</mat-icon>
+                            Assign Staff
+                        </button>
+                        
+                        <button class="command-btn info" *ngIf="(!isCompleted() && !isArchived() && event.status !== 'Cancelled')" (click)="downloadICS()">
+                            <mat-icon>event_available</mat-icon>
+                            Sync to Calendar
+                        </button>
+
+                        <button class="command-btn warn" *ngIf="canArchive()" (click)="archiveEvent()">
+                            <mat-icon>archive</mat-icon>
+                            Archive Event
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Event Organizer Card -->
+                <div class="sidebar-card organizer-card">
+                    <div class="card-header">
+                        <mat-icon>shield</mat-icon>
+                        <span>Event Organizer</span>
+                    </div>
+                    <div class="organizer-info">
+                        <div class="organizer-avatar">
+                            <mat-icon>account_balance</mat-icon>
+                        </div>
+                        <div class="organizer-details">
+                            <span class="org-name">{{ event.createdBy.firstName }} {{ event.createdBy.lastName }}</span>
+                            <span class="org-dept">{{ event.department.name }}</span>
+                            <span class="org-role">Organizer</span>
+                        </div>
+                    </div>
+                    <div class="org-actions">
+                        <button mat-button color="primary">
+                            <mat-icon>mail</mat-icon>
+                            Contact Organizer
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Classification Card -->
+                <div class="sidebar-card intelligence-card">
+                    <div class="card-header">
+                        <mat-icon>category</mat-icon>
+                        <span>Classification</span>
+                    </div>
+                    <div class="classification-info">
+                        <span class="category-tag">{{ event.category }}</span>
+                        <div class="classification-meta">
+                            <mat-icon>info</mat-icon>
+                            <span>Standard Event Protocol</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="sidebar-card actions-card">
+                    <div class="card-header">
+                        <mat-icon>bolt</mat-icon>
+                        <span>Quick Actions</span>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="rapid-btn" (click)="shareEvent()">
+                            <mat-icon>ios_share</mat-icon>
+                            Share Event
+                        </button>
+                        <button class="rapid-btn" (click)="getDirections()">
+                            <mat-icon>near_me</mat-icon>
+                            Get Directions
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>

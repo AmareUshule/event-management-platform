@@ -11,5 +11,6 @@ public class EventResponseDto
     public string Status { get; set; } = string.Empty;
     public Guid CreatedBy { get; set; }
     public Guid? ApprovedBy { get; set; }
+    public string? ClosureComment { get; set; }
     public string EventPlace { get; set; } = string.Empty;
 }

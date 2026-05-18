@@ -246,6 +246,111 @@ $eep-light-bg: #F1F8F0;
   grid-column: 1 / -1;
 }
 
+.cover-image-section {
+  margin-top: 16px;
+
+  .section-label {
+    display: block;
+    margin-bottom: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    color: $eep-gray-800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .cover-image-container {
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+
+  .cover-preview {
+    position: relative;
+    width: 100%;
+    height: 200px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: $eep-gray-200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .remove-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(0, 0, 0, 0.6);
+      border: none;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      padding: 0;
+
+      &:hover {
+        background: rgba(0, 0, 0, 0.8);
+        transform: scale(1.1);
+      }
+
+      mat-icon {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+      }
+    }
+  }
+
+  .upload-area {
+    padding: 40px 20px;
+    background: linear-gradient(135deg, rgba($eep-green-900, 0.05), rgba($eep-light-bg, 0.8));
+    border: 2px dashed rgba($eep-green-900, 0.3);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:hover {
+      border-color: $eep-green-900;
+      background: linear-gradient(135deg, rgba($eep-green-900, 0.1), rgba($eep-light-bg, 0.9));
+    }
+
+    mat-icon {
+      font-size: 48px;
+      width: 48px;
+      height: 48px;
+      color: $eep-green-900;
+    }
+
+    p {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 600;
+      color: $eep-gray-800;
+    }
+
+    span {
+      font-size: 13px;
+      color: rgba($eep-gray-800, 0.6);
+    }
+  }
+}
+
 .date-time-panel {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

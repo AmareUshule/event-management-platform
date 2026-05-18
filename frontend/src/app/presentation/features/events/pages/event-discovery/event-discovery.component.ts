@@ -21,6 +21,7 @@ import { Subject } from 'rxjs';
 
 import { EventService } from '../../services/event.service';
 import { Event, EventStatus } from '../../models/event.model';
+import { AuthService } from '../../../../../core/auth/auth.service';
 import { PageHeaderComponent } from '../../../../../shared/components/page-header/page-header.component';
 
 import { SkeletonModule } from 'primeng/skeleton';
@@ -101,6 +102,11 @@ export class EventDiscoveryComponent implements OnInit {
   private eventService = inject(EventService);
   private router = inject(Router);
   private platformId = inject(PLATFORM_ID);
+  private authService = inject(AuthService);
+
+  get canCreateEvents(): boolean {
+    return this.authService.canCreateEvents();
+  }
 
   // Core state
   events = signal<Event[]>([]);
@@ -128,7 +134,6 @@ export class EventDiscoveryComponent implements OnInit {
   searchSuggestions = signal<string[]>([
     'Project Launch',
     'Workshop',
-    'Board Meeting',
     'Team Building',
     'Conference'
   ]);
@@ -255,7 +260,7 @@ export class EventDiscoveryComponent implements OnInit {
 
   categories = [
     'Project Launch', 'Workshop / Training', 'Media Visit',
-    'Inspection', 'Board Meeting', 'Team Building',
+    'Inspection', 'Team Building',
     'Conference', 'Networking Event', 'Product Demo',
     'Client Meeting', 'Training Session', 'All Hands'
   ];
@@ -585,6 +590,13 @@ export class EventDiscoveryComponent implements OnInit {
   }
 
   getEventBannerGradient(event: Event): string {
+    // Use actual cover image if available
+    if (event.coverImageUrl) {
+      const isAbsolute = event.coverImageUrl.startsWith('http');
+      return `url('${isAbsolute ? event.coverImageUrl : window.location.origin + '/' + event.coverImageUrl.replace(/^\/+/, '')}')`;
+    }
+
+    // Fallback to gradient if no cover image
     const gradients = [
       'linear-gradient(135deg, #1E590C 0%, #DD1407 100%)',
       'linear-gradient(135deg, #DD1407 0%, #1E590C 100%)',
