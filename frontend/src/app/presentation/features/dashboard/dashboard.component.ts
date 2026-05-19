@@ -869,14 +869,19 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   editEvent(event: TableEvent): void {
-    if (this.canManageEvent(event)) {
+    if (this.canEditEvent(event)) {
       this.router.navigate(['/events/edit', event.id]);
     } else {
-      this.showError('You do not have permission to edit this event');
+      this.showError('You cannot edit completed or archived events');
     }
   }
 
   deleteEvent(event: TableEvent): void {
+    if (!this.canDeleteEvent(event)) {
+      this.showError('You do not have permission to delete this event');
+      return;
+    }
+
     if (confirm(`Are you sure you want to delete "${event.name}"?`)) {
       this.eventService.deleteEvent(event.id)
         .subscribe({
@@ -953,23 +958,55 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   canManageEvent(event: TableEvent): boolean {
-    // Admins can manage any event in any status
+    // Check if user can manage (edit/delete) this event
+    return this.canEditEvent(event) || this.canDeleteEvent(event);
+  }
+
+  canEditEvent(event: TableEvent): boolean {
+    // Edit is only allowed for non-completed/archived events
+    const isFinalStatus = event.status === 'Completed' || event.status === 'Archived';
+    if (isFinalStatus) return false;
+
+    // Admins can edit any non-completed event
     if (this.authService.isAdmin()) return true;
 
-    // For others, management (edit/delete) is ONLY allowed if the event is in Draft status
-    if (event.status !== 'Draft') return false;
-
-    // Communication Managers can manage any Draft event
+    // Communication Managers can edit any non-completed event
     if (this.authService.isCommunicationManager()) return true;
 
-    // Department Managers can manage Draft events from their own department
+    // Department Managers can edit non-completed events from their own department
     const user = this.authService.getCurrentUser();
     if (this.authService.isManager() && user?.departmentGuid === event.raw.department.id) {
       return true;
     }
 
-    // Creators can manage their own Draft events
-    return event.raw.createdBy.id === user?.adObjectId;
+    // Creators can edit their own non-completed events
+    if (event.raw.createdBy.id === user?.adObjectId) {
+      return true;
+    }
+
+    return false;
+  }
+
+  canDeleteEvent(event: TableEvent): boolean {
+    // Delete is allowed for ALL statuses for management roles
+    // Admins can always delete
+    if (this.authService.isAdmin()) return true;
+
+    // Communication Managers can always delete
+    if (this.authService.isCommunicationManager()) return true;
+
+    // Department Managers can delete events from their own department
+    const user = this.authService.getCurrentUser();
+    if (this.authService.isManager() && user?.departmentGuid === event.raw.department.id) {
+      return true;
+    }
+
+    // Creators can delete their own events
+    if (event.raw.createdBy.id === user?.adObjectId) {
+      return true;
+    }
+
+    return false;
   }
 
   private showError(message: string): void {
