@@ -1,5 +1,5 @@
-@import '../../../../styles/_tokens.scss';
-@import '../../../../styles/_utilities.scss';
+@use '../../../../styles/_tokens.scss';
+@use '../../../../styles/_utilities.scss';
 
 .filter-panel-container {
   background: rgba(var(--color-surface-rgb), 0.15);

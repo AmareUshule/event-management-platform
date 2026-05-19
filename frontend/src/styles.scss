@@ -1,11 +1,13 @@
 /* Global EEP Branding Styles - Premium Design System */
 
-@import 'ngx-toastr/toastr';
+@use 'ngx-toastr/toastr';
 
 // 1. Import Foundations
-@import './styles/tokens';
-@import './styles/semantic';
-@import './styles/animations';
+@use './styles/tokens';
+@use './styles/semantic';
+@use './styles/animations';
+@use './styles/components';
+@use './styles/utilities';
 
 // 2. Global Resets & Base
 html, body {
@@ -37,8 +39,6 @@ h3 { font-size: var(--text-2xl); }
 h4 { font-size: var(--text-xl); }
 
 // 4. Component Styles
-@import './styles/components';
-@import './styles/utilities';
 
 // 5. Existing Overrides & Special Classes (Refactored)
 .eep-page {
