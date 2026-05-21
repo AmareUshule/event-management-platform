@@ -31,10 +31,11 @@ import {
 } from '../../models/event.model';
 
 import { EventService } from '../../services/event.service';
-import { AuthService } from '../../../../../core/auth/auth.service';import { environment } from '../../../../../../environments/environment';import { AssignmentDialogComponent } from './assignment-dialog.component';
+import { AuthService } from '../../../../../core/auth/auth.service';
+import { environment } from '../../../../../../environments/environment';
+import { AssignmentDialogComponent } from './assignment-dialog.component';
 import { ConfirmationDialogComponent, ConfirmationDialogData } from '../../../confirmation-dialog.component';
 import { ImageLightboxComponent } from '../../../internal-announcements/components/image-lightbox/image-lightbox.component';
-
 
 @Component({
   selector: 'app-event-detail-page',
@@ -53,7 +54,6 @@ import { ImageLightboxComponent } from '../../../internal-announcements/componen
     MatChipsModule,
     MatExpansionModule,
     FileSizePipe,
-    ImageLightboxComponent
   ],
   templateUrl: './event-detail-page.component.html',
   styleUrls: ['./event-detail-page.component.scss']
@@ -133,7 +133,12 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
           this.loading = false;
           this.cdr.detectChanges();
         }
-      } 
+      },
+      error: (error) => {
+        this.loading = false;
+        this.showError(error.message || 'Failed to fetch event details');
+        this.cdr.detectChanges();
+      }
     });
   }
 
@@ -142,6 +147,9 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
       next: (media) => {
         this.mediaFiles = media;
         this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('Error loading media:', error);
       }
     });
   }
@@ -153,6 +161,7 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
   approveEvent(): void {
     if (!this.event?.id) return;
 
+    const eventId = this.event.id;
     const dialogData: ConfirmationDialogData = {
       title: 'Approve Event',
       message: `Are you sure you want to approve "${this.event.title}"? This will move it to Scheduled status.`,
@@ -171,7 +180,7 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         this.isLoading = true;
-        this.eventService.approveEvent(this.event!.id).subscribe({
+        this.eventService.approveEvent(eventId).subscribe({
           next: (updatedEvent) => {
             this.isLoading = false;
             this.event = updatedEvent;
@@ -190,6 +199,7 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
   archiveEvent(): void {
     if (!this.event?.id) return;
     
+    const eventId = this.event.id;
     const comment = prompt('Enter final archive comment (mandatory):');
     if (!comment || comment.trim() === '') {
       this.showError('Archive comment is required');
@@ -197,7 +207,7 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
     }
 
     this.isLoading = true;
-    this.eventService.archiveEvent(this.event.id, comment).subscribe({
+    this.eventService.archiveEvent(eventId, comment).subscribe({
       next: (updatedEvent) => {
         this.isLoading = false;
         this.event = updatedEvent;
@@ -214,6 +224,7 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
   cancelEvent(): void {
     if (!this.event?.id) return;
     
+    const eventId = this.event.id;
     const comment = prompt('Enter cancellation reason (mandatory):');
     if (!comment || comment.trim() === '') {
       this.showError('Cancellation reason is required');
@@ -276,6 +287,9 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
   }
 
   onFileUpload(event: any, fileType: string): void {
+    if (!this.event?.id) return;
+    const eventId = this.event.id;
+
     const file = event.target.files[0];
     if (!file) return;
 
@@ -285,11 +299,11 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
     }
 
     this.isLoading = true;
-    this.eventService.uploadMedia(this.event!.id!, fileType, file).subscribe({
+    this.eventService.uploadMedia(eventId, fileType, file).subscribe({
       next: () => {
         this.isLoading = false;
         this.showSuccess('Media uploaded successfully');
-        this.loadMedia(this.event!.id!);
+        this.loadMedia(eventId);
       },
       error: (error) => {
         this.isLoading = false;
@@ -299,15 +313,18 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
   }
 
   addExternalLink(): void {
+    if (!this.event?.id) return;
+    const eventId = this.event.id;
+
     const url = prompt('Enter external link URL:');
     if (!url) return;
 
     this.isLoading = true;
-    this.eventService.uploadMedia(this.event!.id!, 'Link', undefined, url).subscribe({
+    this.eventService.uploadMedia(eventId, 'Link', undefined, url).subscribe({
       next: () => {
         this.isLoading = false;
         this.showSuccess('Link added successfully');
-        this.loadMedia(this.event!.id!);
+        this.loadMedia(eventId);
       },
       error: (error) => {
         this.isLoading = false;
@@ -321,6 +338,8 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
       return;
     }
 
+    const eventId = this.event.id;
+
     // RBAC check: Admin, Communication Manager, Dept Manager, or Creator
     const user = this.authService.getCurrentUser();
     const isCommManager = this.authService.isCommunicationManager();
@@ -330,11 +349,6 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
     const canEdit = this.authService.isAdmin() || isCommManager || isDeptManager || isCreator;
 
     // Only allow editing in Draft state, and only for creator, admin, comm manager, or dept manager
-    if (!canEdit || this.event.status !== EventStatus.DRAFT) {
-      this.showError('You do not have permission to edit this event');
-      return;
-    }
-
     this.router.navigate(['/events/edit', this.event.id]);
   }
 
@@ -384,6 +398,7 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
 
     return allAssignments.some(a => a.employee?.id === userId && a.status === 'Accepted');
   }
+
   private refreshEventData(): void {
     if (this.event?.id) {
       this.fetchEventDetails(this.event.id);
@@ -486,12 +501,18 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
     return this.getAssignmentsByRole(role).length > 0;
   }
 
+   
   getActiveRoles(): string[] {
-    if (!this.event?.assignments) return [];
-    return Object.keys(this.event.assignments).filter(role =>
-      this.event!.assignments![role as keyof EventAssignments]?.length > 0
-    );
-  }
+  const event = this.event;
+  const assignments = event?.assignments;
+
+  if (!assignments) return [];
+
+  return Object.keys(assignments).filter(role => {
+    const value = assignments[role as keyof EventAssignments];
+    return Array.isArray(value) && value.length > 0;
+  });
+}
 
   getTotalAssignments(): number {
     if (!this.event?.assignments) return 0;
@@ -507,14 +528,18 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
   assignEmployee(): void {
     if (!this.event?.id) return;
 
+    const eventId = this.event.id;
+    const eventTitle = this.event.title;
+    const existingAssignments = this.event.assignments || {};
+
     const dialogRef = this.dialog.open(AssignmentDialogComponent, {
       width: '600px',
       maxWidth: '90vw',
       disableClose: false,
       data: {
-        eventId: this.event.id,
-        eventTitle: this.event.title,
-        existingAssignments: this.event.assignments || {},
+        eventId: eventId,
+        eventTitle: eventTitle,
+        existingAssignments: existingAssignments,
         availableRoles: this.availableRoles
       }
     });
@@ -526,32 +551,45 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
     });
   }
 
-  // FIXED: saveAssignments method - uses the correct service method
+  // FIXED: saveAssignments method - uses the correct service method and handles nested error objects
   saveAssignments(assignments: AssignmentPayload[]): void {
-    if (!assignments || assignments.length === 0) return;
+    if (!assignments || assignments.length === 0 || !this.event?.id) return;
 
+    const eventId = this.event.id;
     this.isLoading = true;
 
     // Use the new method that handles multiple assignments by sending them one by one
-    this.eventService.assignMultipleEmployees(this.event!.id, assignments).subscribe({
+    this.eventService.assignMultipleEmployees(eventId, assignments).subscribe({
       next: (results) => {
         this.isLoading = false;
         this.showSuccess(`${results.length} personnel assigned successfully`);
-        this.refreshEventData(); // Refresh to get updated assignments
+        
+        // Update local event with latest results if available
+        if (results.length > 0) {
+          this.event = results[results.length - 1];
+        }
+        
+        this.refreshEventData(); // Refresh to get fully updated event state from server
+        this.cdr.detectChanges();
       },
-      error: (error) => {
+      error: (errorWrapper) => {
         this.isLoading = false;
-        console.error('Assignment error:', error);
+        console.error('Assignment error:', errorWrapper);
 
-        // Show detailed error message
+        // Handle the nested error object from forkJoin catch in service
         let errorMsg = 'Failed to assign personnel';
-        if (error.message) {
-          errorMsg = error.message;
-        } else if (error.errors) {
-          errorMsg = Object.values(error.errors).join(', ');
+        
+        // Check for nested error from our service wrapper
+        const actualError = errorWrapper.error || errorWrapper;
+        
+        if (actualError.message) {
+          errorMsg = actualError.message;
+        } else if (actualError.errors) {
+          errorMsg = Object.values(actualError.errors).join(', ');
         }
 
         this.showError(errorMsg);
+        this.cdr.detectChanges();
       }
     });
   }
@@ -559,10 +597,11 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
   removeAssignment(role: string, assignmentId: string): void {
     if (!this.event?.id || !confirm('Are you sure you want to remove this assignment?')) return;
 
+    const eventId = this.event.id;
     // Map display role to backend role format
     const backendRole = role.toLowerCase();
 
-    this.eventService.removeAssignment(this.event.id, backendRole, assignmentId).subscribe({
+    this.eventService.removeAssignment(eventId, backendRole, assignmentId).subscribe({
       next: (updatedEvent: Event) => {
         this.showSuccess('Assignment removed successfully');
         this.event = updatedEvent;
