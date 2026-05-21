@@ -519,11 +519,48 @@ assignMultipleEmployees(eventId: string, assignments: AssignmentPayload[]): Obse
   }
 
   /**
-   * Cancel event
+   * Request event cancellation
+   */
+  requestCancellation(eventId: string, comment: string): Observable<Event> {
+    return this.http.post<Event>(
+      `${this.API_URL}/${eventId}/cancellation-request`,
+      { comment },
+      {
+        headers: this.getHeaders(),
+        responseType: 'json'
+      }
+    ).pipe(
+      timeout(this.REQUEST_TIMEOUT),
+      retry(1),
+      catchError(this.handleError.bind(this))
+    );
+  }
+
+  /**
+   * Backward-compatible alias for older callers.
    */
   cancelEvent(eventId: string, comment: string): Observable<Event> {
+    return this.requestCancellation(eventId, comment);
+  }
+
+  approveCancellationRequest(eventId: string, comment: string = ''): Observable<Event> {
     return this.http.post<Event>(
-      `${this.API_URL}/${eventId}/cancel`,
+      `${this.API_URL}/${eventId}/cancellation-request/approve`,
+      { comment },
+      {
+        headers: this.getHeaders(),
+        responseType: 'json'
+      }
+    ).pipe(
+      timeout(this.REQUEST_TIMEOUT),
+      retry(1),
+      catchError(this.handleError.bind(this))
+    );
+  }
+
+  rejectCancellationRequest(eventId: string, comment: string = ''): Observable<Event> {
+    return this.http.post<Event>(
+      `${this.API_URL}/${eventId}/cancellation-request/reject`,
       { comment },
       {
         headers: this.getHeaders(),

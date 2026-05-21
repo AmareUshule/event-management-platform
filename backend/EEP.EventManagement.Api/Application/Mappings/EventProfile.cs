@@ -25,6 +25,9 @@ namespace EEP.EventManagement.Api.Application.Mappings
                 .ForMember(dest => dest.ApprovedBy, opt => opt.MapFrom(src => src.ApprovedByUser))
                 .ForMember(dest => dest.FinalizedBy, opt => opt.MapFrom(src => src.FinalizedByUser))
                 .ForMember(dest => dest.ClosureComment, opt => opt.MapFrom(src => src.ClosureComment))
+                .ForMember(dest => dest.CancellationRequestStatus, opt => opt.MapFrom(src => src.CancellationRequestStatus.ToString()))
+                .ForMember(dest => dest.CancellationRequestedBy, opt => opt.MapFrom(src => src.CancellationRequestedByUser))
+                .ForMember(dest => dest.CancellationReviewedBy, opt => opt.MapFrom(src => src.CancellationReviewedByUser))
                 .ForMember(dest => dest.Assignments, opt => opt.MapFrom(src => src.Assignments));
 
             // Simplified Mappings

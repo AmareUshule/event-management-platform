@@ -221,16 +221,56 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
     }
 
     this.isLoading = true;
-    this.eventService.cancelEvent(this.event.id, comment).subscribe({
+    this.eventService.requestCancellation(this.event.id, comment).subscribe({
       next: (updatedEvent) => {
         this.isLoading = false;
         this.event = updatedEvent;
-        this.showSuccess('Event cancelled successfully');
+        this.showSuccess('Cancellation request submitted');
         this.cdr.detectChanges();
       },
       error: (error) => {
         this.isLoading = false;
-        this.showError(error.message || 'Failed to cancel event');
+        this.showError(error.message || 'Failed to request cancellation');
+      }
+    });
+  }
+
+  approveCancellationRequest(): void {
+    if (!this.event?.id) return;
+
+    const comment = prompt('Optional review comment:') || '';
+
+    this.isLoading = true;
+    this.eventService.approveCancellationRequest(this.event.id, comment).subscribe({
+      next: (updatedEvent) => {
+        this.isLoading = false;
+        this.event = updatedEvent;
+        this.showSuccess('Cancellation request approved');
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        this.isLoading = false;
+        this.showError(error.message || 'Failed to approve cancellation request');
+      }
+    });
+  }
+
+  rejectCancellationRequest(): void {
+    if (!this.event?.id) return;
+
+    const comment = prompt('Optional rejection comment:') || '';
+
+    this.isLoading = true;
+    this.eventService.rejectCancellationRequest(this.event.id, comment).subscribe({
+      next: (updatedEvent) => {
+        this.isLoading = false;
+        this.event = updatedEvent;
+        this.showSuccess('Cancellation request rejected');
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        this.isLoading = false;
+        this.showError(error.message || 'Failed to reject cancellation request');
       }
     });
   }
@@ -289,13 +329,9 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
 
     const canEdit = this.authService.isAdmin() || isCommManager || isDeptManager || isCreator;
 
-    if (!canEdit) {
+    // Only allow editing in Draft state, and only for creator, admin, comm manager, or dept manager
+    if (!canEdit || this.event.status !== EventStatus.DRAFT) {
       this.showError('You do not have permission to edit this event');
-      return;
-    }
-
-    if (this.event.status !== EventStatus.DRAFT) {
-      this.showError('Events can only be edited while in Draft status');
       return;
     }
 
@@ -303,13 +339,34 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
   }
 
   canApprove(): boolean {
-    if (!this.event || this.event.status !== EventStatus.DRAFT) return false;
+    if (!this.event || this.event.status !== EventStatus.DRAFT || this.isCancellationPending()) return false;
     return this.authService.isAdmin() || this.authService.isCommunicationManager();
   }
 
   canArchive(): boolean {
     if (!this.event || this.event.status !== EventStatus.COMPLETED) return false;
     return this.authService.isAdmin() || this.authService.isCommunicationManager();
+  }
+
+  isCancellationPending(): boolean {
+    return this.event?.cancellationRequestStatus === 'Pending';
+  }
+
+  canRequestCancellation(): boolean {
+    if (!this.event?.id || this.isCancellationPending()) return false;
+
+    // Only allow for SCHEDULED events (not DRAFT, not COMPLETED, etc)
+    if (this.event.status !== EventStatus.SCHEDULED) return false;
+
+    const userId = this.authService.getCurrentUser()?.adObjectId;
+    const isCreator = !!userId && this.event.createdBy?.id === userId;
+
+    return this.authService.isAdmin() || isCreator;
+  }
+
+  canReviewCancellation(): boolean {
+    return this.isCancellationPending() &&
+      (this.authService.isAdmin() || this.authService.isCommunicationManager());
   }
 
   canUploadMedia(): boolean {

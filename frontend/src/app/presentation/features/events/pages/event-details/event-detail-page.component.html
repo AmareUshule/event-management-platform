@@ -186,6 +186,28 @@
                                 </div>
 
                                 <!-- Closure Comment Display -->
+                                <div class="closure-comment-box" *ngIf="event.cancellationRequestStatus === 'Pending'">
+                                    <div class="comment-header">
+                                        <mat-icon>pending_actions</mat-icon>
+                                        <span>Cancellation Request Pending</span>
+                                    </div>
+                                    <p class="comment-text">"{{ event.cancellationReason }}"</p>
+                                    <div class="comment-footer" *ngIf="event.cancellationRequestedBy">
+                                        — {{ event.cancellationRequestedBy.firstName }} {{ event.cancellationRequestedBy.lastName }}
+                                    </div>
+                                </div>
+
+                                <div class="closure-comment-box" *ngIf="event.cancellationRequestStatus === 'Rejected'">
+                                    <div class="comment-header">
+                                        <mat-icon>block</mat-icon>
+                                        <span>Cancellation Request Rejected</span>
+                                    </div>
+                                    <p class="comment-text" *ngIf="event.cancellationReviewComment">"{{ event.cancellationReviewComment }}"</p>
+                                    <div class="comment-footer" *ngIf="event.cancellationReviewedBy">
+                                        — {{ event.cancellationReviewedBy.firstName }} {{ event.cancellationReviewedBy.lastName }}
+                                    </div>
+                                </div>
+
                                 <div class="closure-comment-box" *ngIf="event.closureComment">
                                     <div class="comment-header">
                                         <mat-icon>{{ event.status === 'Cancelled' ? 'report_problem' : 'assignment_turned_in' }}</mat-icon>
@@ -396,12 +418,22 @@
                             Approve Event
                         </button>
                         
-                        <button class="command-btn danger" *ngIf="canApprove()" (click)="cancelEvent()">
+                        <button class="command-btn danger" *ngIf="canRequestCancellation()" (click)="cancelEvent()">
                             <mat-icon>cancel</mat-icon>
-                            Cancel Event
+                            Request Cancellation
                         </button>
 
-                        <button class="command-btn secondary" *ngIf="isDraft() && (authService.isAdmin() || (authService.isManager() && authService.getDepartmentGuid() === event.department?.id))" (click)="editEvent()">
+                        <button class="command-btn primary" *ngIf="canReviewCancellation()" (click)="approveCancellationRequest()">
+                            <mat-icon>done</mat-icon>
+                            Approve Cancellation
+                        </button>
+
+                        <button class="command-btn secondary" *ngIf="canReviewCancellation()" (click)="rejectCancellationRequest()">
+                            <mat-icon>close</mat-icon>
+                            Reject Cancellation
+                        </button>
+
+                        <button class="command-btn secondary" *ngIf="isDraft() && (authService.isAdmin() || authService.isCommunicationManager() || (authService.isManager() && authService.getDepartmentGuid() === event.department?.id) || (event.createdBy?.id === authService.getCurrentUser()?.adObjectId))" (click)="editEvent()">
                             <mat-icon>edit_note</mat-icon>
                             Edit Event
                         </button>

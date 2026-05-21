@@ -160,6 +160,13 @@ export interface Event {
   approvedBy?: User;
   finalizedBy?: User;
   closureComment?: string;
+  cancellationRequestStatus?: 'None' | 'Pending' | 'Approved' | 'Rejected' | string;
+  cancellationReason?: string;
+  cancellationRequestedBy?: User;
+  cancellationRequestedAt?: string;
+  cancellationReviewedBy?: User;
+  cancellationReviewedAt?: string;
+  cancellationReviewComment?: string;
 
   assignments?: EventAssignments;
 }

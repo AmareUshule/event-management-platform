@@ -23,6 +23,13 @@ namespace EEP.EventManagement.Api.Application.Features.Events.DTOs
         public SimplifiedUserDto? ApprovedBy { get; set; }
         public SimplifiedUserDto? FinalizedBy { get; set; }
         public string? ClosureComment { get; set; }
+        public string CancellationRequestStatus { get; set; } = "None";
+        public string? CancellationReason { get; set; }
+        public SimplifiedUserDto? CancellationRequestedBy { get; set; }
+        public DateTime? CancellationRequestedAt { get; set; }
+        public SimplifiedUserDto? CancellationReviewedBy { get; set; }
+        public DateTime? CancellationReviewedAt { get; set; }
+        public string? CancellationReviewComment { get; set; }
         public GroupedAssignmentsDto? Assignments { get; set; }
     }
 }

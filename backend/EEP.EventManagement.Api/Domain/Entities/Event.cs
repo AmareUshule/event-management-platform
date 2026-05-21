@@ -20,6 +20,13 @@ namespace EEP.EventManagement.Api.Domain.Entities
         public Guid? ApprovedBy { get; set; }
         public string? ClosureComment { get; set; }
         public Guid? FinalizedBy { get; set; }
+        public CancellationRequestStatus CancellationRequestStatus { get; set; } = CancellationRequestStatus.None;
+        public string? CancellationReason { get; set; }
+        public Guid? CancellationRequestedBy { get; set; }
+        public DateTime? CancellationRequestedAt { get; set; }
+        public Guid? CancellationReviewedBy { get; set; }
+        public DateTime? CancellationReviewedAt { get; set; }
+        public string? CancellationReviewComment { get; set; }
 
         // Navigation properties
         public Department Department { get; set; } = null!;
@@ -30,6 +37,12 @@ namespace EEP.EventManagement.Api.Domain.Entities
 
         [System.ComponentModel.DataAnnotations.Schema.ForeignKey("FinalizedBy")]
         public EEP.EventManagement.Api.Infrastructure.Security.Identity.ApplicationUser? FinalizedByUser { get; set; }
+
+        [System.ComponentModel.DataAnnotations.Schema.ForeignKey("CancellationRequestedBy")]
+        public EEP.EventManagement.Api.Infrastructure.Security.Identity.ApplicationUser? CancellationRequestedByUser { get; set; }
+
+        [System.ComponentModel.DataAnnotations.Schema.ForeignKey("CancellationReviewedBy")]
+        public EEP.EventManagement.Api.Infrastructure.Security.Identity.ApplicationUser? CancellationReviewedByUser { get; set; }
         public ICollection<Assignment> Assignments { get; set; } = new List<Assignment>();
         public ICollection<MediaFile> MediaFiles { get; set; } = new List<MediaFile>();
     }

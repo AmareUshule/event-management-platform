@@ -427,6 +427,10 @@ export class EventDiscoveryComponent implements OnInit {
     return colors[status] || '#64748B';
   }
 
+  hasPendingCancellation(event: Event): boolean {
+    return event.cancellationRequestStatus === 'Pending';
+  }
+
   getPriorityColor(priority: string): string {
     const colors: Record<string, string> = {
       'High': '#DD1407',

@@ -260,15 +260,55 @@ namespace EEP.EventManagement.Api.Controllers
         }
 
         [HttpPost("{id}/cancel")]
-        [Authorize(Policy = EEP.EventManagement.Api.Infrastructure.Security.Authorization.AuthorizationPolicies.CanApproveAndAssign)]
         public async Task<ActionResult<EventDto>> CancelEvent(Guid id, [FromBody] ClosureCommentRequest request)
         {
-            var command = new CancelEventCommand { EventId = id, ClosureComment = request.Comment };
+            var command = new RequestEventCancellationCommand { EventId = id, Reason = request.Comment };
+            var result = await _mediator.Send(command);
+            return Ok(result);
+        }
+
+        [HttpPost("{id}/cancellation-request")]
+        public async Task<ActionResult<EventDto>> RequestCancellation(Guid id, [FromBody] ClosureCommentRequest request)
+        {
+            var command = new RequestEventCancellationCommand { EventId = id, Reason = request.Comment };
+            var result = await _mediator.Send(command);
+            return Ok(result);
+        }
+
+        [HttpPost("{id}/cancellation-request/approve")]
+        [Authorize(Policy = EEP.EventManagement.Api.Infrastructure.Security.Authorization.AuthorizationPolicies.CanApproveAndAssign)]
+        public async Task<ActionResult<EventDto>> ApproveCancellation(Guid id, [FromBody] CancellationReviewRequest request)
+        {
+            var command = new ReviewEventCancellationCommand
+            {
+                EventId = id,
+                Approved = true,
+                ReviewComment = request.Comment
+            };
+            var result = await _mediator.Send(command);
+            return Ok(result);
+        }
+
+        [HttpPost("{id}/cancellation-request/reject")]
+        [Authorize(Policy = EEP.EventManagement.Api.Infrastructure.Security.Authorization.AuthorizationPolicies.CanApproveAndAssign)]
+        public async Task<ActionResult<EventDto>> RejectCancellation(Guid id, [FromBody] CancellationReviewRequest request)
+        {
+            var command = new ReviewEventCancellationCommand
+            {
+                EventId = id,
+                Approved = false,
+                ReviewComment = request.Comment
+            };
             var result = await _mediator.Send(command);
             return Ok(result);
         }
 
         public class ClosureCommentRequest
+        {
+            public string Comment { get; set; } = string.Empty;
+        }
+
+        public class CancellationReviewRequest
         {
             public string Comment { get; set; } = string.Empty;
         }

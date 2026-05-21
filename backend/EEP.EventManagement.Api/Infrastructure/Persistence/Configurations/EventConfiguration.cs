@@ -1,4 +1,5 @@
 using EEP.EventManagement.Api.Domain.Entities;
+using EEP.EventManagement.Api.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -36,12 +37,24 @@ namespace EEP.EventManagement.Api.Infrastructure.Persistence.Configurations
             builder.Property(e => e.Status)
                 .HasMaxLength(20)
                 .IsRequired()
+                .HasDefaultValue(CancellationRequestStatus.None)
                 .HasConversion<string>();
 
             builder.Property(e => e.CreatedBy)
                 .IsRequired();
 
             builder.Property(e => e.ApprovedBy);
+
+            builder.Property(e => e.CancellationRequestStatus)
+                .HasMaxLength(20)
+                .IsRequired()
+                .HasConversion<string>();
+
+            builder.Property(e => e.CancellationReason)
+                .HasColumnType("text");
+
+            builder.Property(e => e.CancellationReviewComment)
+                .HasColumnType("text");
 
             builder.Property(e => e.EventPlace)
                 .HasMaxLength(255);
@@ -68,6 +81,16 @@ namespace EEP.EventManagement.Api.Infrastructure.Persistence.Configurations
             builder.HasOne(e => e.ApprovedByUser)
                 .WithMany()
                 .HasForeignKey(e => e.ApprovedBy)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasOne(e => e.CancellationRequestedByUser)
+                .WithMany()
+                .HasForeignKey(e => e.CancellationRequestedBy)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasOne(e => e.CancellationReviewedByUser)
+                .WithMany()
+                .HasForeignKey(e => e.CancellationReviewedBy)
                 .OnDelete(DeleteBehavior.Restrict);
         }
     }
