@@ -306,12 +306,14 @@
                       (click)="viewEvent(element)">
                       <mat-icon>visibility</mat-icon>
                     </button>
-                    <button class="icon-btn edit" *ngIf="canManageEvent(element)" (click)="editEvent(element)"
+                    <!-- Edit Button - Only for non-completed/archived events -->
+                    <button class="icon-btn edit" *ngIf="canEditEvent(element)" (click)="editEvent(element)"
                       matTooltip="Edit Event">
                       <mat-icon>edit</mat-icon>
                     </button>
 
-                    <button class="icon-btn delete" *ngIf="canManageEvent(element)" (click)="deleteEvent(element)"
+                    <!-- Delete Button - Always available for management roles -->
+                    <button class="icon-btn delete" *ngIf="canDeleteEvent(element)" (click)="deleteEvent(element)"
                       matTooltip="Delete Event">
                       <mat-icon>delete</mat-icon>
                     </button>
@@ -480,45 +482,6 @@
 
           <div class="sidebar-card">
             <div class="sidebar-header">
-              <mat-icon>campaign</mat-icon>
-              <h4>Latest Announcements</h4>
-            </div>
-            <div class="sidebar-content">
-              <div class="empty-state" *ngIf="!isLoadingAnnouncements && latestAnnouncements.length === 0">
-                <mat-icon>announcement</mat-icon>
-                <div>
-                  <div class="empty-title">No announcements yet</div>
-                  <div class="empty-subtitle">Create one to keep everyone in sync.</div>
-                </div>
-              </div>
-
-              <div class="skeleton" *ngIf="isLoadingAnnouncements">
-                <div class="skeleton-row" *ngFor="let _ of [1,2,3]"></div>
-              </div>
-
-              <div class="list" *ngIf="!isLoadingAnnouncements && latestAnnouncements.length > 0">
-                <button class="list-item" *ngFor="let a of latestAnnouncements"
-                  [routerLink]="['/internal-announcements', a.id]">
-                  <div class="list-item-main">
-                    <div class="list-item-title">{{ a.title }}</div>
-                    <div class="list-item-preview">{{ a.content }}</div>
-                    <div class="list-item-date">
-                      <mat-icon>calendar_today</mat-icon>
-                      <span>{{ a.createdAt | date:'MMM d, y' }}</span>
-                    </div>
-                  </div>
-                </button>
-              </div>
-
-              <button class="link-btn" (click)="navigateToAnnouncements()">
-                View all announcements
-                <mat-icon>chevron_right</mat-icon>
-              </button>
-            </div>
-          </div>
-
-          <div class="sidebar-card">
-            <div class="sidebar-header">
               <mat-icon>insights</mat-icon>
               <h4>Event Insights</h4>
             </div>
@@ -558,6 +521,45 @@
               <button class="quick-action-btn">
                 <mat-icon>qr_code</mat-icon>
                 Generate QR Codes
+              </button>
+            </div>
+          </div>
+
+          <div class="sidebar-card">
+            <div class="sidebar-header">
+              <mat-icon>campaign</mat-icon>
+              <h4>Latest Announcements</h4>
+            </div>
+            <div class="sidebar-content">
+              <div class="empty-state" *ngIf="!isLoadingAnnouncements && latestAnnouncements.length === 0">
+                <mat-icon>announcement</mat-icon>
+                <div>
+                  <div class="empty-title">No announcements yet</div>
+                  <div class="empty-subtitle">Create one to keep everyone in sync.</div>
+                </div>
+              </div>
+
+              <div class="skeleton" *ngIf="isLoadingAnnouncements">
+                <div class="skeleton-row" *ngFor="let _ of [1,2,3]"></div>
+              </div>
+
+              <div class="list" *ngIf="!isLoadingAnnouncements && latestAnnouncements.length > 0">
+                <button class="list-item" *ngFor="let a of latestAnnouncements"
+                  [routerLink]="['/internal-announcements', a.id]">
+                  <div class="list-item-main">
+                    <div class="list-item-title">{{ a.title }}</div>
+                    <div class="list-item-preview">{{ a.content }}</div>
+                    <div class="list-item-date">
+                      <mat-icon>calendar_today</mat-icon>
+                      <span>{{ a.createdAt | date:'MMM d, y' }}</span>
+                    </div>
+                  </div>
+                </button>
+              </div>
+
+              <button class="link-btn" (click)="navigateToAnnouncements()">
+                View all announcements
+                <mat-icon>chevron_right</mat-icon>
               </button>
             </div>
           </div>

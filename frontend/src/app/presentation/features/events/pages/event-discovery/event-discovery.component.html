@@ -34,61 +34,58 @@
               (blur)="onSearchBlur()"
               autocomplete="off"
             >
-          <div class="search-hints" *ngIf="!isSearchFocused()">
-            <span class="kbd">⌘</span>
-            <span class="kbd">K</span>
-          </div>
-          <button
-            *ngIf="searchControl.value"
-            class="clear-search"
-            (click)="searchControl.setValue(''); searchTerm.set('')"
-            mat-icon-button
-          >
-            <mat-icon>close</mat-icon>
-          </button>
-        </div>
-
-        <!-- Intelligence Suggestions Dropdown -->
-        <div class="search-suggestions" *ngIf="showSuggestions()" [@slideInOut]>
-          <!-- Recent Queries -->
-          <div class="suggestions-section" *ngIf="recentSearches().length > 0">
-            <div class="section-header">
-              <mat-icon>history</mat-icon>
-              <span>Recent Queries</span>
-              <button class="clear-all" (click)="clearRecentSearches()">Clear Log</button>
-            </div>
-            <div class="suggestion-item" *ngFor="let search of recentSearches()" (click)="selectSuggestion(search)">
-              <mat-icon>search</mat-icon>
-              <span>{{ search }}</span>
-            </div>
+            <button
+              *ngIf="searchControl.value"
+              class="clear-search"
+              (click)="searchControl.setValue(''); searchTerm.set('')"
+              mat-icon-button
+              type="button"
+            >
+              <mat-icon>close</mat-icon>
+            </button>
+            <button
+              class="advanced-search-toggle"
+              [class.active]="showAdvancedFilters()"
+              (click)="toggleAdvancedFilters()"
+              mat-icon-button
+              type="button"
+              aria-label="Advanced filters"
+            >
+              <mat-icon>tune</mat-icon>
+              <span class="filter-badge" *ngIf="activeFilterCount() > 0">{{ activeFilterCount() }}</span>
+            </button>
           </div>
 
-          <!-- Suggested Intelligence -->
-          <div class="suggestions-section">
-            <div class="section-header">
-              <mat-icon>insights</mat-icon>
-              <span>Event Recommendations</span>
+          <!-- Intelligence Suggestions Dropdown -->
+          <div class="search-suggestions" *ngIf="showSuggestions()" [@slideInOut]>
+            <!-- Recent Queries -->
+            <div class="suggestions-section" *ngIf="recentSearches().length > 0">
+              <div class="section-header">
+                <mat-icon>history</mat-icon>
+                <span>Recent Queries</span>
+                <button class="clear-all" (click)="clearRecentSearches()">Clear Log</button>
+              </div>
+              <div class="suggestion-item" *ngFor="let search of recentSearches()" (click)="selectSuggestion(search)">
+                <mat-icon>search</mat-icon>
+                <span>{{ search }}</span>
+              </div>
             </div>
-            <div class="suggestion-item" *ngFor="let suggestion of searchSuggestions()" (click)="selectSuggestion(suggestion)">
-              <mat-icon>terminal</mat-icon>
-              <span>{{ suggestion }}</span>
+
+            <!-- Suggested Intelligence -->
+            <div class="suggestions-section">
+              <div class="section-header">
+                <mat-icon>insights</mat-icon>
+                <span>Event Recommendations</span>
+              </div>
+              <div class="suggestion-item" *ngFor="let suggestion of searchSuggestions()" (click)="selectSuggestion(suggestion)">
+                <mat-icon>terminal</mat-icon>
+                <span>{{ suggestion }}</span>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <button
-        class="advanced-search-btn filter-toggle-btn"
-        [class.active]="showAdvancedFilters()"
-        (click)="toggleAdvancedFilters()"
-        mat-stroked-button
-      >
-        <mat-icon>tune</mat-icon>
-       Advanced Search
-        <span class="filter-badge" *ngIf="activeFilterCount() > 0">{{ activeFilterCount() }}</span>
-      </button>
-
-      <!-- Event Status Pills -->
       <div class="quick-filters" *ngIf="showQuickFilters()">
         <span class="filter-label">Quick event telemetry:</span>
         <button
@@ -109,7 +106,6 @@
         </button>
       </div>
     </div>
-  </div>
 
     <!-- Active Filters Display -->
     <div class="active-filters-display" *ngIf="hasActiveFilters()" [@slideInOut]>
@@ -523,7 +519,7 @@
       >
         <!-- Card Banner -->
         <div class="card-banner" 
-             [style.background]="getEventBannerGradient(event)"
+             [style.backgroundImage]="getEventBannerGradient(event)"
              [class.has-cover]="event.coverImageUrl">
           <div class="card-badges">
             <span class="category-badge">{{ event.category }}</span>

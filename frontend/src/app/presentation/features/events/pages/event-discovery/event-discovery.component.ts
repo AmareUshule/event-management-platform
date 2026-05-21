@@ -23,6 +23,7 @@ import { EventService } from '../../services/event.service';
 import { Event, EventStatus } from '../../models/event.model';
 import { AuthService } from '../../../../../core/auth/auth.service';
 import { PageHeaderComponent } from '../../../../../shared/components/page-header/page-header.component';
+import { environment } from '../../../../../../environments/environment';
 
 import { SkeletonModule } from 'primeng/skeleton';
 
@@ -592,8 +593,7 @@ export class EventDiscoveryComponent implements OnInit {
   getEventBannerGradient(event: Event): string {
     // Use actual cover image if available
     if (event.coverImageUrl) {
-      const isAbsolute = event.coverImageUrl.startsWith('http');
-      return `url('${isAbsolute ? event.coverImageUrl : window.location.origin + '/' + event.coverImageUrl.replace(/^\/+/, '')}')`;
+      return `url('${this.getCoverImageUrl(event.coverImageUrl)}')`;
     }
 
     // Fallback to gradient if no cover image
@@ -608,6 +608,18 @@ export class EventDiscoveryComponent implements OnInit {
     // Use event title or id to consistently select a gradient
     const seed = (event.title + (event.id || '')).length;
     return gradients[seed % gradients.length];
+  }
+
+  private getCoverImageUrl(coverImageUrl: string): string {
+    if (coverImageUrl.startsWith('http')) {
+      return coverImageUrl;
+    }
+
+    const apiBase = environment.apiUrl || '';
+    const baseUrl = apiBase.endsWith('/') ? apiBase : `${apiBase}/`;
+    const filePath = coverImageUrl.startsWith('/') ? coverImageUrl.substring(1) : coverImageUrl;
+
+    return `${baseUrl}${filePath}`;
   }
 
   getAssignmentCount(event: Event): number {

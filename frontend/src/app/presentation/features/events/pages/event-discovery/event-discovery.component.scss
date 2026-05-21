@@ -69,7 +69,7 @@
 .search-bar-wrapper {
   position: relative;
   width: 100%;
-  max-width: 800px;
+  max-width: 100%;
   margin: 0 auto;
 
   &.focused {
@@ -93,7 +93,7 @@
   background: var(--bg-surface);
   border: 2px solid var(--border-default);
   border-radius: var(--radius-2xl);
-  padding: 0 var(--space-6);
+  padding: 0 var(--space-4);
   height: 72px;
   box-shadow: var(--shadow-premium);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -131,35 +131,43 @@
     }
   }
 
-  .search-hints {
-    display: flex;
-    align-items: center;
-    gap: 2px;
-    margin-left: var(--space-4);
-    flex-shrink: 0;
-
-    .kbd {
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--text-muted);
-      padding: 3px 8px;
-      background: var(--bg-subtle);
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--radius-sm);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-  }
-
-  .clear-search {
+  .clear-search,
+  .advanced-search-toggle {
     margin-left: var(--space-4);
     color: var(--text-muted);
     flex-shrink: 0;
+    position: relative;
+    width: 44px;
+    height: 44px;
+    border-radius: 999px;
+    transition: background 0.2s ease, color 0.2s ease;
 
     &:hover {
-      color: var(--brand-red-500);
-      background: rgba(221, 20, 7, 0.1);
+      color: var(--brand-green-700);
+      background: rgba(30, 89, 12, 0.08);
     }
+  }
+
+  .advanced-search-toggle.active {
+    color: var(--brand-green-700);
+    background: rgba(30, 89, 12, 0.12);
+  }
+
+  .filter-badge {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    min-width: 18px;
+    height: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    border-radius: 999px;
+    background: var(--brand-red-600);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
   }
 }
 
@@ -252,7 +260,7 @@
   align-items: center;
   gap: var(--space-3);
   flex-wrap: wrap;
-  max-width: 800px;
+  max-width: 100%;
   margin: 0 auto;
 
   .filter-label {
@@ -294,7 +302,7 @@
 
 // Active Filters Display
 .active-filters-display {
-  max-width: 800px;
+  max-width: 100%;
   margin: 0 auto;
 
   .filters-header {
