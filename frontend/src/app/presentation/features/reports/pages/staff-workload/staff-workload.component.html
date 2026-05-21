@@ -1,58 +1,80 @@
 
 <div class="resource-planning-container">
   <!-- Premium Header -->
-  <div class="page-header-premium">
+  <header class="page-header-premium animate-fade-in">
     <div class="header-content">
       <div class="header-left">
         <div class="header-icon-wrapper">
           <mat-icon class="header-icon">groups_3</mat-icon>
         </div>
         <div class="header-text">
-          <h1 class="gradient-strip">Resource Planning</h1>
-          <p>Monitor team capacity, assignments, and workload distribution</p>
+          <h1 class="gradient-text">Resource Planning</h1>
+          <p>Optimize team capacity and track assignment distribution across projects</p>
         </div>
       </div>
-      <div class="header-metrics">
-        <div class="metric-card">
-          <div class="metric-value">{{ getTotalStaff() }}</div>
-          <div class="metric-label">Active Staff</div>
+      
+      <div class="header-metrics-glass">
+        <div class="metric-item">
+          <div class="metric-icon-box green">
+            <mat-icon>person</mat-icon>
+          </div>
+          <div class="metric-info">
+            <span class="metric-value">{{ getTotalStaff() }}</span>
+            <span class="metric-label">Active Staff</span>
+          </div>
         </div>
-        <div class="metric-card">
-          <div class="metric-value">{{ getTotalAssignments() }}</div>
-          <div class="metric-label">Total Assignments</div>
+        <div class="metric-divider"></div>
+        <div class="metric-item">
+          <div class="metric-icon-box blue">
+            <mat-icon>assignment</mat-icon>
+          </div>
+          <div class="metric-info">
+            <span class="metric-value">{{ getTotalAssignments() }}</span>
+            <span class="metric-label">Assignments</span>
+          </div>
         </div>
-        <div class="metric-card">
-          <div class="metric-value">{{ getUtilizationRate() }}%</div>
-          <div class="metric-label">Avg Utilization</div>
+        <div class="metric-divider"></div>
+        <div class="metric-item">
+          <div class="metric-icon-box amber">
+            <mat-icon>speed</mat-icon>
+          </div>
+          <div class="metric-info">
+            <span class="metric-value">{{ getUtilizationRate() }}%</span>
+            <span class="metric-label">Utilization</span>
+          </div>
         </div>
       </div>
     </div>
-  </div>
+  </header>
 
   <!-- Advanced Filters -->
-  <div class="filters-section">
-    <div class="filters-card card-premium">
+  <section class="filters-section animate-slide-up">
+    <div class="filters-card-modern">
+      <div class="filters-header">
+        <mat-icon>filter_list</mat-icon>
+        <span>Data Filters</span>
+      </div>
       <div class="filters-grid">
-        <div class="filter-group">
-          <label class="filter-label">Role Filter</label>
+        <div class="filter-field">
+          <label>Role</label>
           <mat-select
-            class="filter-select input-premium"
             [(ngModel)]="selectedRole"
             (selectionChange)="applyFilters()"
-            placeholder="All Roles">
+            placeholder="All Roles"
+            class="premium-select">
             <mat-option *ngFor="let role of roles" [value]="role.value">
               {{ role.label }}
             </mat-option>
           </mat-select>
         </div>
 
-        <div class="filter-group">
-          <label class="filter-label">Staff Member</label>
+        <div class="filter-field">
+          <label>Staff Member</label>
           <mat-select
-            class="filter-select input-premium"
             [(ngModel)]="selectedStaffId"
             (selectionChange)="applyFilters()"
-            placeholder="All Staff">
+            placeholder="Search staff..."
+            class="premium-select">
             <mat-option value="">All Staff</mat-option>
             <mat-option *ngFor="let staff of allStaff" [value]="staff.id">
               {{ staff.name }} ({{ staff.role }})
@@ -60,154 +82,167 @@
           </mat-select>
         </div>
 
-        <div class="filter-group">
-          <label class="filter-label">Date Range</label>
-          <div class="date-range-inputs">
-            <input
-              matInput
-              class="date-input input-premium"
-              [matDatepicker]="startPicker"
-              [(ngModel)]="startDate"
-              (dateChange)="applyFilters()"
-              placeholder="Start Date">
-            <mat-datepicker-toggle matSuffix [for]="startPicker" class="date-toggle"></mat-datepicker-toggle>
-            <mat-datepicker #startPicker></mat-datepicker>
-
-            <span class="date-separator">to</span>
-
-            <input
-              matInput
-              class="date-input input-premium"
-              [matDatepicker]="endPicker"
-              [(ngModel)]="endDate"
-              (dateChange)="applyFilters()"
-              placeholder="End Date">
-            <mat-datepicker-toggle matSuffix [for]="endPicker" class="date-toggle"></mat-datepicker-toggle>
-            <mat-datepicker #endPicker></mat-datepicker>
+        <div class="filter-field date-range">
+          <label>Date Period</label>
+          <div class="date-inputs-wrapper">
+            <div class="date-input-box">
+              <input
+                matInput
+                [matDatepicker]="startPicker"
+                [(ngModel)]="startDate"
+                (dateChange)="applyFilters()"
+                placeholder="From">
+              <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+              <mat-datepicker #startPicker></mat-datepicker>
+            </div>
+            <span class="date-arrow">→</span>
+            <div class="date-input-box">
+              <input
+                matInput
+                [matDatepicker]="endPicker"
+                [(ngModel)]="endDate"
+                (dateChange)="applyFilters()"
+                placeholder="To">
+              <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
+              <mat-datepicker #endPicker></mat-datepicker>
+            </div>
           </div>
         </div>
 
         <div class="filter-actions">
-          <button class="btn-premium secondary" (click)="resetFilters()">
+          <button class="btn-icon-secondary" (click)="resetFilters()" matTooltip="Reset all filters">
             <mat-icon>restart_alt</mat-icon>
-            Reset Filters
           </button>
         </div>
       </div>
     </div>
-  </div>
+  </section>
 
   <!-- Loading State -->
-  <div *ngIf="isLoading" class="loading-overlay">
-    <div class="loading-card card-premium">
-      <mat-spinner diameter="40" class="loading-spinner"></mat-spinner>
-      <p class="loading-text">Loading resource data...</p>
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="loader-card">
+      <mat-spinner diameter="48"></mat-spinner>
+      <span>Analyzing capacity...</span>
     </div>
   </div>
 
   <!-- Resource Grid -->
-  <div *ngIf="!isLoading" class="resources-grid">
-    <div *ngIf="staffWorkload.length === 0" class="empty-state-card card-premium">
-      <div class="empty-state-content">
-        <mat-icon class="empty-icon">person_off</mat-icon>
-        <h3>No Resources Found</h3>
-        <p>Try adjusting your filters to see staff workload data.</p>
+  <div *ngIf="!isLoading" class="resources-grid-modern">
+    <!-- Empty State -->
+    <div *ngIf="staffWorkload.length === 0" class="empty-state-modern animate-fade-in">
+      <div class="empty-state-visual">
+        <mat-icon>person_search</mat-icon>
+        <div class="pulse-ring"></div>
       </div>
+      <h3>No staff members found</h3>
+      <p>Try adjusting your filters to find the right resource data.</p>
+      <button class="btn-premium secondary" (click)="resetFilters()">Clear Filters</button>
     </div>
 
-    <div *ngFor="let staff of staffWorkload" class="resource-card card-premium hoverable">
-      <!-- Staff Header -->
-      <div class="resource-header">
-        <div class="staff-profile">
-          <div class="staff-avatar">
-            <div class="avatar-initials">{{ getInitials(staff.fullName) }}</div>
-            <div class="avatar-status" [ngClass]="getAvailabilityStatus(staff)"></div>
+    <!-- Staff Cards -->
+    <article *ngFor="let staff of staffWorkload; let i = index" 
+             class="resource-card-modern animate-slide-up"
+             [style.animation-delay]="(i * 0.05) + 's'">
+      
+      <div class="card-glow"></div>
+      
+      <div class="card-main-content">
+        <!-- Staff Header -->
+        <div class="staff-header-row">
+          <div class="staff-avatar-wrapper">
+            <div class="avatar-circle" [ngClass]="getRoleClass(staff.role)">
+              {{ getInitials(staff.fullName) }}
+            </div>
+            <div class="availability-indicator" 
+                 [ngClass]="getAvailabilityStatus(staff)"
+                 [matTooltip]="'Status: ' + getAvailabilityStatus(staff)">
+            </div>
           </div>
-          <div class="staff-info">
+          
+          <div class="staff-meta">
             <h3 class="staff-name">{{ staff.fullName }}</h3>
-            <div class="staff-role">
-              <span class="role-badge" [ngClass]="getRoleClass(staff.role)">
+            <div class="staff-labels">
+              <span class="role-tag" [ngClass]="getRoleClass(staff.role)">
                 {{ staff.role }}
               </span>
-              <span class="department-tag">{{ staff.departmentName }}</span>
+              <span class="dept-label">{{ staff.departmentName }}</span>
             </div>
           </div>
-        </div>
 
-        <div class="resource-actions">
-          <button class="btn-premium ghost" [routerLink]="['/admin/dashboard']" [queryParams]="{ staffId: staff.staffId }">
-            <mat-icon>visibility</mat-icon>
-            View Details
+          <button class="btn-icon-ghost" [routerLink]="['/admin/dashboard']" [queryParams]="{ staffId: staff.staffId }" matTooltip="Full Analysis">
+            <mat-icon>analytics</mat-icon>
           </button>
         </div>
-      </div>
 
-      <!-- Workload Metrics -->
-      <div class="workload-metrics">
-        <div class="metric-item">
-          <div class="metric-visual">
-            <div class="metric-bar">
-              <div class="metric-fill" [style.width.%]="getUtilizationPercentage(staff)"></div>
+        <!-- Workload Analytics -->
+        <div class="workload-analysis">
+          <div class="utilization-gauge">
+            <div class="gauge-header">
+              <span class="gauge-label">Utilization Rate</span>
+              <span class="gauge-value" [ngClass]="getAvailabilityStatus(staff)">{{ getUtilizationPercentage(staff) }}%</span>
             </div>
-            <span class="metric-percentage">{{ getUtilizationPercentage(staff) }}%</span>
-          </div>
-          <div class="metric-label">Utilization</div>
-        </div>
-
-        <div class="metric-item">
-          <div class="metric-value">{{ staff.totalAssignments }}</div>
-          <div class="metric-label">Total Events</div>
-        </div>
-
-        <div class="metric-item">
-          <div class="metric-value">{{ staff.scheduledAssignments }}</div>
-          <div class="metric-label">Upcoming</div>
-        </div>
-
-        <div class="metric-item">
-          <div class="metric-value">{{ staff.pastAssignments }}</div>
-          <div class="metric-label">Completed</div>
-        </div>
-      </div>
-
-      <!-- Assignment Timeline -->
-      <div class="assignment-timeline" *ngIf="staff.events.length > 0">
-        <div class="timeline-header">
-          <h4>Assignment Timeline</h4>
-          <span class="event-count">{{ staff.events.length }} events</span>
-        </div>
-
-        <div class="timeline-events">
-          <div
-            *ngFor="let event of getRecentEvents(staff.events)"
-            class="timeline-event"
-            [routerLink]="['/events', event.eventId]">
-            <div class="event-marker" [ngClass]="getStatusClass(event.status)"></div>
-            <div class="event-content">
-              <div class="event-title">{{ event.title }}</div>
-              <div class="event-meta">
-                <span class="event-date">{{ event.startDate | date:'MMM dd' }}</span>
-                <span class="event-status-badge" [ngClass]="getStatusClass(event.status)">
-                  {{ event.status }}
-                </span>
+            <div class="gauge-bar-bg">
+              <div class="gauge-bar-fill" 
+                   [ngClass]="getAvailabilityStatus(staff)"
+                   [style.width.%]="getUtilizationPercentage(staff)">
+                <div class="gauge-shine"></div>
               </div>
             </div>
           </div>
+
+          <div class="stats-mini-grid">
+            <div class="stat-box">
+              <span class="stat-num">{{ staff.totalAssignments }}</span>
+              <span class="stat-label">Total</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-num">{{ staff.scheduledAssignments }}</span>
+              <span class="stat-label">Active</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-num">{{ staff.pastAssignments }}</span>
+              <span class="stat-label">Past</span>
+            </div>
+          </div>
         </div>
 
-        <div *ngIf="staff.events.length > 3" class="timeline-footer">
-          <button class="btn-premium ghost small" (click)="toggleExpandedView(staff)">
-            <mat-icon>{{ isExpanded(staff) ? 'expand_less' : 'expand_more' }}</mat-icon>
-            {{ isExpanded(staff) ? 'Show Less' : `View ${staff.events.length - 3} More` }}
+        <!-- Timeline Preview -->
+        <div class="timeline-preview" *ngIf="staff.events.length > 0">
+          <div class="section-title">
+            <span>Recent Activity</span>
+            <span class="activity-badge">{{ staff.events.length }}</span>
+          </div>
+
+          <div class="timeline-items">
+            <div *ngFor="let event of getRecentEvents(staff.events)" 
+                 class="timeline-item-modern"
+                 [routerLink]="['/events', event.eventId]">
+              <div class="status-dot" [ngClass]="getStatusClass(event.status)"></div>
+              <div class="event-details">
+                <span class="event-name">{{ event.title }}</span>
+                <span class="event-date-row">
+                  <mat-icon>calendar_today</mat-icon>
+                  {{ event.startDate | date:'MMM dd, yyyy' }}
+                </span>
+              </div>
+              <mat-icon class="arrow-icon">chevron_right</mat-icon>
+            </div>
+          </div>
+
+          <button *ngIf="staff.events.length > 3" 
+                  class="btn-expand" 
+                  (click)="toggleExpandedView(staff)">
+            {{ isExpanded(staff) ? 'Collapse details' : 'See ' + (staff.events.length - 3) + ' more events' }}
+            <mat-icon>{{ isExpanded(staff) ? 'keyboard_arrow_up' : 'keyboard_arrow_down' }}</mat-icon>
           </button>
         </div>
-      </div>
 
-      <!-- No Assignments State -->
-      <div *ngIf="staff.events.length === 0" class="no-assignments">
-        <mat-icon>event_busy</mat-icon>
-        <p>No assignments in selected period</p>
+        <!-- Empty State for Assignments -->
+        <div *ngIf="staff.events.length === 0" class="no-activity-box">
+          <mat-icon>event_busy</mat-icon>
+          <p>No active assignments</p>
+        </div>
       </div>
-    </div>
+    </article>
   </div>
 </div>
