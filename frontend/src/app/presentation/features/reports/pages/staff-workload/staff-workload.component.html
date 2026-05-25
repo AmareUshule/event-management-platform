@@ -13,236 +13,292 @@
         </div>
       </div>
       
-      <div class="header-metrics-glass">
-        <div class="metric-item">
-          <div class="metric-icon-box green">
-            <mat-icon>person</mat-icon>
-          </div>
-          <div class="metric-info">
-            <span class="metric-value">{{ getTotalStaff() }}</span>
-            <span class="metric-label">Active Staff</span>
-          </div>
+      <div class="header-actions">
+        <button class="btn-premium primary" (click)="exportData()" matTooltip="Export detailed workload report">
+          <mat-icon>download</mat-icon>
+          <span>Export Report</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="header-metrics-row animate-slide-up">
+      <div class="metric-glass-card">
+        <div class="metric-icon-box green">
+          <mat-icon>person</mat-icon>
         </div>
-        <div class="metric-divider"></div>
-        <div class="metric-item">
-          <div class="metric-icon-box blue">
-            <mat-icon>assignment</mat-icon>
-          </div>
-          <div class="metric-info">
-            <span class="metric-value">{{ getTotalAssignments() }}</span>
-            <span class="metric-label">Assignments</span>
-          </div>
+        <div class="metric-info">
+          <span class="metric-label">Active Staff</span>
+          <span class="metric-value">{{ getTotalStaff() }}</span>
         </div>
-        <div class="metric-divider"></div>
-        <div class="metric-item">
-          <div class="metric-icon-box amber">
-            <mat-icon>speed</mat-icon>
-          </div>
-          <div class="metric-info">
-            <span class="metric-value">{{ getUtilizationRate() }}%</span>
-            <span class="metric-label">Utilization</span>
-          </div>
+        <div class="metric-trend positive">
+          <mat-icon>trending_up</mat-icon>
+          <span>Stable</span>
+        </div>
+      </div>
+
+      <div class="metric-glass-card">
+        <div class="metric-icon-box blue">
+          <mat-icon>assignment</mat-icon>
+        </div>
+        <div class="metric-info">
+          <span class="metric-label">Total Assignments</span>
+          <span class="metric-value">{{ getTotalAssignments() }}</span>
         </div>
       </div>
     </div>
   </header>
 
-  <!-- Advanced Filters -->
-  <section class="filters-section animate-slide-up">
+  <!-- Advanced Filters & Sorting -->
+  <section class="controls-section animate-slide-up">
     <div class="filters-card-modern">
-      <div class="filters-header">
-        <mat-icon>filter_list</mat-icon>
-        <span>Data Filters</span>
-      </div>
-      <div class="filters-grid">
-        <div class="filter-field">
-          <label>Role</label>
-          <mat-select
-            [(ngModel)]="selectedRole"
-            (selectionChange)="applyFilters()"
-            placeholder="All Roles"
-            class="premium-select">
-            <mat-option *ngFor="let role of roles" [value]="role.value">
-              {{ role.label }}
-            </mat-option>
-          </mat-select>
-        </div>
+      <div class="controls-row">
+        <div class="filters-group">
+          <div class="filter-field">
+            <label class="field-label">
+              <mat-icon>work_outline</mat-icon>
+              <span>Resource Role</span>
+            </label>
+            <mat-select
+              [(ngModel)]="selectedRole"
+              (selectionChange)="applyFilters()"
+              placeholder="All Roles"
+              class="premium-select">
+              @for (role of roles; track role.value) {
+                <mat-option [value]="role.value">
+                  {{ role.label }}
+                </mat-option>
+              }
+            </mat-select>
+          </div>
 
-        <div class="filter-field">
-          <label>Staff Member</label>
-          <mat-select
-            [(ngModel)]="selectedStaffId"
-            (selectionChange)="applyFilters()"
-            placeholder="Search staff..."
-            class="premium-select">
-            <mat-option value="">All Staff</mat-option>
-            <mat-option *ngFor="let staff of allStaff" [value]="staff.id">
-              {{ staff.name }} ({{ staff.role }})
-            </mat-option>
-          </mat-select>
-        </div>
+          <div class="filter-field">
+            <label class="field-label">
+              <mat-icon>person_outline</mat-icon>
+              <span>Staff Member</span>
+            </label>
+            <mat-select
+              [(ngModel)]="selectedStaffId"
+              (selectionChange)="applyFilters()"
+              placeholder="Search Staff"
+              class="premium-select">
+              <mat-option value="">All Staff</mat-option>
+              @for (staff of allStaff; track staff.id) {
+                <mat-option [value]="staff.id">
+                  {{ staff.name }}
+                </mat-option>
+              }
+            </mat-select>
+          </div>
 
-        <div class="filter-field date-range">
-          <label>Date Period</label>
-          <div class="date-inputs-wrapper">
-            <div class="date-input-box">
+          <div class="filter-field date-range">
+            <label class="field-label">
+              <mat-icon>date_range</mat-icon>
+              <span>Analysis Period</span>
+            </label>
+            <div class="date-inputs-wrapper">
               <input
                 matInput
                 [matDatepicker]="startPicker"
                 [(ngModel)]="startDate"
                 (dateChange)="applyFilters()"
-                placeholder="From">
+                placeholder="Start Date">
               <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
               <mat-datepicker #startPicker></mat-datepicker>
-            </div>
-            <span class="date-arrow">→</span>
-            <div class="date-input-box">
+              <span class="date-sep"></span>
               <input
                 matInput
                 [matDatepicker]="endPicker"
                 [(ngModel)]="endDate"
                 (dateChange)="applyFilters()"
-                placeholder="To">
+                placeholder="End Date">
               <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
               <mat-datepicker #endPicker></mat-datepicker>
             </div>
           </div>
+
+          <div class="filter-field reset-field">
+            <label class="field-label">&nbsp;</label>
+            <button class="btn-reset" (click)="resetFilters()" matTooltip="Clear all filters">
+              <mat-icon>restart_alt</mat-icon>
+              <span>Reset</span>
+            </button>
+          </div>
         </div>
 
-        <div class="filter-actions">
-          <button class="btn-icon-secondary" (click)="resetFilters()" matTooltip="Reset all filters">
-            <mat-icon>restart_alt</mat-icon>
-          </button>
+        <div class="sorting-group">
+          <span class="sort-label">Sort by:</span>
+          <div class="sort-chips">
+            <button class="sort-chip" [class.active]="sortBy === 'name'" (click)="toggleSort('name')">
+              Name
+              @if (sortBy === 'name') {
+                <mat-icon>{{ sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</mat-icon>
+              }
+            </button>
+            <button class="sort-chip" [class.active]="sortBy === 'assignments'" (click)="toggleSort('assignments')">
+              Assignments
+              @if (sortBy === 'assignments') {
+                <mat-icon>{{ sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</mat-icon>
+              }
+            </button>
+          </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Loading State -->
-  <div *ngIf="isLoading" class="loading-container">
-    <div class="loader-card">
-      <mat-spinner diameter="48"></mat-spinner>
-      <span>Analyzing capacity...</span>
-    </div>
-  </div>
-
-  <!-- Resource Grid -->
-  <div *ngIf="!isLoading" class="resources-grid-modern">
-    <!-- Empty State -->
-    <div *ngIf="staffWorkload.length === 0" class="empty-state-modern animate-fade-in">
-      <div class="empty-state-visual">
-        <mat-icon>person_search</mat-icon>
-        <div class="pulse-ring"></div>
-      </div>
-      <h3>No staff members found</h3>
-      <p>Try adjusting your filters to find the right resource data.</p>
-      <button class="btn-premium secondary" (click)="resetFilters()">Clear Filters</button>
-    </div>
-
-    <!-- Staff Cards -->
-    <article *ngFor="let staff of staffWorkload; let i = index" 
-             class="resource-card-modern animate-slide-up"
-             [style.animation-delay]="(i * 0.05) + 's'">
-      
-      <div class="card-glow"></div>
-      
-      <div class="card-main-content">
-        <!-- Staff Header -->
-        <div class="staff-header-row">
-          <div class="staff-avatar-wrapper">
-            <div class="avatar-circle" [ngClass]="getRoleClass(staff.role)">
-              {{ getInitials(staff.fullName) }}
-            </div>
-            <div class="availability-indicator" 
-                 [ngClass]="getAvailabilityStatus(staff)"
-                 [matTooltip]="'Status: ' + getAvailabilityStatus(staff)">
+  <!-- Loading State (Skeletons) -->
+  @if (isLoading) {
+    <div class="resources-grid-modern">
+      @for (i of [1,2,3,4,5,6]; track i) {
+        <div class="resource-card-modern skeleton">
+          <div class="skeleton-header">
+            <div class="skeleton-avatar"></div>
+            <div class="skeleton-text-group">
+              <div class="skeleton-line title"></div>
+              <div class="skeleton-line subtitle"></div>
             </div>
           </div>
+          <div class="skeleton-content">
+            <div class="skeleton-box"></div>
+            <div class="skeleton-line full"></div>
+            <div class="skeleton-line full"></div>
+          </div>
+        </div>
+      }
+    </div>
+  } @else {
+    <!-- Resource Grid -->
+    <div class="resources-grid-modern">
+      @for (staff of filteredWorkload; track staff.staffId; let i = $index) {
+        <!-- Staff Cards -->
+        <article 
+                 class="resource-card-modern animate-slide-up"
+                 [style.animation-delay]="(i * 0.05) + 's'">
           
-          <div class="staff-meta">
-            <h3 class="staff-name">{{ staff.fullName }}</h3>
-            <div class="staff-labels">
-              <span class="role-tag" [ngClass]="getRoleClass(staff.role)">
-                {{ staff.role }}
-              </span>
-              <span class="dept-label">{{ staff.departmentName }}</span>
-            </div>
-          </div>
+          <div class="card-glow"></div>
+          
+          <div class="card-main-content">
+            <!-- Staff Header -->
+            <div class="staff-header-row">
+              <div class="staff-avatar-wrapper">
+                <div class="avatar-circle" [ngClass]="getRoleClass(staff.role)">
+                  {{ getInitials(staff.fullName) }}
+                </div>
+                <div class="availability-status" [ngClass]="getAvailabilityStatus(staff)">
+                  <span class="status-dot"></span>
+                  {{ getAvailabilityStatus(staff) | titlecase }}
+                </div>
+              </div>
+              
+              <div class="staff-meta">
+                <h3 class="staff-name">{{ staff.fullName }}</h3>
+                <div class="staff-labels">
+                  <span class="role-badge" [ngClass]="getRoleClass(staff.role)">
+                    <mat-icon>{{ staff.role === 'Expert' ? 'workspace_premium' : 'videocam' }}</mat-icon>
+                    {{ staff.role }}
+                  </span>
+                  <span class="dept-info">{{ staff.departmentName }}</span>
+                </div>
+              </div>
 
-          <button class="btn-icon-ghost" [routerLink]="['/admin/dashboard']" [queryParams]="{ staffId: staff.staffId }" matTooltip="Full Analysis">
-            <mat-icon>analytics</mat-icon>
-          </button>
-        </div>
-
-        <!-- Workload Analytics -->
-        <div class="workload-analysis">
-          <div class="utilization-gauge">
-            <div class="gauge-header">
-              <span class="gauge-label">Utilization Rate</span>
-              <span class="gauge-value" [ngClass]="getAvailabilityStatus(staff)">{{ getUtilizationPercentage(staff) }}%</span>
+              <button class="btn-action-ghost" [routerLink]="['/admin/dashboard']" [queryParams]="{ staffId: staff.staffId }" matTooltip="Detailed Analytics">
+                <mat-icon>bar_chart</mat-icon>
+              </button>
             </div>
-            <div class="gauge-bar-bg">
-              <div class="gauge-bar-fill" 
-                   [ngClass]="getAvailabilityStatus(staff)"
-                   [style.width.%]="getUtilizationPercentage(staff)">
-                <div class="gauge-shine"></div>
+
+            <!-- Workload Analytics -->
+            <div class="workload-stats-card">
+              <div class="utilization-section">
+                <div class="utilization-header">
+                  <span class="label">Current Load</span>
+                  <span class="value" [ngClass]="getAvailabilityStatus(staff)">{{ getUtilizationPercentage(staff) }}%</span>
+                </div>
+                <div class="custom-progress-container">
+                  <div class="progress-track">
+                    <div class="progress-bar" 
+                         [ngClass]="getAvailabilityStatus(staff)"
+                         [style.width.%]="getUtilizationPercentage(staff)">
+                      <div class="bar-glow"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="stats-counter-grid">
+                <div class="counter-item">
+                  <span class="count">{{ staff.totalAssignments }}</span>
+                  <span class="label">Total</span>
+                </div>
+                <div class="counter-item active">
+                  <span class="count">{{ staff.scheduledAssignments }}</span>
+                  <span class="label">Active</span>
+                </div>
+                <div class="counter-item">
+                  <span class="count">{{ staff.pastAssignments }}</span>
+                  <span class="label">History</span>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div class="stats-mini-grid">
-            <div class="stat-box">
-              <span class="stat-num">{{ staff.totalAssignments }}</span>
-              <span class="stat-label">Total</span>
-            </div>
-            <div class="stat-box">
-              <span class="stat-num">{{ staff.scheduledAssignments }}</span>
-              <span class="stat-label">Active</span>
-            </div>
-            <div class="stat-box">
-              <span class="stat-num">{{ staff.pastAssignments }}</span>
-              <span class="stat-label">Past</span>
-            </div>
-          </div>
-        </div>
+            <!-- Activity Timeline -->
+            @if (staff.events.length > 0) {
+              <div class="timeline-section">
+                <div class="timeline-header">
+                  <h4>Recent Assignments</h4>
+                  <span class="count-pill">{{ staff.events.length }}</span>
+                </div>
 
-        <!-- Timeline Preview -->
-        <div class="timeline-preview" *ngIf="staff.events.length > 0">
-          <div class="section-title">
-            <span>Recent Activity</span>
-            <span class="activity-badge">{{ staff.events.length }}</span>
-          </div>
+                <div class="timeline-list">
+                  @for (event of getRecentEvents(staff.events); track event.eventId) {
+                    <div class="timeline-card"
+                         [routerLink]="['/events', event.eventId]">
+                      <div class="event-status-line" [ngClass]="getStatusClass(event.status)"></div>
+                      <div class="event-info">
+                        <span class="title">{{ event.title }}</span>
+                        <div class="meta">
+                          <span class="date">
+                            <mat-icon>event</mat-icon>
+                            {{ event.startDate | date:'MMM d, yyyy' }}
+                          </span>
+                          <span class="dot">•</span>
+                          <span class="status-text">{{ event.status }}</span>
+                        </div>
+                      </div>
+                      <mat-icon class="action-icon">chevron_right</mat-icon>
+                    </div>
+                  }
+                </div>
 
-          <div class="timeline-items">
-            <div *ngFor="let event of getRecentEvents(staff.events)" 
-                 class="timeline-item-modern"
-                 [routerLink]="['/events', event.eventId]">
-              <div class="status-dot" [ngClass]="getStatusClass(event.status)"></div>
-              <div class="event-details">
-                <span class="event-name">{{ event.title }}</span>
-                <span class="event-date-row">
-                  <mat-icon>calendar_today</mat-icon>
-                  {{ event.startDate | date:'MMM dd, yyyy' }}
-                </span>
+                @if (staff.events.length > 3) {
+                  <button 
+                          class="btn-show-more" 
+                          (click)="toggleExpandedView(staff)">
+                    <span>{{ isExpanded(staff) ? 'Hide details' : 'View ' + (staff.events.length - 3) + ' more' }}</span>
+                    <mat-icon>{{ isExpanded(staff) ? 'expand_less' : 'expand_more' }}</mat-icon>
+                  </button>
+                }
               </div>
-              <mat-icon class="arrow-icon">chevron_right</mat-icon>
-            </div>
+            } @else {
+              <!-- No Activity State -->
+              <div class="no-data-placeholder">
+                <mat-icon>event_available</mat-icon>
+                <p>No active assignments assigned</p>
+              </div>
+            }
           </div>
-
-          <button *ngIf="staff.events.length > 3" 
-                  class="btn-expand" 
-                  (click)="toggleExpandedView(staff)">
-            {{ isExpanded(staff) ? 'Collapse details' : 'See ' + (staff.events.length - 3) + ' more events' }}
-            <mat-icon>{{ isExpanded(staff) ? 'keyboard_arrow_up' : 'keyboard_arrow_down' }}</mat-icon>
-          </button>
+        </article>
+      } @empty {
+        <!-- Empty State -->
+        <div class="empty-state-modern animate-fade-in">
+          <div class="empty-state-visual">
+            <mat-icon>person_off</mat-icon>
+            <div class="pulse-ring"></div>
+          </div>
+          <h3>No matching records</h3>
+          <p>Try adjusting your search filters or date range.</p>
+          <button class="btn-premium secondary" (click)="resetFilters()">Reset Dashboard</button>
         </div>
-
-        <!-- Empty State for Assignments -->
-        <div *ngIf="staff.events.length === 0" class="no-activity-box">
-          <mat-icon>event_busy</mat-icon>
-          <p>No active assignments</p>
-        </div>
-      </div>
-    </article>
-  </div>
+      }
+    </div>
+  }
 </div>
