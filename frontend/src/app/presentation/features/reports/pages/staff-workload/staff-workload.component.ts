@@ -22,7 +22,6 @@ import { ReportService, StaffWorkload, StaffEventSummary } from '../../../../../
 import { AuthService } from '../../../../../core/auth/auth.service';
 import { EmployeeService } from '../../../../../core/services/employee.service';
 import { Employee } from '../../../../../core/models/employee.model';
-import { HeaderComponent } from '../../../../layouts/header/header.component';
 
 @Component({
   selector: 'app-staff-workload',
@@ -57,16 +56,19 @@ export class StaffWorkloadComponent implements OnInit {
 
   isLoading = true;
   staffWorkload: StaffWorkload[] = [];
+  filteredWorkload: StaffWorkload[] = [];
   allStaff: Employee[] = [];
   
-  // Filters
+  // Filters & Sorting
   startDate: Date | null = null;
   endDate: Date | null = null;
-  selectedRole: string = '';
-  selectedStaffId: string = '';
+  selectedRole = '';
+  selectedStaffId = '';
+  sortBy: 'name' | 'assignments' = 'name';
+  sortOrder: 'asc' | 'desc' = 'asc';
   
   roles = [
-    { value: '', label: 'All Staff' },
+    { value: '', label: 'All Roles' },
     { value: 'Expert', label: 'Experts Only' },
     { value: 'Cameraman', label: 'Cameramen Only' }
   ];
@@ -84,7 +86,9 @@ export class StaffWorkloadComponent implements OnInit {
     this.employeeService.getAllEmployees().subscribe({
       next: (employees) => {
         // Filter only experts and cameramen for the dropdown
-        this.allStaff = employees.filter(e => e.role === 'Expert' || e.role === 'Cameraman');
+        this.allStaff = employees
+          .filter(e => e.role === 'Expert' || e.role === 'Cameraman')
+          .sort((a, b) => a.firstName.localeCompare(b.firstName));
         this.cdr.detectChanges();
       }
     });
@@ -108,8 +112,9 @@ export class StaffWorkloadComponent implements OnInit {
       .subscribe({
         next: (data) => {
           this.staffWorkload = data;
+          this.applySorting();
         },
-        error: (err) => {
+        error: () => {
           this.snackBar.open('Failed to load workload data', 'Close', { duration: 3000 });
         }
       });
@@ -119,12 +124,46 @@ export class StaffWorkloadComponent implements OnInit {
     this.loadWorkload();
   }
 
+  applySorting(): void {
+    const sorted = [...this.staffWorkload].sort((a, b) => {
+      let comparison = 0;
+      switch (this.sortBy) {
+        case 'name':
+          comparison = a.fullName.localeCompare(b.fullName);
+          break;
+        case 'assignments':
+          comparison = a.totalAssignments - b.totalAssignments;
+          break;
+      }
+      return this.sortOrder === 'asc' ? comparison : -comparison;
+    });
+    this.filteredWorkload = sorted;
+    this.cdr.detectChanges();
+  }
+
+  toggleSort(field: 'name' | 'assignments'): void {
+    if (this.sortBy === field) {
+      this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortBy = field;
+      this.sortOrder = 'asc';
+    }
+    this.applySorting();
+  }
+
   resetFilters(): void {
     this.startDate = null;
     this.endDate = null;
     this.selectedRole = '';
     this.selectedStaffId = '';
+    this.sortBy = 'name';
+    this.sortOrder = 'asc';
     this.loadWorkload();
+  }
+
+  exportData(): void {
+    this.reportService.exportReportSummary();
+    this.snackBar.open('Exporting report...', 'Close', { duration: 2000 });
   }
 
   getTotalStaff(): number {
@@ -133,12 +172,6 @@ export class StaffWorkloadComponent implements OnInit {
 
   getTotalAssignments(): number {
     return this.staffWorkload.reduce((sum, staff) => sum + staff.totalAssignments, 0);
-  }
-
-  getUtilizationRate(): number {
-    if (this.staffWorkload.length === 0) return 0;
-    const totalUtilization = this.staffWorkload.reduce((sum, staff) => sum + this.getUtilizationPercentage(staff), 0);
-    return Math.round(totalUtilization / this.staffWorkload.length);
   }
 
   getInitials(fullName: string): string {
