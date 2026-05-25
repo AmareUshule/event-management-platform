@@ -39,9 +39,9 @@ namespace EEP.EventManagement.Api.Application.Features.Events.Handlers
                 throw new UnauthorizedException("Only the event creator or an admin can request cancellation.");
             }
 
-            if (ev.Status == EventStatus.Archived || ev.Status == EventStatus.Completed || ev.Status == EventStatus.Cancelled)
+            if (ev.Status != EventStatus.Scheduled)
             {
-                throw new BadRequestException($"Events in {ev.Status} status cannot be cancelled.");
+                throw new BadRequestException($"Cancellation can only be requested for Scheduled events. Current status: {ev.Status}");
             }
 
             if (ev.CancellationRequestStatus == CancellationRequestStatus.Pending)

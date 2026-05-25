@@ -33,11 +33,20 @@ namespace EEP.EventManagement.Api.Application.Features.Events.Handlers
                 throw new NotFoundException("Event", request.EventId);
             }
 
-            // Based on user requirements, events can be cancelled after initialized (Draft status)
-            // or possibly Scheduled/Ongoing, but primary use case is cancelling Drafts.
-            if (ev.Status == EventStatus.Archived || ev.Status == EventStatus.Completed || ev.Status == EventStatus.Cancelled)
+            // Check authorization: Admin or Communication Manager
+            var roles = _userContext.GetRoles();
+            var isCommManager = _userContext.IsInRole("Manager") && _userContext.GetDepartmentId() != null; 
+            // Note: The specific "Communication" department check is better handled via Policy in Controller,
+            // but we add a safety check here for the General Manager role if possible.
+            
+            if (!_userContext.IsInRole("Admin") && !roles.Contains("Manager"))
             {
-                throw new BadRequestException($"Events in {ev.Status} status cannot be cancelled.");
+                throw new UnauthorizedException("Only an admin or manager can cancel a draft event.");
+            }
+
+            if (ev.Status != EventStatus.Draft)
+            {
+                throw new BadRequestException($"Direct cancellation is only allowed for Draft events. Current status: {ev.Status}");
             }
 
             ev.Status = EventStatus.Cancelled;

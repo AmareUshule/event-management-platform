@@ -66,6 +66,17 @@ namespace EEP.EventManagement.Api.Controllers
                     return true;
                 }
 
+                // Requirement: Managers/Creators only see their OWN cancelled events
+                // Admins and Communication Managers see ALL (already handled above)
+                if (e.Status == EventStatus.Cancelled.ToString())
+                {
+                    if (e.CreatedBy != null && e.CreatedBy.Id == currentUserId)
+                    {
+                        return true;
+                    }
+                    return false;
+                }
+
                 // New logic for Draft events (Pending Approval)
                 if (e.Status == EventStatus.Draft.ToString())
                 {
@@ -145,8 +156,13 @@ namespace EEP.EventManagement.Api.Controllers
                 return NotFound();
             }
 
-            // Admin can edit any event in any status
-            if (User.IsInRole("Admin"))
+            // Never allow editing Cancelled events
+            if (eventDto.Status == EventStatus.Cancelled.ToString())
+            {
+                return BadRequest(new { message = "Cancelled events cannot be edited." });
+            }
+
+            // Admin can edit any event (except Cancelled) in any status
             {
                 var command = new UpdateEventCommand { UpdateEventDto = updateEventDto };
                 await _mediator.Send(command);
@@ -260,9 +276,10 @@ namespace EEP.EventManagement.Api.Controllers
         }
 
         [HttpPost("{id}/cancel")]
+        [Authorize(Policy = EEP.EventManagement.Api.Infrastructure.Security.Authorization.AuthorizationPolicies.IsCommunicationManager)]
         public async Task<ActionResult<EventDto>> CancelEvent(Guid id, [FromBody] ClosureCommentRequest request)
         {
-            var command = new RequestEventCancellationCommand { EventId = id, Reason = request.Comment };
+            var command = new CancelEventCommand { EventId = id, ClosureComment = request.Comment };
             var result = await _mediator.Send(command);
             return Ok(result);
         }

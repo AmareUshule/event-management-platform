@@ -37,7 +37,7 @@ namespace EEP.EventManagement.Api.Infrastructure.Persistence.Configurations
             builder.Property(e => e.Status)
                 .HasMaxLength(20)
                 .IsRequired()
-                .HasDefaultValue(CancellationRequestStatus.None)
+                .HasDefaultValue(EventStatus.Draft)
                 .HasConversion<string>();
 
             builder.Property(e => e.CreatedBy)
@@ -48,6 +48,7 @@ namespace EEP.EventManagement.Api.Infrastructure.Persistence.Configurations
             builder.Property(e => e.CancellationRequestStatus)
                 .HasMaxLength(20)
                 .IsRequired()
+                .HasDefaultValue(CancellationRequestStatus.None)
                 .HasConversion<string>();
 
             builder.Property(e => e.CancellationReason)

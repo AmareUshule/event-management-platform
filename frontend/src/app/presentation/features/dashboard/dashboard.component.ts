@@ -164,6 +164,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   pendingApprovalCount = 0; // Renamed from draftEventsCount
   ongoingEvents = 0;
   pastEventsCount = 0;
+  cancelledEventsCount = 0;
   eventsThisWeek = 0;
   assignedEventsCount = 0;
   pendingAssignmentsCount = 0;
@@ -174,6 +175,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   // ============ AGENDA (DERIVED FROM MASTER DATA) ============
   agendaItems: AgendaItem[] = [];
+
+  // ============ STAFF SPECIFIC (Expert/Cameraman) ============
+  nextAssignment: TableEvent | null = null;
+  pendingInvitations: AssignmentResponse[] = [];
+  pendingUploads: TableEvent[] = [];
 
   // =========== CLEANUP =============
   private destroy$ = new Subject<void>();
@@ -575,22 +581,78 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.pastEventsCount = this.masterEvents.filter(e => 
       e.status === "Completed" || e.status === "Archived").length;
 
+    this.cancelledEventsCount = this.masterEvents.filter(e => e.status === "Cancelled").length;
+
     if (this.isStaff()) {
-      this.assignedEventsCount = this.myAssignments.length;
-      this.pendingAssignmentsCount = this.myAssignments.filter(a => a.status === "Pending").length;
-      
-      // For staff, statistics should only consider events where they are assigned.
-      // We'll update the counts for Scheduled and Past based on their assignments.
+      // For staff, we distinguish between 'Assignments' (Roles) and 'Events' (Work items)
+      // Unique event IDs that this staff member is involved in
       const assignedEventIds = new Set(this.myAssignments.map(a => a.eventId));
       
-      this.scheduledEvents = this.masterEvents.filter(e => 
-        e.status === "Scheduled" && assignedEventIds.has(e.id)).length;
-        
-      this.pastEventsCount = this.masterEvents.filter(e => 
-        (e.status === "Completed" || e.status === "Archived") && assignedEventIds.has(e.id)).length;
+      // The events that are actually loaded and visible to the staff member
+      const myVisibleEvents = this.masterEvents.filter(e => assignedEventIds.has(e.id));
+      
+      // 'totalEvents' should represent the count of unique events visible in the 'ALL' tab
+      this.totalEvents = myVisibleEvents.length;
+      
+      // 'assignedEventsCount' (Summary Card) now matches 'totalEvents' to ensure consistency
+      // between the top statistics and the table tabs.
+      this.assignedEventsCount = this.totalEvents;
+      
+      // Categories derived strictly from visible assigned events
+      this.scheduledEvents = myVisibleEvents.filter(e => e.status === "Scheduled").length;
+      this.ongoingEvents = myVisibleEvents.filter(e => e.status === "Ongoing").length;
+      this.pastEventsCount = myVisibleEvents.filter(e => e.status === "Completed" || e.status === "Archived").length;
+      this.cancelledEventsCount = myVisibleEvents.filter(e => e.status === "Cancelled").length;
+
+      // Specific assignment counts (for the Inbox/Staff Center)
+      this.pendingInvitations = this.myAssignments.filter(a => a.status === "Pending");
+      this.pendingAssignmentsCount = this.pendingInvitations.length;
+      
+      // Identify Next Assignment (Confirmed and in future)
+
+      // Identify Next Assignment (Confirmed and in future)
+      const now = new Date();
+      const confirmedAssignments = this.myAssignments
+        .filter(a => a.status === "Accepted")
+        .map(a => {
+          const ev = this.masterEvents.find(e => e.id === a.eventId);
+          return ev ? { event: ev, date: new Date(ev.startDate) } : null;
+        })
+        .filter(item => item !== null && item.date >= now)
+        .sort((a, b) => a!.date.getTime() - b!.date.getTime());
+
+      if (confirmedAssignments.length > 0) {
+        const next = confirmedAssignments[0]!.event;
+        this.nextAssignment = this.transformToTableEvents([next])[0];
+      } else {
+        this.nextAssignment = null;
+      }
+
+      // Identify Pending Uploads (Completed events with no media from this user)
+      // Note: We'd need the MediaFiles included in the event object to check this accurately
+      this.pendingUploads = this.masterEvents
+        .filter(e => e.status === "Completed" && assignedEventIds.has(e.id))
+        .filter(e => {
+          const userAssignment = this.myAssignments.find(a => a.eventId === e.id);
+          // If they accepted but haven't uploaded anything (assuming mediaFiles is available or we check another way)
+          // For now, let's include all Completed events they were assigned to as 'Action Required' 
+          // if they haven't been archived yet.
+          return userAssignment?.status === "Accepted";
+        })
+        .map(e => this.transformToTableEvents([e])[0]);
     }
     
     this.updateEventsThisWeek();
+  }
+
+  getUserRoleInEvent(eventId: string): string {
+    const assignment = this.myAssignments.find(a => a.eventId === eventId);
+    return assignment?.role || 'Staff';
+  }
+
+  getEventDateForAssignment(eventId: string): Date | null {
+    const event = this.masterEvents.find(e => e.id === eventId);
+    return event ? new Date(event.startDate) : null;
   }
 
   private updateEventsThisWeek(): void {
@@ -606,7 +668,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     this.eventsThisWeek = this.masterEvents.filter(e => {
       const eventDate = new Date(e.startDate);
-      return eventDate >= startOfWeek && eventDate < endOfWeek;
+      const isActive = e.status === "Scheduled" || e.status === "Ongoing";
+      return isActive && eventDate >= startOfWeek && eventDate < endOfWeek;
     }).length;
   }
 
@@ -614,18 +677,34 @@ export class DashboardComponent implements OnInit, OnDestroy {
    * Update insights from master data
    */
   private updateInsights(): void {
-    this.pendingApprovalsCount = this.masterEvents.filter(e => e.status === "Draft").length;
+    if (this.isStaff()) {
+      const assignedEventIds = new Set(this.myAssignments.map(a => a.eventId));
+      const myVisibleEvents = this.masterEvents.filter(e => assignedEventIds.has(e.id));
+      
+      this.pendingApprovalsCount = 0; // Staff don't approve events
 
-    if (this.upcomingEvents.length === 0) {
       const now = new Date();
       const weekFromNow = new Date();
       weekFromNow.setDate(weekFromNow.getDate() + 7);
 
-      this.upcomingEventsCount = this.masterEvents.filter(e => {
+      this.upcomingEventsCount = myVisibleEvents.filter(e => {
         const eventDate = new Date(e.startDate);
-        return eventDate >= now && eventDate <= weekFromNow;
+        return e.status === "Scheduled" && eventDate >= now && eventDate <= weekFromNow;
       }).length;
+      return;
     }
+
+    this.pendingApprovalsCount = this.masterEvents.filter(e => e.status === "Draft").length;
+
+    // Use only Scheduled events for the upcoming count
+    const now = new Date();
+    const weekFromNow = new Date();
+    weekFromNow.setDate(weekFromNow.getDate() + 7);
+
+    this.upcomingEventsCount = this.masterEvents.filter(e => {
+      const eventDate = new Date(e.startDate);
+      return e.status === "Scheduled" && eventDate >= now && eventDate <= weekFromNow;
+    }).length;
   }
 
   /**
@@ -682,6 +761,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private applyFilters(): void {
     let filtered = [...this.masterTableEvents];
 
+    // For Staff roles, the main table should be scoped to their work to match the status card counts
+    if (this.isStaff()) {
+      const assignedEventIds = new Set(this.myAssignments.map(a => a.eventId));
+      filtered = filtered.filter(e => assignedEventIds.has(e.id));
+    }
+
     if (this.activeTab === 'assignments') {
        this.filteredEvents = [];
        this.paginatedEvents = [];
@@ -701,6 +786,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
         break;
       case 'past':
         filtered = filtered.filter(e => e.status === 'Completed' || e.status === 'Archived');
+        break;
+      case 'cancelled':
+        filtered = filtered.filter(e => e.status === 'Cancelled');
         break;
       // case 'all': default
     }
@@ -963,11 +1051,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   canEditEvent(event: TableEvent): boolean {
-    // Edit is only allowed for non-completed/archived events
-    const isFinalStatus = event.status === 'Completed' || event.status === 'Archived';
+    // Edit is only allowed for non-completed/archived/cancelled events
+    const isFinalStatus = event.status === 'Completed' || event.status === 'Archived' || event.status === 'Cancelled';
     if (isFinalStatus) return false;
 
-    // Admins can edit any non-completed event
+    // Admins can edit any non-final event
     if (this.authService.isAdmin()) return true;
 
     // Communication Managers can edit any non-completed event
@@ -1007,6 +1095,54 @@ export class DashboardComponent implements OnInit, OnDestroy {
     }
 
     return false;
+  }
+
+  generateICS(): void {
+    const event = this.nextAssignment;
+    if (!event) return;
+
+    try {
+      const startDate = new Date(event.date);
+      // Assume 2 hour duration if not specified
+      const endDate = new Date(startDate.getTime() + (2 * 60 * 60 * 1000));
+
+      const formatDate = (date: Date): string => {
+        return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+      };
+
+      const icsContent = [
+        'BEGIN:VCALENDAR',
+        'VERSION:2.0',
+        'PRODID:-//Event Management//EN',
+        'BEGIN:VEVENT',
+        `UID:${event.id}@eventmanagement.com`,
+        `DTSTAMP:${formatDate(new Date())}`,
+        `DTSTART:${formatDate(startDate)}`,
+        `DTEND:${formatDate(endDate)}`,
+        `SUMMARY:${this.escapeICSText(event.name)}`,
+        `LOCATION:${this.escapeICSText(event.location)}`,
+        `DESCRIPTION:${this.escapeICSText('Role: ' + this.getUserRoleInEvent(event.id))}`,
+        'END:VEVENT',
+        'END:VCALENDAR'
+      ].join('\n');
+
+      const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${event.name.replace(/[^a-z0-9]/gi, '_')}.ics`;
+      link.click();
+      window.URL.revokeObjectURL(url);
+
+      this.snackBar.open('Tactical calendar sync complete', 'Close', { duration: 3000 });
+    } catch (error) {
+      console.error('Error generating ICS:', error);
+      this.showError('Failed to generate calendar file');
+    }
+  }
+
+  private escapeICSText(text: string): string {
+    return text.replace(/[\\,;]/g, '\\$&').replace(/\n/g, '\\n');
   }
 
   private showError(message: string): void {

@@ -90,7 +90,7 @@
         <span class="filter-label">Quick event telemetry:</span>
         <button
           class="quick-filter-pill"
-          *ngFor="let status of ['Scheduled', 'Ongoing', 'Archived']"
+          *ngFor="let status of ['Scheduled', 'Ongoing', 'Archived', 'Cancelled']"
           (click)="quickFilterByStatus(status)"
           [class.active]="activeFilters().status.includes(status)"
         >

@@ -38,6 +38,13 @@ namespace EEP.EventManagement.Api.Application.Features.Events.Handlers
                 throw new BadRequestException("There is no pending cancellation request for this event.");
             }
 
+            // Check authorization: Admin or Manager (Communication Manager)
+            var roles = _userContext.GetRoles();
+            if (!_userContext.IsInRole("Admin") && !roles.Contains("Manager"))
+            {
+                throw new UnauthorizedException("Only an admin or manager can review cancellation requests.");
+            }
+
             var userId = _userContext.GetUserId();
             ev.CancellationReviewedBy = userId;
             ev.CancellationReviewedAt = DateTime.UtcNow;

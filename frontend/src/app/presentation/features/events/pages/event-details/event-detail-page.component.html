@@ -208,9 +208,39 @@
                                     </div>
                                 </div>
 
-                                <div class="closure-comment-box" *ngIf="event.closureComment">
+                                <div class="closure-comment-box" *ngIf="event.status === 'Cancelled'">
                                     <div class="comment-header">
-                                        <mat-icon>{{ event.status === 'Cancelled' ? 'report_problem' : 'assignment_turned_in' }}</mat-icon>
+                                        <mat-icon>report_problem</mat-icon>
+                                        <span>Event Cancellation Details</span>
+                                    </div>
+                                    <div class="cancellation-details-content">
+                                        <div class="detail-sub-section" *ngIf="event.cancellationReason">
+                                            <span class="detail-label">Reason for Request:</span>
+                                            <p class="comment-text">"{{ event.cancellationReason }}"</p>
+                                            <div class="comment-footer" *ngIf="event.cancellationRequestedBy">
+                                                — Requested by {{ event.cancellationRequestedBy.firstName }} {{ event.cancellationRequestedBy.lastName }}
+                                            </div>
+                                        </div>
+                                        <div class="detail-sub-section" *ngIf="event.cancellationReviewComment">
+                                            <span class="detail-label">Approval Note:</span>
+                                            <p class="comment-text">"{{ event.cancellationReviewComment }}"</p>
+                                            <div class="comment-footer" *ngIf="event.cancellationReviewedBy">
+                                                — Approved by {{ event.cancellationReviewedBy.firstName }} {{ event.cancellationReviewedBy.lastName }}
+                                            </div>
+                                        </div>
+                                        <div class="detail-sub-section" *ngIf="!event.cancellationReason && event.closureComment">
+                                            <span class="detail-label">Closure Comment:</span>
+                                            <p class="comment-text">"{{ event.closureComment }}"</p>
+                                            <div class="comment-footer" *ngIf="event.finalizedBy">
+                                                — {{ event.finalizedBy.firstName }} {{ event.finalizedBy.lastName }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="closure-comment-box" *ngIf="event.status === 'Archived' && event.closureComment">
+                                    <div class="comment-header">
+                                        <mat-icon>assignment_turned_in</mat-icon>
                                         <span>Final Closure Comment</span>
                                     </div>
                                     <p class="comment-text">"{{ event.closureComment }}"</p>
@@ -418,8 +448,13 @@
                             Approve Event
                         </button>
                         
-                        <button class="command-btn danger" *ngIf="canRequestCancellation()" (click)="cancelEvent()">
+                        <button class="command-btn danger" *ngIf="canCancelDirectly()" (click)="cancelEvent()">
                             <mat-icon>cancel</mat-icon>
+                            Cancel Event
+                        </button>
+
+                        <button class="command-btn danger" *ngIf="canRequestCancellation()" (click)="cancelEvent()">
+                            <mat-icon>history_toggle_off</mat-icon>
                             Request Cancellation
                         </button>
 

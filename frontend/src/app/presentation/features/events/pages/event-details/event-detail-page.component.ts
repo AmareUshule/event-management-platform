@@ -224,24 +224,32 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
   cancelEvent(): void {
     if (!this.event?.id) return;
     
+    const isDraft = this.event.status === EventStatus.DRAFT;
+    
     const eventId = this.event.id;
-    const comment = prompt('Enter cancellation reason (mandatory):');
+    const comment = prompt(`Enter reason for ${isDraft ? 'cancellation' : 'cancellation request'} (mandatory):`);
+    
     if (!comment || comment.trim() === '') {
-      this.showError('Cancellation reason is required');
+      this.showError('Reason is required');
       return;
     }
 
     this.isLoading = true;
-    this.eventService.requestCancellation(this.event.id, comment).subscribe({
+    
+    const operation = isDraft 
+      ? this.eventService.cancelEvent(eventId, comment)
+      : this.eventService.requestCancellation(eventId, comment);
+
+    operation.subscribe({
       next: (updatedEvent) => {
         this.isLoading = false;
         this.event = updatedEvent;
-        this.showSuccess('Cancellation request submitted');
+        this.showSuccess(isDraft ? 'Event cancelled successfully' : 'Cancellation request submitted');
         this.cdr.detectChanges();
       },
       error: (error) => {
         this.isLoading = false;
-        this.showError(error.message || 'Failed to request cancellation');
+        this.showError(error.message || `Failed to ${isDraft ? 'cancel event' : 'request cancellation'}`);
       }
     });
   }
@@ -369,13 +377,23 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
   canRequestCancellation(): boolean {
     if (!this.event?.id || this.isCancellationPending()) return false;
 
-    // Only allow for SCHEDULED events (not DRAFT, not COMPLETED, etc)
+    // Only allow requesting cancellation for SCHEDULED events
+    // (Ongoing events cannot be cancelled as per updated requirements)
     if (this.event.status !== EventStatus.SCHEDULED) return false;
 
     const userId = this.authService.getCurrentUser()?.adObjectId;
     const isCreator = !!userId && this.event.createdBy?.id === userId;
 
     return this.authService.isAdmin() || isCreator;
+  }
+
+  canCancelDirectly(): boolean {
+    if (!this.event?.id || this.isCancellationPending()) return false;
+
+    // Direct cancellation is only for DRAFT events
+    if (this.event.status !== EventStatus.DRAFT) return false;
+
+    return this.authService.isAdmin() || this.authService.isCommunicationManager();
   }
 
   canReviewCancellation(): boolean {
@@ -699,6 +717,10 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
 
   isArchived(): boolean {
     return this.event?.status === EventStatus.ARCHIVED;
+  }
+
+  isStaff(): boolean {
+    return this.authService.isStaff();
   }
 
   canAssignEmployees(): boolean {
