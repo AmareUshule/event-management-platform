@@ -48,6 +48,7 @@ namespace EEP.EventManagement.Api.Application.Mappings
             CreateMap<Assignment, SimplifiedAssignmentDto>()
                 .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Employee != null ? $"{src.Employee.FirstName} {src.Employee.LastName}" : string.Empty))
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
+                .ForMember(dest => dest.VerifiedBy, opt => opt.MapFrom(src => src.VerifiedBy))
                 .ForMember(dest => dest.AssignedBy, opt => opt.MapFrom(src => src.AssignedByUser));
 
             // Grouping logic for assignments

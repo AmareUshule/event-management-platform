@@ -28,10 +28,10 @@
                 <div class="hero-metadata-left">
                     <div class="status-badge-hero" [class]="event.status.toLowerCase()">
                         <mat-icon>
-                            {{ event.status === 'Approved' || event.status === 'Scheduled' ? 'check_circle' :
+                            {{ event.status === 'Approved' || event.status === 'Scheduled' || event.status === 'Covered' ? 'check_circle' :
                             event.status === 'Draft' ? 'drafts' :
                             event.status === 'Completed' ? 'task_alt' : 
-                            event.status === 'Cancelled' ? 'cancel' : 'pending' }}
+                            event.status === 'Cancelled' || event.status === 'Uncovered' ? 'cancel' : 'pending' }}
                         </mat-icon>
                         <span>{{ event.status }}</span>
                     </div>
@@ -72,10 +72,10 @@
                     <div class="hero-metadata-left">
                         <div class="status-badge-hero" [class]="event.status.toLowerCase()">
                             <mat-icon>
-                                {{ event.status === 'Approved' || event.status === 'Scheduled' ? 'check_circle' :
+                                {{ event.status === 'Approved' || event.status === 'Scheduled' || event.status === 'Covered' ? 'check_circle' :
                                 event.status === 'Draft' ? 'drafts' :
                                 event.status === 'Completed' ? 'task_alt' : 
-                                event.status === 'Cancelled' ? 'cancel' : 'pending' }}
+                                event.status === 'Cancelled' || event.status === 'Uncovered' ? 'cancel' : 'pending' }}
                             </mat-icon>
                             <span>{{ event.status }}</span>
                         </div>
@@ -172,14 +172,14 @@
 
                                     <!-- Stage 4: Archived -->
                                     <div class="timeline-node" 
-                                         [class.completed]="isArchived() || event.status === 'Cancelled'"
-                                         [class.cancelled-node]="event.status === 'Cancelled'">
+                                         [class.completed]="isArchived() || event.status === 'Cancelled' || event.status === 'Covered' || event.status === 'Uncovered'"
+                                         [class.cancelled-node]="event.status === 'Cancelled' || event.status === 'Uncovered'">
                                         <div class="node-icon">
-                                            <mat-icon>{{ event.status === 'Cancelled' ? 'cancel' : 'inventory_2' }}</mat-icon>
+                                            <mat-icon>{{ event.status === 'Cancelled' || event.status === 'Uncovered' ? 'cancel' : 'inventory_2' }}</mat-icon>
                                         </div>
                                         <div class="node-content">
-                                            <span class="node-label">{{ event.status === 'Cancelled' ? 'Cancelled' : 'Archived' }}</span>
-                                            <span class="node-date" *ngIf="isArchived() || event.status === 'Cancelled'">{{ event.updatedAt | date:'shortDate' }}</span>
+                                            <span class="node-label">{{ event.status === 'Cancelled' ? 'Cancelled' : (event.status === 'Uncovered' ? 'Uncovered' : (event.status === 'Covered' ? 'Covered' : 'Archived')) }}</span>
+                                            <span class="node-date" *ngIf="isArchived() || event.status === 'Cancelled' || event.status === 'Covered' || event.status === 'Uncovered'">{{ event.updatedAt | date:'shortDate' }}</span>
                                             <span class="node-meta" *ngIf="event.finalizedBy">by {{ event.finalizedBy.firstName }}</span>
                                         </div>
                                     </div>
@@ -312,10 +312,40 @@
                                                     <div class="unit-info">
                                                         <span class="unit-name">{{ getAssigneeName(role, assignment.id) }}</span>
                                                         <span class="unit-status" [class]="assignment.status?.toLowerCase() || 'pending'">
-                                                            {{ assignment.status || 'Pending' }}
+                                                            {{ assignment.status === 'VerifiedByCreator' ? 'Verified' : 
+                                                               (assignment.status === 'RevisionRequested' ? 'Revision Requested' : 
+                                                               (assignment.status === 'Submitted' ? 'Awaiting Verification' : assignment.status || 'Pending')) }}
                                                         </span>
                                                     </div>
                                                 </div>
+
+                                                <!-- Coverage Verification Actions -->
+                                                <div class="coverage-actions" *ngIf="canSubmitCoverage(assignment) || canVerifyCoverage(assignment) || assignment.verificationNote">
+                                                    <!-- Staff Submit -->
+                                                    <button class="action-btn submit" *ngIf="canSubmitCoverage(assignment)" (click)="submitCoverage(assignment.id)">
+                                                        <mat-icon>send</mat-icon>
+                                                        Submit Coverage
+                                                    </button>
+
+                                                    <!-- Creator Verify/Reject -->
+                                                    <div class="creator-actions" *ngIf="canVerifyCoverage(assignment)">
+                                                        <button class="action-btn verify" (click)="verifyCoverage(assignment.id, true)">
+                                                            <mat-icon>verified</mat-icon>
+                                                            Verify
+                                                        </button>
+                                                        <button class="action-btn reject" (click)="verifyCoverage(assignment.id, false)">
+                                                            <mat-icon>history_edu</mat-icon>
+                                                            Revision
+                                                        </button>
+                                                    </div>
+
+                                                    <!-- Verification Note -->
+                                                    <div class="verification-note" *ngIf="assignment.verificationNote">
+                                                        <mat-icon>speaker_notes</mat-icon>
+                                                        <span>{{ assignment.verificationNote }}</span>
+                                                    </div>
+                                                </div>
+
                                                 <div class="unit-card-footer">
                                                     <span class="assigned-by-brief">By {{ getAssignedByName(role, assignment.id) }}</span>
                                                     <button mat-icon-button color="warn" class="remove-unit-btn" 

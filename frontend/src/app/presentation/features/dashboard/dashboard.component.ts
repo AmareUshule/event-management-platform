@@ -650,6 +650,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return assignment?.role || 'Staff';
   }
 
+  getAssignmentStatus(eventId: string): string {
+    const assignment = this.myAssignments.find(a => a.eventId === eventId);
+    return assignment?.status || 'Pending';
+  }
+
   getEventDateForAssignment(eventId: string): Date | null {
     const event = this.masterEvents.find(e => e.id === eventId);
     return event ? new Date(event.startDate) : null;
@@ -1020,6 +1025,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       case 'Scheduled':
       case 'Ongoing':
       case 'Completed':
+      case 'Covered':
         return 'published';
       case 'Draft':
         return 'draft';
@@ -1027,6 +1033,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         return 'archived';
       case 'Cancelled':
       case 'Rejected':
+      case 'Uncovered':
         return 'rejected';
       default:
         return status.toLowerCase();

@@ -206,8 +206,28 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
       return;
     }
 
+    // Check if all staff are verified
+    const allAssignments = [
+      ...this.getAssignmentsByRole('cameraman'),
+      ...this.getAssignmentsByRole('expert')
+    ];
+    
+    const unverifiedAssignments = allAssignments.filter(a => 
+      a.status === 'Accepted' || a.status === 'Submitted' || a.status === 'RevisionRequested'
+    );
+
+    let allowOverride = false;
+    if (unverifiedAssignments.length > 0) {
+      const msg = `There are ${unverifiedAssignments.length} assignments not yet verified by the creator. Do you want to override and archive anyway?`;
+      if (confirm(msg)) {
+        allowOverride = true;
+      } else {
+        return;
+      }
+    }
+
     this.isLoading = true;
-    this.eventService.archiveEvent(eventId, comment).subscribe({
+    this.eventService.archiveEvent(eventId, comment, allowOverride).subscribe({
       next: (updatedEvent) => {
         this.isLoading = false;
         this.event = updatedEvent;
@@ -219,6 +239,71 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
         this.showError(error.message || 'Failed to archive event');
       }
     });
+  }
+
+  submitCoverage(assignmentId: string): void {
+    if (!this.event?.id) return;
+    
+    if (!confirm('Are you sure you want to submit coverage for verification? This confirms you have completed your work.')) return;
+
+    this.isLoading = true;
+    this.eventService.submitCoverage(this.event.id, assignmentId).subscribe({
+      next: () => {
+        this.isLoading = false;
+        this.showSuccess('Coverage submitted for verification');
+        this.refreshEventData();
+      },
+      error: (error) => {
+        this.isLoading = false;
+        this.showError(error.message || 'Failed to submit coverage');
+      }
+    });
+  }
+
+  verifyCoverage(assignmentId: string, isApproved: boolean): void {
+    if (!this.event?.id) return;
+    
+    const action = isApproved ? 'verify' : 'request revision for';
+    const note = prompt(`Enter ${isApproved ? 'optional verification note' : 'mandatory revision reason'}:`);
+    
+    if (!isApproved && (!note || note.trim() === '')) {
+      this.showError('Revision reason is required');
+      return;
+    }
+
+    this.isLoading = true;
+    this.eventService.verifyCoverage(this.event.id, assignmentId, isApproved, note || undefined).subscribe({
+      next: () => {
+        this.isLoading = false;
+        this.showSuccess(`Coverage ${isApproved ? 'verified' : 'revision requested'}`);
+        this.refreshEventData();
+      },
+      error: (error) => {
+        this.isLoading = false;
+        this.showError(error.message || 'Failed to update verification status');
+      }
+    });
+  }
+
+  canSubmitCoverage(assignment: Assignment): boolean {
+    if (!this.event || (this.event.status !== EventStatus.ONGOING && this.event.status !== EventStatus.COMPLETED)) return false;
+    
+    const userId = this.authService.getCurrentUser()?.adObjectId;
+    const isAssigned = assignment.employee?.id === userId;
+    const correctStatus = assignment.status === 'Accepted' || assignment.status === 'RevisionRequested';
+    
+    return isAssigned && correctStatus;
+  }
+
+  canVerifyCoverage(assignment: Assignment): boolean {
+    if (!this.event || (this.event.status !== EventStatus.ONGOING && this.event.status !== EventStatus.COMPLETED)) return false;
+    
+    const userId = this.authService.getCurrentUser()?.adObjectId;
+    const isCreator = this.event.createdBy?.id === userId;
+    const isAdmin = this.authService.isAdmin();
+    const isSubmitted = assignment.status === 'Submitted';
+    
+    return (isCreator || isAdmin) && isSubmitted;
   }
 
   cancelEvent(): void {

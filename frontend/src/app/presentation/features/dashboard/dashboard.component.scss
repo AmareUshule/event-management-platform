@@ -1009,6 +1009,46 @@ $glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
                   border-color: rgba($danger-color, 0.15);
                 }
               }
+
+              .personal-status-badge {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                padding: 4px 10px;
+                border-radius: 6px;
+                font-size: 10px;
+                font-weight: 800;
+                text-transform: uppercase;
+                margin-left: 8px;
+                vertical-align: middle;
+                background: $dark-100;
+                color: $dark-500;
+                border: 1px solid $dark-200;
+
+                mat-icon {
+                  font-size: 14px;
+                  width: 14px;
+                  height: 14px;
+                }
+
+                &.covered, &.verifiedbycreator {
+                  background: rgba($primary-color, 0.08);
+                  color: $primary-color;
+                  border-color: rgba($primary-color, 0.2);
+                }
+
+                &.uncovered, &.revisionrequested {
+                  background: rgba($accent-color, 0.08);
+                  color: $accent-color;
+                  border-color: rgba($accent-color, 0.2);
+                }
+
+                &.submitted {
+                  background: rgba($warning-color, 0.08);
+                  color: $warning-dark;
+                  border-color: rgba($warning-color, 0.2);
+                }
+              }
             }
           }
 

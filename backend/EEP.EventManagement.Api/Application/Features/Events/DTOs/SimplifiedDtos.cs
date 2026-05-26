@@ -27,6 +27,9 @@ namespace EEP.EventManagement.Api.Application.Features.Events.DTOs
         public Guid EmployeeId { get; set; }
         public string Name { get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty;
+        public string? VerificationNote { get; set; }
+        public DateTime? VerifiedAt { get; set; }
+        public AssignedByDto? VerifiedBy { get; set; }
         public AssignedByDto? AssignedBy { get; set; }
     }
 

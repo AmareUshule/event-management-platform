@@ -8,5 +8,6 @@ namespace EEP.EventManagement.Api.Application.Features.Events.Commands
     {
         public Guid EventId { get; set; }
         public string ClosureComment { get; set; } = string.Empty;
+        public bool AllowOverride { get; set; } = false;
     }
 }

@@ -309,11 +309,18 @@
                       <div class="event-info">
                         <span class="event-title">{{ element.name }}</span>
                         <div class="event-status-badge"
-                          [class.scheduled]="element.status === 'Scheduled' || element.status === 'Ongoing' || element.status === 'Completed'"
+                          [class.scheduled]="element.status === 'Scheduled' || element.status === 'Ongoing' || element.status === 'Completed' || element.status === 'Covered'"
                           [class.archived]="element.status === 'Archived'" 
                           [class.draft]="element.status === 'Draft'"
-                          [class.cancelled]="element.status === 'Cancelled'">
+                          [class.cancelled]="element.status === 'Cancelled' || element.status === 'Uncovered'">
                           {{ element.status === 'Draft' ? 'Pending Approval' : (element.status | titlecase) }}
+                        </div>
+                        <!-- Personal Coverage Status for Staff -->
+                        <div class="personal-status-badge" *ngIf="isStaff()" [class]="getAssignmentStatus(element.id).toLowerCase()">
+                          <mat-icon>{{ getAssignmentStatus(element.id) === 'Covered' ? 'check_circle' : (getAssignmentStatus(element.id) === 'Uncovered' ? 'cancel' : 'info') }}</mat-icon>
+                          <span>{{ getAssignmentStatus(element.id) === 'VerifiedByCreator' ? 'Verified' : 
+                                  (getAssignmentStatus(element.id) === 'RevisionRequested' ? 'Revision Req.' : 
+                                  (getAssignmentStatus(element.id) === 'Submitted' ? 'Submitted' : getAssignmentStatus(element.id))) }}</span>
                         </div>
                       </div>
                     </div>

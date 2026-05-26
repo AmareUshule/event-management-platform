@@ -78,8 +78,9 @@
         margin-bottom: 16px;
 
         &.draft { background: rgba(245, 158, 11, 0.3); color: #fbbf24; }
-        &.approved, &.scheduled { background: rgba(16, 185, 129, 0.3); color: #34d399; }
+        &.approved, &.scheduled, &.covered { background: rgba(16, 185, 129, 0.3); color: #34d399; }
         &.completed { background: rgba(59, 130, 246, 0.3); color: #60a5fa; }
+        &.uncovered, &.cancelled { background: rgba(220, 38, 38, 0.3); color: #fca5a5; }
       }
 
       .hero-title-overlay {
@@ -529,7 +530,61 @@
           &.accepted { color: #166534; }
           &.pending { color: #b45309; }
           &.declined { color: #991b1b; }
+          &.submitted { color: #1e40af; }
+          &.verifiedbycreator, &.covered { color: #15803d; }
+          &.revisionrequested, &.uncovered { color: #b91c1c; }
         }
+      }
+    }
+
+    .coverage-actions {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px dashed #e2e8f0;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+
+      .action-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        width: 100%;
+        padding: 8px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: 1px solid transparent;
+
+        mat-icon { font-size: 16px; width: 16px; height: 16px; }
+
+        &.submit { background: #eff6ff; color: #1d4ed8; border-color: #dbeafe; }
+        &.verify { background: #ecfdf5; color: #065f46; border-color: #d1fae5; }
+        &.reject { background: #fff1f2; color: #9f1239; border-color: #ffe4e6; }
+
+        &:hover { transform: translateY(-1px); filter: brightness(0.95); }
+      }
+
+      .creator-actions {
+        display: flex;
+        gap: 8px;
+      }
+
+      .verification-note {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        padding: 8px;
+        background: #f8fafc;
+        border-radius: 8px;
+        font-size: 11px;
+        color: #475569;
+        font-style: italic;
+
+        mat-icon { font-size: 14px; width: 14px; height: 14px; color: #94a3b8; margin-top: 2px; }
       }
     }
 

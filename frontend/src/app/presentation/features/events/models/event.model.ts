@@ -17,7 +17,9 @@ export enum EventStatus {
   ONGOING = 'Ongoing',
   CANCELLED = 'Cancelled',
   COMPLETED = 'Completed',
-  ARCHIVED = 'Archived'
+  ARCHIVED = 'Archived',
+  COVERED = 'Covered',
+  UNCOVERED = 'Uncovered'
 }
 
 /* -----------------------------
@@ -30,6 +32,20 @@ export const ASSIGNMENT_ROLES = {
 
 export type AssignmentRole =
   typeof ASSIGNMENT_ROLES[keyof typeof ASSIGNMENT_ROLES];
+
+/* -----------------------------
+   Assignment Statuses (Custom for UI)
+--------------------------------*/
+export enum AssignmentStatus {
+  PENDING = 'Pending',
+  ACCEPTED = 'Accepted',
+  DECLINED = 'Declined',
+  SUBMITTED = 'Submitted',
+  VERIFIED_BY_CREATOR = 'VerifiedByCreator',
+  REVISION_REQUESTED = 'RevisionRequested',
+  COVERED = 'Covered',
+  UNCOVERED = 'Uncovered'
+}
 
 /* -----------------------------
    Department
@@ -89,6 +105,9 @@ export interface Assignment {
   assignedBy: AssignmentUser;
   status?: string;
   declineReason?: string;
+  verificationNote?: string;
+  verifiedAt?: string;
+  verifiedBy?: AssignmentUser;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -134,6 +153,9 @@ export interface AssignmentResponse {
   status: string;
   role: string;
   declineReason?: string;
+  verificationNote?: string;
+  verifiedAt?: string;
+  verifiedBy?: User;
   createdAt: string;
   updatedAt: string;
 }

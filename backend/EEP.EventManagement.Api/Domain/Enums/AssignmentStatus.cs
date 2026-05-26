@@ -4,6 +4,11 @@ namespace EEP.EventManagement.Api.Domain.Enums
     {
         Pending,
         Accepted,
-        Declined
+        Declined,
+        Submitted,
+        VerifiedByCreator,
+        RevisionRequested,
+        Covered,
+        Uncovered
     }
 }

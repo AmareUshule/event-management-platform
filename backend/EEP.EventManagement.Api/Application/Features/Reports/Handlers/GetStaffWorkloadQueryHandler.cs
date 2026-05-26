@@ -92,7 +92,7 @@ namespace EEP.EventManagement.Api.Application.Features.Reports.Handlers
                     DepartmentName = "Communication", // Assuming they belong to Communication dept
                     TotalAssignments = assignments.Count,
                     ScheduledAssignments = assignments.Count(a => a.Event.Status == EventStatus.Scheduled || a.Event.Status == EventStatus.Ongoing),
-                    PastAssignments = assignments.Count(a => a.Event.Status == EventStatus.Completed || a.Event.Status == EventStatus.Archived),
+                    PastAssignments = assignments.Count(a => a.Event.Status == EventStatus.Completed || a.Event.Status == EventStatus.Archived || a.Event.Status == EventStatus.Covered || a.Event.Status == EventStatus.Uncovered),
                     Events = assignments.Select(a => new StaffEventSummaryDto
                     {
                         EventId = a.EventId,

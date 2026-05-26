@@ -13,13 +13,15 @@ namespace EEP.EventManagement.Api.Application.Mappings
                 .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.Role.ToString()))
                 .ForMember(dest => dest.EventTitle, opt => opt.MapFrom(src => src.Event!.Title))
                 .ForMember(dest => dest.Employee, opt => opt.MapFrom(src => src.Employee))
-                .ForMember(dest => dest.AssignedBy, opt => opt.MapFrom(src => src.AssignedByUser));
+                .ForMember(dest => dest.AssignedBy, opt => opt.MapFrom(src => src.AssignedByUser))
+                .ForMember(dest => dest.VerifiedBy, opt => opt.MapFrom(src => src.VerifiedBy));
 
             CreateMap<Assignment, EventAssignmentDto>()
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
                 .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.Role.ToString()))
                 .ForMember(dest => dest.Employee, opt => opt.MapFrom(src => src.Employee))
-                .ForMember(dest => dest.AssignedBy, opt => opt.MapFrom(src => src.AssignedByUser));
+                .ForMember(dest => dest.AssignedBy, opt => opt.MapFrom(src => src.AssignedByUser))
+                .ForMember(dest => dest.VerifiedBy, opt => opt.MapFrom(src => src.VerifiedBy));
 
             CreateMap<CreateAssignmentDto, Assignment>();
             CreateMap<UpdateAssignmentStatusDto, Assignment>();

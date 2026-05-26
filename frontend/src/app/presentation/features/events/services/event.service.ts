@@ -503,10 +503,10 @@ assignMultipleEmployees(eventId: string, assignments: AssignmentPayload[]): Obse
   /**
    * Archive event
    */
-  archiveEvent(eventId: string, comment: string): Observable<Event> {
+  archiveEvent(eventId: string, closureComment: string, allowOverride: boolean = false): Observable<Event> {
     return this.http.post<Event>(
       `${this.API_URL}/${eventId}/archive`,
-      { comment },
+      { eventId, closureComment, allowOverride },
       {
         headers: this.getHeaders(),
         responseType: 'json'
@@ -514,6 +514,36 @@ assignMultipleEmployees(eventId: string, assignments: AssignmentPayload[]): Obse
     ).pipe(
       timeout(this.REQUEST_TIMEOUT),
       retry(1),
+      catchError(this.handleError.bind(this))
+    );
+  }
+
+  /**
+   * Submit coverage for an assignment (Staff)
+   */
+  submitCoverage(eventId: string, assignmentId: string): Observable<AssignmentResponse> {
+    const url = `${this.API_URL}/${eventId}/assignments/${assignmentId}/submit-coverage`;
+    return this.http.post<AssignmentResponse>(
+      url,
+      {},
+      { headers: this.getHeaders() }
+    ).pipe(
+      timeout(this.REQUEST_TIMEOUT),
+      catchError(this.handleError.bind(this))
+    );
+  }
+
+  /**
+   * Verify coverage for an assignment (Creator)
+   */
+  verifyCoverage(eventId: string, assignmentId: string, isApproved: boolean, note?: string): Observable<AssignmentResponse> {
+    const url = `${this.API_URL}/${eventId}/assignments/${assignmentId}/verify-coverage`;
+    return this.http.post<AssignmentResponse>(
+      url,
+      { isApproved, note },
+      { headers: this.getHeaders() }
+    ).pipe(
+      timeout(this.REQUEST_TIMEOUT),
       catchError(this.handleError.bind(this))
     );
   }

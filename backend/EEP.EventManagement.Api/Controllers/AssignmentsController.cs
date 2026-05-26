@@ -94,6 +94,29 @@ namespace EEP.EventManagement.Api.Controllers
             return Ok(result);
         }
 
+        [HttpPost("{id}/submit-coverage")]
+        [Authorize(Roles = "Expert,Cameraman")]
+        public async Task<ActionResult<AssignmentDto>> SubmitCoverage(Guid eventId, Guid id)
+        {
+            var command = new SubmitCoverageCommand { EventId = eventId, AssignmentId = id };
+            var result = await _mediator.Send(command);
+            return Ok(result);
+        }
+
+        [HttpPost("{id}/verify-coverage")]
+        public async Task<ActionResult<AssignmentDto>> VerifyCoverage(Guid eventId, Guid id, [FromBody] VerifyCoverageRequest request)
+        {
+            var command = new VerifyCoverageCommand 
+            { 
+                EventId = eventId, 
+                AssignmentId = id, 
+                IsApproved = request.IsApproved, 
+                Note = request.Note 
+            };
+            var result = await _mediator.Send(command);
+            return Ok(result);
+        }
+
         [HttpGet("{id}")]
         public async Task<ActionResult<AssignmentDto>> GetAssignmentById(Guid eventId, Guid id)
         {
@@ -135,5 +158,11 @@ namespace EEP.EventManagement.Api.Controllers
             var result = await _mediator.Send(query);
             return Ok(result);
         }
+    }
+
+    public class VerifyCoverageRequest
+    {
+        public bool IsApproved { get; set; }
+        public string? Note { get; set; }
     }
 }

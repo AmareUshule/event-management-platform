@@ -7,5 +7,7 @@ public enum EventStatus
     Ongoing,
     Completed,
     Archived,
-    Cancelled
+    Cancelled,
+    Covered,
+    Uncovered
 }
