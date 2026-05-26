@@ -568,6 +568,43 @@
         &:hover { transform: translateY(-1px); filter: brightness(0.95); }
       }
 
+      .history-log-box {
+        background: #f8fafc;
+        border-radius: 12px;
+        padding: 12px;
+        border: 1px solid #e2e8f0;
+        margin-top: 8px;
+
+        .history-header {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 10px;
+          font-weight: 800;
+          color: #94a3b8;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          margin-bottom: 8px;
+          
+          mat-icon { font-size: 14px; width: 14px; height: 14px; }
+        }
+
+        .history-entries {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+          
+          .history-entry {
+            font-size: 11px;
+            color: #475569;
+            line-height: 1.4;
+            padding-left: 12px;
+            border-left: 2px solid #e2e8f0;
+            white-space: pre-wrap;
+          }
+        }
+      }
+
       .creator-actions {
         display: flex;
         gap: 8px;

@@ -28,6 +28,7 @@ namespace EEP.EventManagement.Api.Application.Features.Events.DTOs
         public SimplifiedUserDto? Employee { get; set; }
         public string Name { get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty;
+        public string? CommentHistory { get; set; }
         public string? VerificationNote { get; set; }
         public DateTime? VerifiedAt { get; set; }
         public AssignedByDto? VerifiedBy { get; set; }

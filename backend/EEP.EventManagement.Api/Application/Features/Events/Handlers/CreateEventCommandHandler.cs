@@ -48,6 +48,21 @@ namespace EEP.EventManagement.Api.Application.Features.Events.Handlers
             
             @event.CreatedAt = DateTime.UtcNow;
             @event.CreatedBy = userId;
+
+            // 72-hour Rule Implementation
+            var roles = _userContext.GetRoles();
+            var isAdmin = roles.Contains("Admin");
+            var isCommManager = roles.Contains("Manager") && user.Department?.Name == "Communication";
+            var isCommStaff = user.Department?.Name == "Communication";
+
+            if (!isAdmin && !isCommManager && !isCommStaff)
+            {
+                var minAllowedStartDate = DateTime.UtcNow.AddHours(72);
+                if (request.CreateEventDto.StartDate < minAllowedStartDate)
+                {
+                    throw new BadRequestException("Events must be scheduled at least 72 hours in advance. Only the Communication department and Administrators can create urgent events.");
+                }
+            }
             
             // If department ID is provided in DTO, use it; otherwise, use creator's department
             if (request.CreateEventDto.DepartmentId.HasValue && request.CreateEventDto.DepartmentId.Value != Guid.Empty)

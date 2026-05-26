@@ -207,15 +207,25 @@ namespace EEP.EventManagement.Api.Controllers
         public async Task<IActionResult> DeleteEvent(Guid id)
         {
             var eventDto = await _mediator.Send(new GetEventByIdQuery { Id = id });
-
-            if (!User.IsInRole("Admin"))
+            if (eventDto == null)
             {
-                var authResult = await _authorizationService.AuthorizeAsync(User, null,
-                    new IsDepartmentManagerOfResourceRequirement(eventDto.Department!.Id));
+                return NotFound();
+            }
 
-                if (!authResult.Succeeded)
+            var currentUserId = _userContext.GetUserId();
+            var isAdmin = User.IsInRole("Admin");
+            var isCreator = eventDto.CreatedBy != null && eventDto.CreatedBy.Id == currentUserId;
+
+            if (!isAdmin)
+            {
+                if (!isCreator)
                 {
                     return Forbid();
+                }
+
+                if (eventDto.Status != EventStatus.Draft.ToString())
+                {
+                    return BadRequest(new { message = "Creators can only delete events in Draft status." });
                 }
             }
 

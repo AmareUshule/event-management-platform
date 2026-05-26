@@ -1058,8 +1058,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   canEditEvent(event: TableEvent): boolean {
-    // Edit is only allowed for non-completed/archived/cancelled events
-    const isFinalStatus = event.status === 'Completed' || event.status === 'Archived' || event.status === 'Cancelled';
+    // Edit is only allowed for non-final events
+    const isFinalStatus = 
+      event.status === 'Completed' || 
+      event.status === 'Archived' || 
+      event.status === 'Cancelled' ||
+      event.status === 'Covered' ||
+      event.status === 'Uncovered';
+      
     if (isFinalStatus) return false;
 
     // Admins can edit any non-final event
@@ -1083,25 +1089,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   canDeleteEvent(event: TableEvent): boolean {
-    // Delete is allowed for ALL statuses for management roles
     // Admins can always delete
     if (this.authService.isAdmin()) return true;
 
-    // Communication Managers can always delete
-    if (this.authService.isCommunicationManager()) return true;
-
-    // Department Managers can delete events from their own department
+    // Managers / Communication Managers can ONLY delete if they are the creator AND event is in Draft
     const user = this.authService.getCurrentUser();
-    if (this.authService.isManager() && user?.departmentGuid === event.raw.department.id) {
-      return true;
-    }
+    const isCreator = event.raw.createdBy?.id === user?.adObjectId;
+    const isDraft = event.status === 'Draft';
 
-    // Creators can delete their own events
-    if (event.raw.createdBy.id === user?.adObjectId) {
-      return true;
-    }
-
-    return false;
+    return isCreator && isDraft;
   }
 
   generateICS(): void {

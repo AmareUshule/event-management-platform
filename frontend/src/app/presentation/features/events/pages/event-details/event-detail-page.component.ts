@@ -301,9 +301,14 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
     const userId = this.authService.getCurrentUser()?.adObjectId;
     const isCreator = this.event.createdBy?.id === userId;
     const isAdmin = this.authService.isAdmin();
+    const isCommManager = this.authService.isCommunicationManager();
     const isSubmitted = assignment.status === 'Submitted';
     
-    return (isCreator || isAdmin) && isSubmitted;
+    // Management (Admin/Comm Manager) can override and verify even if not submitted
+    if (isAdmin || isCommManager) return true;
+    
+    // Creator can only verify if it's submitted
+    return isCreator && isSubmitted;
   }
 
   cancelEvent(): void {
@@ -813,11 +818,18 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
   }
 
   isCompleted(): boolean {
-    return this.event?.status === EventStatus.COMPLETED;
+    const status = this.event?.status;
+    return status === EventStatus.COMPLETED || 
+           status === EventStatus.ARCHIVED || 
+           status === EventStatus.COVERED || 
+           status === EventStatus.UNCOVERED;
   }
 
   isArchived(): boolean {
-    return this.event?.status === EventStatus.ARCHIVED;
+    const status = this.event?.status;
+    return status === EventStatus.ARCHIVED || 
+           status === EventStatus.COVERED || 
+           status === EventStatus.UNCOVERED;
   }
 
   isStaff(): boolean {
@@ -826,21 +838,23 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
 
   canAssignEmployees(): boolean {
     // Only Admin or Communication Manager can assign staff,
-    // and only while the event is not completed, cancelled, or archived
+    // and only while the event is in an active/pre-terminal state
     if (!this.event) {
       return false;
     }
 
-    const notFinal =
-      this.event.status !== EventStatus.COMPLETED &&
-      this.event.status !== EventStatus.CANCELLED &&
-      this.event.status !== EventStatus.ARCHIVED;
+    const isFinal =
+      this.event.status === EventStatus.COMPLETED ||
+      this.event.status === EventStatus.CANCELLED ||
+      this.event.status === EventStatus.ARCHIVED ||
+      this.event.status === EventStatus.COVERED ||
+      this.event.status === EventStatus.UNCOVERED;
 
     const canAssign =
       this.authService.isAdmin() ||
       this.authService.isCommunicationManager();
 
-    return notFinal && canAssign;
+    return !isFinal && canAssign;
   }
 
   private showSuccess(message: string): void {

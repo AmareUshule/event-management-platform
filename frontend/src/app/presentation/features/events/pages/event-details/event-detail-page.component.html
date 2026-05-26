@@ -331,7 +331,7 @@
                                                     <div class="creator-actions" *ngIf="canVerifyCoverage(assignment)">
                                                         <button class="action-btn verify" (click)="verifyCoverage(assignment.id, true)">
                                                             <mat-icon>verified</mat-icon>
-                                                            Verify
+                                                            {{ (authService.isAdmin() || authService.isCommunicationManager()) && assignment.status !== 'Submitted' ? 'Override Verify' : 'Verify' }}
                                                         </button>
                                                         <button class="action-btn reject" (click)="verifyCoverage(assignment.id, false)">
                                                             <mat-icon>history_edu</mat-icon>
@@ -339,8 +339,21 @@
                                                         </button>
                                                     </div>
 
+                                                    <!-- Verification History -->
+                                                    <div class="history-log-box" *ngIf="assignment.commentHistory">
+                                                        <div class="history-header">
+                                                            <mat-icon>history</mat-icon>
+                                                            <span>Action History</span>
+                                                        </div>
+                                                        <div class="history-entries">
+                                                            <div class="history-entry" *ngFor="let entry of assignment.commentHistory.split('\n')">
+                                                                <span *ngIf="entry.trim()">{{ entry }}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
                                                     <!-- Verification Note -->
-                                                    <div class="verification-note" *ngIf="assignment.verificationNote">
+                                                    <div class="verification-note" *ngIf="assignment.verificationNote && !assignment.commentHistory">
                                                         <mat-icon>speaker_notes</mat-icon>
                                                         <span>{{ assignment.verificationNote }}</span>
                                                     </div>

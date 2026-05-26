@@ -13,6 +13,7 @@ namespace EEP.EventManagement.Api.Application.Features.Assignments.DTOs
         public string Status { get; set; } = string.Empty;
         public string Role { get; set; } = string.Empty;
         public string? DeclineReason { get; set; }
+        public string? CommentHistory { get; set; }
         public string? VerificationNote { get; set; }
         public DateTime? VerifiedAt { get; set; }
         public UserResponseDto? VerifiedBy { get; set; }

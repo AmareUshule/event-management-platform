@@ -19,6 +19,7 @@ namespace EEP.EventManagement.Api.Domain.Entities
         public AssignmentStatus Status { get; set; } = AssignmentStatus.Pending;
         public AssignmentRole Role { get; set; }
         public string? DeclineReason { get; set; }
+        public string? CommentHistory { get; set; }
 
         // Coverage Verification Fields
         public string? VerificationNote { get; set; }

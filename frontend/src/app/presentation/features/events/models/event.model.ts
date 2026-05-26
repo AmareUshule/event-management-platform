@@ -105,6 +105,7 @@ export interface Assignment {
   employee?: AssignmentUser; // optional for backward compatibility
   assignedBy: AssignmentUser;
   status?: string;
+  commentHistory?: string;
   declineReason?: string;
   verificationNote?: string;
   verifiedAt?: string;
