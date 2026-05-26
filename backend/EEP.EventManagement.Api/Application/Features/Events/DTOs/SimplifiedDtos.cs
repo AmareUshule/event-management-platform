@@ -25,6 +25,7 @@ namespace EEP.EventManagement.Api.Application.Features.Events.DTOs
     {
         public Guid Id { get; set; }
         public Guid EmployeeId { get; set; }
+        public SimplifiedUserDto? Employee { get; set; }
         public string Name { get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty;
         public string? VerificationNote { get; set; }

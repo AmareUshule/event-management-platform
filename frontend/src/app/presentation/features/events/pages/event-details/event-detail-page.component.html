@@ -430,6 +430,15 @@
                                     <div class="intelligence-grid">
                                         <div class="artifact-card" *ngFor="let media of filteredMedia" 
                                              [class]="getMediaCardClass(media)" (click)="openMediaViewer(media)">
+                                            
+                                            <!-- Delete Button -->
+                                            <button class="delete-artifact-btn" 
+                                                    *ngIf="canDeleteMedia(media)" 
+                                                    (click)="deleteMedia(media, $event)"
+                                                    matTooltip="Delete Media">
+                                                <mat-icon>delete</mat-icon>
+                                            </button>
+
                                             <div class="artifact-preview">
                                                 <img *ngIf="isImage(media)" [src]="getMediaUrl(media)" class="artifact-thumb">
                                                 <div *ngIf="!isImage(media)" class="artifact-icon-box">
@@ -440,11 +449,15 @@
                                                 </div>
                                             </div>
                                             <div class="artifact-info">
-                                                <div class="artifact-name">{{ media.fileName }}</div>
+                                                <div class="artifact-name" [matTooltip]="media.fileName">{{ media.fileName }}</div>
                                                 <div class="artifact-meta">
                                                     <span>{{ media.createdAt | date:'shortDate' }}</span>
                                                     <span class="dot"></span>
                                                     <span>{{ media.fileSize | fileSize }}</span>
+                                                </div>
+                                                <div class="artifact-uploader" *ngIf="media.uploaderName">
+                                                    <mat-icon>person</mat-icon>
+                                                    <span>{{ media.uploaderName }}</span>
                                                 </div>
                                             </div>
                                         </div>

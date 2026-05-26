@@ -234,7 +234,7 @@
                   <button class="event-tab" [class.active]="activeTab === 'past'" (click)="onTabChange('past')">
                     Past Events <span class="tab-count">{{ pastEventsCount }}</span>
                   </button>
-                  <button class="event-tab" [class.active]="activeTab === 'cancelled'" (click)="onTabChange('cancelled')">
+                  <button class="event-tab" [class.active]="activeTab === 'cancelled'" (click)="onTabChange('cancelled')" *ngIf="!isStaff()">
                     Cancelled <span class="tab-count">{{ cancelledEventsCount }}</span>
                   </button>
                 </div>

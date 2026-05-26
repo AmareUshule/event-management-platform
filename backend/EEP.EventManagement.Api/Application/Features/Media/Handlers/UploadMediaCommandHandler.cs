@@ -20,6 +20,7 @@ namespace EEP.EventManagement.Api.Application.Features.Media.Handlers
     {
         private readonly IMediaFileRepository _mediaRepository;
         private readonly IEventRepository _eventRepository;
+        private readonly IAssignmentRepository _assignmentRepository;
         private readonly IStorageService _storageService;
         private readonly IMapper _mapper;
         private readonly IUserContext _userContext;
@@ -28,6 +29,7 @@ namespace EEP.EventManagement.Api.Application.Features.Media.Handlers
         public UploadMediaCommandHandler(
             IMediaFileRepository mediaRepository,
             IEventRepository eventRepository,
+            IAssignmentRepository assignmentRepository,
             IStorageService storageService,
             IMapper mapper,
             IUserContext userContext,
@@ -35,6 +37,7 @@ namespace EEP.EventManagement.Api.Application.Features.Media.Handlers
         {
             _mediaRepository = mediaRepository;
             _eventRepository = eventRepository;
+            _assignmentRepository = assignmentRepository;
             _storageService = storageService;
             _mapper = mapper;
             _userContext = userContext;
@@ -49,19 +52,27 @@ namespace EEP.EventManagement.Api.Application.Features.Media.Handlers
                 throw new NotFoundException("Event", request.UploadMediaDto.EventId);
             }
 
-            if (ev.Status != EventStatus.Completed)
+            if (ev.Status != EventStatus.Scheduled && ev.Status != EventStatus.Ongoing && ev.Status != EventStatus.Completed && ev.Status != EventStatus.Covered)
             {
-                throw new BadRequestException("Media can only be uploaded for completed events.");
+                throw new BadRequestException("Media can only be uploaded for scheduled, ongoing, completed, or covered events.");
             }
 
             var currentUserId = _userContext.GetUserId();
-            var roles = _userContext.GetRoles();
+            var roles = _userContext.GetRoles().ToList();
             var isAdmin = roles.Contains("Admin");
-            var isAssigned = ev.Assignments.Any(a => a.EmployeeId == currentUserId && a.Status == AssignmentStatus.Accepted);
+            
+            var userAssignments = await _assignmentRepository.GetAssignmentsByEmployeeIdAndEventIdAsync(currentUserId, ev.Id);
+            var isAssigned = userAssignments.Any(a => 
+                a.Status == AssignmentStatus.Accepted || 
+                a.Status == AssignmentStatus.Submitted || 
+                a.Status == AssignmentStatus.Covered ||
+                a.Status == AssignmentStatus.VerifiedByCreator ||
+                a.Status == AssignmentStatus.RevisionRequested);
 
             if (!isAdmin && !isAssigned)
             {
-                throw new UnauthorizedException("Only assigned staff who accepted the assignment can upload media.");
+                var rolesStr = string.Join(", ", roles);
+                throw new UnauthorizedException($"User {currentUserId} with roles [{rolesStr}] is not authorized to upload media for this event. No valid assignment found (Accepted, Submitted, Covered, Verified, or RevisionRequested).");
             }
 
             var mediaFile = new MediaFile

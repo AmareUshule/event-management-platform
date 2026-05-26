@@ -688,8 +688,33 @@
       border: 1px solid #e2e8f0;
       cursor: pointer;
       transition: all 0.3s ease;
+      position: relative;
 
-      &:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); border-color: #14532d; }
+      .delete-artifact-btn {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: rgba(220, 38, 38, 0.9);
+        color: white;
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        cursor: pointer;
+        opacity: 0;
+        transition: all 0.2s ease;
+        z-index: 5;
+        
+        mat-icon { font-size: 18px; width: 18px; height: 18px; }
+        &:hover { background: #dc2626; transform: scale(1.1); }
+      }
+
+      &:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); border-color: #14532d; 
+        .delete-artifact-btn { opacity: 1; }
+      }
 
       .artifact-preview {
         height: 140px;
@@ -724,6 +749,20 @@
         .artifact-meta {
           font-size: 11px; color: #94a3b8; display: flex; align-items: center; gap: 6px;
           .dot { width: 3px; height: 3px; background: #cbd5e1; border-radius: 50%; }
+        }
+
+        .artifact-uploader {
+          font-size: 10px;
+          font-weight: 600;
+          color: #64748b;
+          margin-top: 6px;
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          padding-top: 4px;
+          border-top: 1px solid #f1f5f9;
+          
+          mat-icon { font-size: 14px; width: 14px; height: 14px; color: #14532d; }
         }
       }
     }

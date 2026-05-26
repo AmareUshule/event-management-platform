@@ -101,6 +101,7 @@ export interface AssignmentUser {
 export interface Assignment {
   id: string;
   name: string; // Backend sends name at root level
+  employeeId?: string;
   employee?: AssignmentUser; // optional for backward compatibility
   assignedBy: AssignmentUser;
   status?: string;

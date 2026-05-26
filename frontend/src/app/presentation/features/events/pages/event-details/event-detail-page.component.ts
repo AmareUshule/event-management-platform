@@ -289,7 +289,7 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
     if (!this.event || (this.event.status !== EventStatus.ONGOING && this.event.status !== EventStatus.COMPLETED)) return false;
     
     const userId = this.authService.getCurrentUser()?.adObjectId;
-    const isAssigned = assignment.employee?.id === userId;
+    const isAssigned = assignment.employee?.id === userId || assignment.employeeId === userId;
     const correctStatus = assignment.status === 'Accepted' || assignment.status === 'RevisionRequested';
     
     return isAssigned && correctStatus;
@@ -487,10 +487,19 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
   }
 
   canUploadMedia(): boolean {
-    if (!this.event || this.event.status !== EventStatus.COMPLETED) return false;
+    if (!this.event) return false;
+    
+    const status = this.event.status;
+    const canUploadStatus = status === EventStatus.SCHEDULED || 
+                           status === EventStatus.ONGOING || 
+                           status === EventStatus.COMPLETED || 
+                           status === EventStatus.COVERED;
+    
+    if (!canUploadStatus) return false;
+    
     if (this.authService.isAdmin()) return true;
     
-    // Check if current user is an assigned staff who accepted the assignment
+    // Check if current user is an assigned staff who is in an active or terminal upload-eligible status
     const userId = this.authService.getCurrentUser()?.adObjectId;
     if (!userId) return false;
 
@@ -499,7 +508,14 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
       ...this.getAssignmentsByRole('expert')
     ];
 
-    return allAssignments.some(a => a.employee?.id === userId && a.status === 'Accepted');
+    return allAssignments.some(a => 
+      (a.employee?.id === userId || a.employeeId === userId) && 
+      (a.status === 'Accepted' || 
+       a.status === 'Submitted' || 
+       a.status === 'Covered' || 
+       a.status === 'VerifiedByCreator' || 
+       a.status === 'RevisionRequested')
+    );
   }
 
   private refreshEventData(): void {
