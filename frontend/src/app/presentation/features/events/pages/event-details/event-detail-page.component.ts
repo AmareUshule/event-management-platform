@@ -701,11 +701,7 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
         this.isLoading = false;
         this.showSuccess(`${results.length} personnel assigned successfully`);
         
-        // Update local event with latest results if available
-        if (results.length > 0) {
-          this.event = results[results.length - 1];
-        }
-        
+        // DO NOT set this.event to results since results is an array of Assignments
         this.refreshEventData(); // Refresh to get fully updated event state from server
         this.cdr.detectChanges();
       },

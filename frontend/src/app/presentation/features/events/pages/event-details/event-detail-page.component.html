@@ -133,7 +133,7 @@
                                         <div class="node-content">
                                             <span class="node-label">Created</span>
                                             <span class="node-date">{{ event.createdAt | date:'shortDate' }}</span>
-                                            <span class="node-meta">by {{ event.createdBy.firstName }}</span>
+                                            <span class="node-meta">by {{ event.createdBy?.firstName }}</span>
                                         </div>
                                     </div>
                                     <div class="timeline-connector" [class.active]="event.approvedBy || isScheduled() || isCompleted() || isArchived() || event.status === 'Cancelled'"></div>
@@ -148,7 +148,7 @@
                                         <div class="node-content">
                                             <span class="node-label">Approved</span>
                                             <span class="node-date" *ngIf="event.approvedBy">{{ event.updatedAt | date:'shortDate' }}</span>
-                                            <span class="node-meta" *ngIf="event.approvedBy">by {{ event.approvedBy.firstName }}</span>
+                                            <span class="node-meta" *ngIf="event.approvedBy">by {{ event.approvedBy?.firstName }}</span>
                                             <span class="node-meta" *ngIf="!event.approvedBy && (isScheduled() || isCompleted() || isArchived())">Approved</span>
                                             <span class="node-meta" *ngIf="!event.approvedBy && event.status === 'Draft'">Pending</span>
                                             <span class="node-meta" *ngIf="event.status === 'Cancelled'">Cancelled</span>
@@ -180,7 +180,7 @@
                                         <div class="node-content">
                                             <span class="node-label">{{ event.status === 'Cancelled' ? 'Cancelled' : (event.status === 'Uncovered' ? 'Uncovered' : (event.status === 'Covered' ? 'Covered' : 'Archived')) }}</span>
                                             <span class="node-date" *ngIf="isArchived() || event.status === 'Cancelled' || event.status === 'Covered' || event.status === 'Uncovered'">{{ event.updatedAt | date:'shortDate' }}</span>
-                                            <span class="node-meta" *ngIf="event.finalizedBy">by {{ event.finalizedBy.firstName }}</span>
+                                            <span class="node-meta" *ngIf="event.finalizedBy">by {{ event.finalizedBy?.firstName }}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -193,7 +193,7 @@
                                     </div>
                                     <p class="comment-text">"{{ event.cancellationReason }}"</p>
                                     <div class="comment-footer" *ngIf="event.cancellationRequestedBy">
-                                        — {{ event.cancellationRequestedBy.firstName }} {{ event.cancellationRequestedBy.lastName }}
+                                        — {{ event.cancellationRequestedBy?.firstName }} {{ event.cancellationRequestedBy?.lastName }}
                                     </div>
                                 </div>
 
@@ -204,7 +204,7 @@
                                     </div>
                                     <p class="comment-text" *ngIf="event.cancellationReviewComment">"{{ event.cancellationReviewComment }}"</p>
                                     <div class="comment-footer" *ngIf="event.cancellationReviewedBy">
-                                        — {{ event.cancellationReviewedBy.firstName }} {{ event.cancellationReviewedBy.lastName }}
+                                        — {{ event.cancellationReviewedBy?.firstName }} {{ event.cancellationReviewedBy?.lastName }}
                                     </div>
                                 </div>
 
@@ -218,21 +218,21 @@
                                             <span class="detail-label">Reason for Request:</span>
                                             <p class="comment-text">"{{ event.cancellationReason }}"</p>
                                             <div class="comment-footer" *ngIf="event.cancellationRequestedBy">
-                                                — Requested by {{ event.cancellationRequestedBy.firstName }} {{ event.cancellationRequestedBy.lastName }}
+                                                — Requested by {{ event.cancellationRequestedBy?.firstName }} {{ event.cancellationRequestedBy?.lastName }}
                                             </div>
                                         </div>
                                         <div class="detail-sub-section" *ngIf="event.cancellationReviewComment">
                                             <span class="detail-label">Approval Note:</span>
                                             <p class="comment-text">"{{ event.cancellationReviewComment }}"</p>
                                             <div class="comment-footer" *ngIf="event.cancellationReviewedBy">
-                                                — Approved by {{ event.cancellationReviewedBy.firstName }} {{ event.cancellationReviewedBy.lastName }}
+                                                — Approved by {{ event.cancellationReviewedBy?.firstName }} {{ event.cancellationReviewedBy?.lastName }}
                                             </div>
                                         </div>
                                         <div class="detail-sub-section" *ngIf="!event.cancellationReason && event.closureComment">
                                             <span class="detail-label">Closure Comment:</span>
                                             <p class="comment-text">"{{ event.closureComment }}"</p>
                                             <div class="comment-footer" *ngIf="event.finalizedBy">
-                                                — {{ event.finalizedBy.firstName }} {{ event.finalizedBy.lastName }}
+                                                — {{ event.finalizedBy?.firstName }} {{ event.finalizedBy?.lastName }}
                                             </div>
                                         </div>
                                     </div>
@@ -245,7 +245,7 @@
                                     </div>
                                     <p class="comment-text">"{{ event.closureComment }}"</p>
                                     <div class="comment-footer" *ngIf="event.finalizedBy">
-                                        — {{ event.finalizedBy.firstName }} {{ event.finalizedBy.lastName }}, Administrator
+                                        — {{ event.finalizedBy?.firstName }} {{ event.finalizedBy?.lastName }}, Administrator
                                     </div>
                                 </div>
                             </div>
@@ -557,8 +557,8 @@
                             <mat-icon>account_balance</mat-icon>
                         </div>
                         <div class="organizer-details">
-                            <span class="org-name">{{ event.createdBy.firstName }} {{ event.createdBy.lastName }}</span>
-                            <span class="org-dept">{{ event.department.name }}</span>
+                            <span class="org-name">{{ event.createdBy?.firstName }} {{ event.createdBy?.lastName }}</span>
+                            <span class="org-dept">{{ event.department?.name }}</span>
                             <span class="org-role">Organizer</span>
                         </div>
                     </div>

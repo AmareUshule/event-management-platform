@@ -363,7 +363,7 @@ export class EventService {
    * API expects a single assignment object, not an array
    */
    
-assignEmployeeToEvent(eventId: string, assignment: AssignmentPayload): Observable<Event> {
+assignEmployeeToEvent(eventId: string, assignment: AssignmentPayload): Observable<any> {
   console.log('📦 Sending single assignment:', { eventId, ...assignment });
   
   // Try both ID formats to see which one works
@@ -375,7 +375,7 @@ assignEmployeeToEvent(eventId: string, assignment: AssignmentPayload): Observabl
   
   console.log('Full payload being sent:', JSON.stringify(payload, null, 2));
   
-  return this.http.post<Event>(
+  return this.http.post<any>(
     `${this.API_URL}/${eventId}/assignments`, 
     payload,
     { 
@@ -394,7 +394,7 @@ assignEmployeeToEvent(eventId: string, assignment: AssignmentPayload): Observabl
 }
 
 // Update assignMultipleEmployees:
-assignMultipleEmployees(eventId: string, assignments: AssignmentPayload[]): Observable<Event[]> {
+assignMultipleEmployees(eventId: string, assignments: AssignmentPayload[]): Observable<any[]> {
   console.log(`📦 Sending ${assignments.length} assignments one by one`);
   console.log('Original assignments:', assignments);
   
@@ -412,7 +412,7 @@ assignMultipleEmployees(eventId: string, assignments: AssignmentPayload[]): Obse
     
     console.log(`Request ${index + 1}:`, payload);
     
-    return this.http.post<Event>(
+    return this.http.post<any>(
       `${this.API_URL}/${eventId}/assignments`,
       payload,
       { 

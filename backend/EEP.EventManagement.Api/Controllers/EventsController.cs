@@ -296,7 +296,7 @@ namespace EEP.EventManagement.Api.Controllers
         [Authorize(Policy = EEP.EventManagement.Api.Infrastructure.Security.Authorization.AuthorizationPolicies.CanApproveAndAssign)]
         public async Task<ActionResult<EventDto>> ArchiveEvent(Guid id, [FromBody] ClosureCommentRequest request)
         {
-            var command = new ArchiveEventCommand { EventId = id, ClosureComment = request.Comment };
+            var command = new ArchiveEventCommand { EventId = id, ClosureComment = request.Comment, AllowOverride = request.AllowOverride };
             var result = await _mediator.Send(command);
             return Ok(result);
         }
@@ -349,6 +349,7 @@ namespace EEP.EventManagement.Api.Controllers
         public class ClosureCommentRequest
         {
             public string Comment { get; set; } = string.Empty;
+            public bool AllowOverride { get; set; } = false;
         }
 
         public class CancellationReviewRequest

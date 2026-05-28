@@ -1110,8 +1110,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   get departmentName(): string {
-    if (!this.user?.departmentId) return 'Unknown';
-    return this.departmentMap[this.user.departmentId] || 'Unknown Department';
+    return this.user?.departmentName || 'Unknown Department';
   }
 
   getFullName(user: { firstName: string; lastName: string }): string {

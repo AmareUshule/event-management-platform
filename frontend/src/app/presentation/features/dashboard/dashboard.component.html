@@ -21,7 +21,7 @@
         <!-- Dashboard Hero -->
         <section class="dashboard-hero">
           <div class="hero-copy">
-            <span class="hero-tag">Operational command center</span>
+            <span class="hero-tag">Event Operations Hub</span>
             <h1 class="gradient-strip">{{ heroGreeting }}</h1>
             <p class="hero-role">
               {{ heroRoleLabel }}<span *ngIf="departmentName"> • {{ departmentName }}</span>
@@ -213,29 +213,6 @@
                   </button>
                   <button class="event-tab" [class.active]="activeTab === 'past'" (click)="onTabChange('past')">
                     Past Events <span class="tab-count">{{ pastEventsCount }}</span>
-                  </button>
-                </div>
-
-                <!-- Sub-filters for Past Events (Shown only when Past tab is active) -->
-                <div class="sub-filter-row" *ngIf="activeTab === 'past'">
-                  <button class="pill-filter" [class.active]="activePastFilter === 'all'" (click)="onPastFilterChange('all')">
-                    All ({{ pastEventsCount }})
-                  </button>
-                  <button class="pill-filter" [class.active]="activePastFilter === 'awaiting'" (click)="onPastFilterChange('awaiting')" *ngIf="isManagerView()">
-                    <mat-icon>pending_actions</mat-icon>
-                    Awaiting Verification ({{ pastAwaitingVerificationCount }})
-                  </button>
-                  <button class="pill-filter" [class.active]="activePastFilter === 'covered'" (click)="onPastFilterChange('covered')">
-                    <mat-icon>check_circle</mat-icon>
-                    Covered ({{ coveredEvents }})
-                  </button>
-                  <button class="pill-filter" [class.active]="activePastFilter === 'uncovered'" (click)="onPastFilterChange('uncovered')">
-                    <mat-icon>cancel</mat-icon>
-                    Uncovered ({{ uncoveredEvents }})
-                  </button>
-                  <button class="pill-filter" [class.active]="activePastFilter === 'cancelled'" (click)="onPastFilterChange('cancelled')">
-                    <mat-icon>block</mat-icon>
-                    Cancelled ({{ cancelledEventsCount }})
                   </button>
                 </div>
 
