@@ -33,7 +33,7 @@ import { ReportService, ReportSummary } from '../../../core/services/report.serv
 import { AnnouncementService } from '../internal-announcements/services/announcement.service';
 
 // Models
-import { Event, EventFormData, EventStatus, AssignmentResponse } from '../events/models/event.model';
+import { Event, EventFormData, EventStatus, Assignment, AssignmentResponse } from '../events/models/event.model';
 import { AuthUser } from '../../../core/models/auth-user.model';
 import { Announcement } from '../internal-announcements/models/announcement.model';
 
@@ -118,6 +118,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   isLoadingReport = false;
   currentDate = new Date();
   activeTab: string = 'all';
+  activePastFilter: string = 'all'; // Nested filter for Past Events
   searchTerm: string = '';
   isMobileMenuOpen = false;
   heroActionSelected = '';
@@ -164,6 +165,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
   pendingApprovalCount = 0; // Renamed from draftEventsCount
   ongoingEvents = 0;
   pastEventsCount = 0;
+  completedEventsCount = 0;
+  coveredEvents = 0;
+  uncoveredEvents = 0;
   cancelledEventsCount = 0;
   eventsThisWeek = 0;
   assignedEventsCount = 0;
@@ -331,6 +335,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   get heroAlertText(): string {
+    if (this.isManagerView() && this.managerActionQueueCount > 0) {
+      return `${this.pendingVerificationCount} event${this.pendingVerificationCount === 1 ? '' : 's'} with submitted staff coverage need verification.`;
+    }
+
     if (this.canApproveEvents() && this.pendingApprovalCount > 0) {
       return `You have ${this.pendingApprovalCount} draft event${this.pendingApprovalCount === 1 ? '' : 's'} requiring review.`;
     }
@@ -354,7 +362,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     if (this.authService.isAdmin() || this.authService.isManager() || this.authService.isCommunicationManager()) {
       return [
         { label: this.isStaff() ? 'My Assignments' : 'Total Events', value: this.isStaff() ? this.assignedEventsCount : this.totalEvents, description: this.isStaff() ? 'Assigned to you' : 'Visible events' },
-        { label: this.canApproveEvents() ? 'Pending Approvals' : 'Scheduled', value: this.pendingApprovalCount, description: 'Draft items needing review' },
+        { label: 'Action Needed', value: this.isStaff() ? this.pendingAssignmentsCount : this.pendingApprovalCount, description: 'Items needing review' },
         { label: 'Live events', value: this.ongoingEvents, description: 'Currently active' },
         { label: 'In 7 days', value: this.upcomingEventsCount, description: 'Upcoming schedule' }
       ];
@@ -394,6 +402,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
         description: 'Open drafts awaiting review'
       },
       {
+        label: this.authService.isCommunicationManager() ? 'Archive Pending' : 'Verify Coverage',
+        icon: 'rate_review',
+        visible: this.isManagerView(),
+        click: () => this.onStatCardClick('verification'),
+        description: 'Open submitted staff coverage'
+      },
+      {
         label: 'My Assignments',
         icon: 'assignment',
         visible: this.isStaff(),
@@ -411,6 +426,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   get heroSubText(): string {
+    if (this.isManagerView() && this.managerActionQueueCount > 0) {
+      if (this.authService.isCommunicationManager()) {
+        return 'Archive completed events after manager coverage approval is in place.';
+      }
+
+      return 'Review submitted staff coverage while the work is still fresh.';
+    }
+
     if (this.canApproveEvents() && this.pendingApprovalCount > 0) {
       return 'Approve drafts quickly to keep the event pipeline moving.';
     }
@@ -421,6 +444,50 @@ export class DashboardComponent implements OnInit, OnDestroy {
       return 'Monitor live operations and verify current event progress.';
     }
     return 'Use this dashboard to manage your event workflow with confidence.';
+  }
+
+  get verificationQueue(): Event[] {
+    return this.masterEvents
+      .filter(event => this.requiresVerification(event))
+      .sort((a, b) => new Date(b.updatedAt || b.endDate || b.startDate).getTime() - new Date(a.updatedAt || a.endDate || a.startDate).getTime());
+  }
+
+  get finalizationQueue(): Event[] {
+    return this.masterEvents
+      .filter(event => this.requiresFinalization(event))
+      .sort((a, b) => new Date(b.updatedAt || b.endDate || b.startDate).getTime() - new Date(a.updatedAt || a.endDate || a.startDate).getTime());
+  }
+
+  get managerActionQueue(): Event[] {
+    return this.authService.isCommunicationManager() ? this.finalizationQueue : this.verificationQueue;
+  }
+
+  get pendingVerificationCount(): number {
+    return this.verificationQueue.length;
+  }
+
+  get pendingFinalizationCount(): number {
+    return this.finalizationQueue.length;
+  }
+
+  get managerActionQueueCount(): number {
+    return this.authService.isCommunicationManager() ? this.pendingFinalizationCount : this.pendingVerificationCount;
+  }
+
+  get pastAwaitingVerificationCount(): number {
+    return this.completedEventsCount;
+  }
+
+  get verificationQueueLabel(): string {
+    return this.authService.isCommunicationManager() ? 'Ready for Finalization' : 'Pending Verification';
+  }
+
+  get verificationQueueHeader(): string {
+    return this.authService.isCommunicationManager() ? 'Finalization Queue' : 'Verification Queue';
+  }
+
+  get managerActionQueueDescription(): string {
+    return this.authService.isCommunicationManager() ? 'Ready to close' : 'Submitted coverage';
   }
 
   // ==================== DATA LOADING ====================
@@ -528,7 +595,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.calculateStatistics();
     } else {
       this.scheduledEvents = summary.scheduledCount;
-      this.pastEventsCount = summary.completedCount + summary.archivedCount;
+      this.completedEventsCount = summary.completedCount;
+      this.coveredEvents = summary.coveredCount;
+      this.uncoveredEvents = summary.uncoveredCount;
+      this.pastEventsCount = summary.completedCount + summary.coveredCount + summary.uncoveredCount + summary.cancelledCount;
     }
   }
 
@@ -576,10 +646,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
       
     this.scheduledEvents = this.masterEvents.filter(e => e.status === "Scheduled").length;
     this.ongoingEvents = this.masterEvents.filter(e => e.status === "Ongoing").length;
+    this.completedEventsCount = this.masterEvents.filter(e => e.status === "Completed").length;
+    this.coveredEvents = this.masterEvents.filter(e => e.status === "Covered").length;
+    this.uncoveredEvents = this.masterEvents.filter(e => e.status === "Uncovered").length;
     
-    // Merged Past Events (Completed + Archived)
+    // Merged Past Events (Completed + Covered + Uncovered + Cancelled)
     this.pastEventsCount = this.masterEvents.filter(e => 
-      e.status === "Completed" || e.status === "Archived").length;
+      ['Completed', 'Covered', 'Uncovered', 'Cancelled'].includes(e.status)).length;
 
     this.cancelledEventsCount = this.masterEvents.filter(e => e.status === "Cancelled").length;
 
@@ -601,15 +674,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
       // Categories derived strictly from visible assigned events
       this.scheduledEvents = myVisibleEvents.filter(e => e.status === "Scheduled").length;
       this.ongoingEvents = myVisibleEvents.filter(e => e.status === "Ongoing").length;
-      this.pastEventsCount = myVisibleEvents.filter(e => e.status === "Completed" || e.status === "Archived").length;
+      this.coveredEvents = myVisibleEvents.filter(e => e.status === "Covered").length;
+      this.uncoveredEvents = myVisibleEvents.filter(e => e.status === "Uncovered").length;
+      this.pastEventsCount = myVisibleEvents.filter(e => ['Completed', 'Covered', 'Uncovered', 'Cancelled'].includes(e.status)).length;
       this.cancelledEventsCount = myVisibleEvents.filter(e => e.status === "Cancelled").length;
 
       // Specific assignment counts (for the Inbox/Staff Center)
       this.pendingInvitations = this.myAssignments.filter(a => a.status === "Pending");
       this.pendingAssignmentsCount = this.pendingInvitations.length;
       
-      // Identify Next Assignment (Confirmed and in future)
-
       // Identify Next Assignment (Confirmed and in future)
       const now = new Date();
       const confirmedAssignments = this.myAssignments
@@ -629,14 +702,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
       }
 
       // Identify Pending Uploads (Completed events with no media from this user)
-      // Note: We'd need the MediaFiles included in the event object to check this accurately
       this.pendingUploads = this.masterEvents
         .filter(e => e.status === "Completed" && assignedEventIds.has(e.id))
         .filter(e => {
           const userAssignment = this.myAssignments.find(a => a.eventId === e.id);
-          // If they accepted but haven't uploaded anything (assuming mediaFiles is available or we check another way)
-          // For now, let's include all Completed events they were assigned to as 'Action Required' 
-          // if they haven't been archived yet.
           return userAssignment?.status === "Accepted";
         })
         .map(e => this.transformToTableEvents([e])[0]);
@@ -739,7 +808,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   onStatCardClick(tab: string): void {
-    this.onTabChange(tab);
+    if (tab === 'covered' || tab === 'uncovered' || tab === 'past') {
+      this.activeTab = 'past';
+      this.activePastFilter = tab === 'past' ? 'all' : tab;
+    } else {
+      this.onTabChange(tab);
+    }
+    this.applyFilters();
     this.scrollToTable();
   }
 
@@ -760,6 +835,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   onTabChange(tab: string): void {
     this.activeTab = tab;
+    this.activePastFilter = 'all'; // Reset sub-filter when changing main tab
+    this.applyFilters();
+  }
+
+  onPastFilterChange(filter: string): void {
+    this.activePastFilter = filter;
     this.applyFilters();
   }
 
@@ -790,10 +871,22 @@ export class DashboardComponent implements OnInit, OnDestroy {
         filtered = filtered.filter(e => e.status === 'Ongoing');
         break;
       case 'past':
-        filtered = filtered.filter(e => e.status === 'Completed' || e.status === 'Archived');
+        // Base filter for past events
+        filtered = filtered.filter(e => ['Completed', 'Covered', 'Uncovered', 'Cancelled'].includes(e.status));
+        
+        // Apply nested sub-filters
+        if (this.activePastFilter === 'covered') {
+          filtered = filtered.filter(e => e.status === 'Covered');
+        } else if (this.activePastFilter === 'uncovered') {
+          filtered = filtered.filter(e => e.status === 'Uncovered');
+        } else if (this.activePastFilter === 'cancelled') {
+          filtered = filtered.filter(e => e.status === 'Cancelled');
+        } else if (this.activePastFilter === 'awaiting') {
+          filtered = filtered.filter(e => e.status === 'Completed');
+        }
         break;
-      case 'cancelled':
-        filtered = filtered.filter(e => e.status === 'Cancelled');
+      case 'verification':
+        filtered = filtered.filter(e => this.authService.isCommunicationManager() ? this.requiresFinalization(e.raw) : this.requiresVerification(e.raw));
         break;
       // case 'all': default
     }
@@ -961,6 +1054,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.router.navigate(['/events', id]);
   }
 
+  quickReview(event: Event): void {
+    if (!event.id) return;
+    this.router.navigate(['/events', event.id], { queryParams: { tab: 'staff' } });
+  }
+
   editEvent(event: TableEvent): void {
     if (this.canEditEvent(event)) {
       this.router.navigate(['/events/edit', event.id]);
@@ -1048,6 +1146,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return this.authService.isManager();
   }
 
+  isManagerView(): boolean {
+    return this.authService.isAdmin() || this.authService.isManager();
+  }
+
   canApproveEvents(): boolean {
     return this.authService.canApproveEvents();
   }
@@ -1098,6 +1200,50 @@ export class DashboardComponent implements OnInit, OnDestroy {
     const isDraft = event.status === 'Draft';
 
     return isCreator && isDraft;
+  }
+
+  requiresVerification(event: Event): boolean {
+    const isReviewableStatus = event.status === 'Ongoing' || event.status === 'Completed';
+    return isReviewableStatus && this.getSubmittedAssignmentCount(event) > 0;
+  }
+
+  requiresFinalization(event: Event): boolean {
+    if (event.status !== 'Completed') return false;
+
+    const assignments = this.getEventAssignments(event);
+    if (assignments.length === 0) return true;
+
+    // Ready if no assignments are currently 'Submitted' (waiting for dept manager)
+    // AND every assignment has been acted upon (Verified or Revision Requested)
+    return assignments.every(a =>
+      a.status === 'VerifiedByCreator' ||
+      a.status === 'RevisionRequested' ||
+      a.status === 'Declined' ||
+      a.status === 'Covered' ||
+      a.status === 'Uncovered'
+    );
+  }
+
+  getSubmittedAssignmentCount(event: Event): number {
+    const assignments = this.getEventAssignments(event);
+    if (assignments.length > 0) {
+      return assignments.filter(assignment => assignment.status === 'Submitted').length;
+    }
+
+    return event.hasSubmittedAssignments ? 1 : 0;
+  }
+
+  getVerificationTooltip(event: Event): string {
+    const count = this.getSubmittedAssignmentCount(event);
+    return `${count} staff member${count === 1 ? '' : 's'} have submitted coverage for verification.`;
+  }
+
+  private getEventAssignments(event: Event): Assignment[] {
+    if (!event.assignments) return [];
+
+    return Object.values(event.assignments)
+      .filter((assignments): assignments is Assignment[] => Array.isArray(assignments))
+      .flat();
   }
 
   generateICS(): void {

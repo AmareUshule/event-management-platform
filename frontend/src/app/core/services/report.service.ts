@@ -10,6 +10,8 @@ export interface ReportSummary {
   scheduledCount: number;
   ongoingCount: number;
   completedCount: number;
+  coveredCount: number;
+  uncoveredCount: number;
   archivedCount: number;
   cancelledCount: number;
   pendingApprovalsCount: number;

@@ -84,74 +84,51 @@
           </ng-container>
 
           <!-- Actual Stats -->
-          <!-- Actual Stats -->
-<ng-container *ngIf="!isLoadingEvents">
-  <!-- Total / Assignments -->
-  <div class="stat-card" (click)="onStatCardClick('all')">
-    <div class="stat-icon total-events">
-      <mat-icon>event</mat-icon>
-    </div>
-    <div class="stat-content">
-      <p class="stat-label">{{ isStaff() ? 'My Total Assignments' : 'Total Events' }}</p>
-      <h3 class="stat-number">{{ isStaff() ? assignedEventsCount : totalEvents }}</h3>
-    </div>
-  </div>
+          <ng-container *ngIf="!isLoadingEvents">
+            <!-- Total Workload -->
+            <div class="stat-card" (click)="onStatCardClick('all')">
+              <div class="stat-icon total-events">
+                <mat-icon>analytics</mat-icon>
+              </div>
+              <div class="stat-content">
+                <p class="stat-label">{{ isStaff() ? 'My Workload' : 'Total Events' }}</p>
+                <h3 class="stat-number">{{ isStaff() ? assignedEventsCount : totalEvents }}</h3>
+              </div>
+            </div>
 
-  <!-- Pending Approval (Admin/Manager only) -->
-  <div class="stat-card" *ngIf="authService.isAdmin() || authService.isManager()" (click)="onStatCardClick('draft')">
-    <div class="stat-icon draft">
-      <mat-icon>edit_note</mat-icon>
-    </div>
-    <div class="stat-content">
-      <p class="stat-label">Pending Approval</p>
-      <h3 class="stat-number">{{ pendingApprovalCount }}</h3>
-    </div>
-  </div>
+            <!-- Ongoing Events -->
+            <div class="stat-card ongoing" (click)="onStatCardClick('ongoing')">
+              <div class="stat-icon draft" style="background: linear-gradient(135deg, #3b82f6, #2563eb);">
+                <mat-icon>play_circle_outline</mat-icon>
+              </div>
+              <div class="stat-content">
+                <p class="stat-label">Ongoing</p>
+                <h3 class="stat-number">{{ ongoingEvents }}</h3>
+              </div>
+            </div>
 
-  <!-- Pending Invitations (Staff only) -->
-  <div class="stat-card" *ngIf="isStaff()" (click)="onStatCardClick('assignments')">
-    <div class="stat-icon pending">
-      <mat-icon>notification_important</mat-icon>
-    </div>
-    <div class="stat-content">
-      <p class="stat-label">Pending Invitations</p>
-      <h3 class="stat-number">{{ pendingAssignmentsCount }}</h3>
-    </div>
-  </div>
+            <!-- Scheduled Events -->
+            <div class="stat-card scheduled" (click)="onStatCardClick('scheduled')">
+              <div class="stat-icon published">
+                <mat-icon>calendar_month</mat-icon>
+              </div>
+              <div class="stat-content">
+                <p class="stat-label">Scheduled</p>
+                <h3 class="stat-number">{{ scheduledEvents }}</h3>
+              </div>
+            </div>
 
-  <!-- Ongoing Events (Staff or others) -->
-  <div class="stat-card" *ngIf="ongoingEvents > 0" (click)="onStatCardClick('ongoing')">
-    <div class="stat-icon draft" style="background: linear-gradient(135deg, #3b82f6, #2563eb);">
-      <mat-icon>play_circle_outline</mat-icon>
-    </div>
-    <div class="stat-content">
-      <p class="stat-label">Ongoing Events</p>
-      <h3 class="stat-number">{{ ongoingEvents }}</h3>
-    </div>
-  </div>
-
-  <!-- Scheduled Events -->
-  <div class="stat-card" (click)="onStatCardClick('scheduled')">
-    <div class="stat-icon published">
-      <mat-icon>check_circle</mat-icon>
-    </div>
-    <div class="stat-content">
-      <p class="stat-label">Scheduled</p>
-      <h3 class="stat-number">{{ scheduledEvents }}</h3>
-    </div>
-  </div>
-
-  <!-- Past Events -->
-  <div class="stat-card" (click)="onStatCardClick('past')">
-    <div class="stat-icon total-events" style="background: linear-gradient(135deg, #10b981, #059669);">
-      <mat-icon>history</mat-icon>
-    </div>
-    <div class="stat-content">
-      <p class="stat-label">Past Events</p>
-      <h3 class="stat-number">{{ pastEventsCount }}</h3>
-    </div>
-  </div>
-</ng-container>
+            <!-- Past Events (Concluded) -->
+            <div class="stat-card past-events" (click)="onStatCardClick('past')">
+              <div class="stat-icon total-events" style="background: linear-gradient(135deg, #64748b, #475569);">
+                <mat-icon>history</mat-icon>
+              </div>
+              <div class="stat-content">
+                <p class="stat-label">Past Events</p>
+                <h3 class="stat-number">{{ pastEventsCount }}</h3>
+              </div>
+            </div>
+          </ng-container>
         </div>
       </div>
 
@@ -214,6 +191,9 @@
                     <button class="event-tab" [class.active]="activeTab === 'draft'" (click)="onTabChange('draft')">
                       Pending Approval <span class="tab-count" *ngIf="pendingApprovalCount > 0">({{ pendingApprovalCount }})</span>
                     </button>
+                    <button class="event-tab" [class.active]="activeTab === 'verification'" (click)="onTabChange('verification')">
+                      {{ verificationQueueLabel }} <span class="tab-count" *ngIf="managerActionQueueCount > 0">({{ managerActionQueueCount }})</span>
+                    </button>
                   </ng-container>
 
                   <!-- Cameraman & Expert Tabs -->
@@ -234,8 +214,28 @@
                   <button class="event-tab" [class.active]="activeTab === 'past'" (click)="onTabChange('past')">
                     Past Events <span class="tab-count">{{ pastEventsCount }}</span>
                   </button>
-                  <button class="event-tab" [class.active]="activeTab === 'cancelled'" (click)="onTabChange('cancelled')" *ngIf="!isStaff()">
-                    Cancelled <span class="tab-count">{{ cancelledEventsCount }}</span>
+                </div>
+
+                <!-- Sub-filters for Past Events (Shown only when Past tab is active) -->
+                <div class="sub-filter-row" *ngIf="activeTab === 'past'">
+                  <button class="pill-filter" [class.active]="activePastFilter === 'all'" (click)="onPastFilterChange('all')">
+                    All ({{ pastEventsCount }})
+                  </button>
+                  <button class="pill-filter" [class.active]="activePastFilter === 'awaiting'" (click)="onPastFilterChange('awaiting')" *ngIf="isManagerView()">
+                    <mat-icon>pending_actions</mat-icon>
+                    Awaiting Verification ({{ pastAwaitingVerificationCount }})
+                  </button>
+                  <button class="pill-filter" [class.active]="activePastFilter === 'covered'" (click)="onPastFilterChange('covered')">
+                    <mat-icon>check_circle</mat-icon>
+                    Covered ({{ coveredEvents }})
+                  </button>
+                  <button class="pill-filter" [class.active]="activePastFilter === 'uncovered'" (click)="onPastFilterChange('uncovered')">
+                    <mat-icon>cancel</mat-icon>
+                    Uncovered ({{ uncoveredEvents }})
+                  </button>
+                  <button class="pill-filter" [class.active]="activePastFilter === 'cancelled'" (click)="onPastFilterChange('cancelled')">
+                    <mat-icon>block</mat-icon>
+                    Cancelled ({{ cancelledEventsCount }})
                   </button>
                 </div>
 
@@ -307,7 +307,17 @@
                   <td mat-cell *matCellDef="let element">
                     <div class="event-name-cell">
                       <div class="event-info">
-                        <span class="event-title">{{ element.name }}</span>
+                        <div class="event-title-row">
+                          <span class="event-title">{{ element.name }}</span>
+                          <span
+                            class="verification-ready-badge"
+                            *ngIf="isManagerView() && requiresVerification(element.raw)"
+                            [matTooltip]="getVerificationTooltip(element.raw)"
+                            aria-label="Submitted coverage ready for verification">
+                            <span class="pulse-dot" aria-hidden="true"></span>
+                            <mat-icon>rate_review</mat-icon>
+                          </span>
+                        </div>
                         <div class="event-status-badge"
                           [class.scheduled]="element.status === 'Scheduled' || element.status === 'Ongoing' || element.status === 'Completed' || element.status === 'Covered'"
                           [class.archived]="element.status === 'Archived'" 
@@ -497,6 +507,41 @@
 
         <!-- Quick Stats & Actions Sidebar -->
         <div class="sidebar">
+
+          <div class="sidebar-card verification-queue-card" *ngIf="isManagerView()">
+            <div class="sidebar-header">
+              <mat-icon>rate_review</mat-icon>
+              <h4>{{ verificationQueueHeader }}</h4>
+              <span class="queue-count-badge" *ngIf="managerActionQueueCount > 0">{{ managerActionQueueCount }}</span>
+            </div>
+            <div class="sidebar-content">
+              <div class="empty-state accomplished" *ngIf="managerActionQueue.length === 0">
+                <mat-icon>task_alt</mat-icon>
+                <div>
+                  <div class="empty-title">Mission Accomplished!</div>
+                  <div class="empty-subtitle">{{ authService.isCommunicationManager() ? 'All approved events have been archived.' : 'All staff coverage has been verified.' }}</div>
+                </div>
+              </div>
+
+              <div class="list" *ngIf="managerActionQueue.length > 0">
+                <div class="list-item verification-event" *ngFor="let event of managerActionQueue | slice:0:5">
+                  <div class="list-item-main">
+                    <div class="list-item-title">{{ event.title }}</div>
+                    <div class="list-item-meta">
+                      <mat-icon>pending_actions</mat-icon>
+                      <span>{{ authService.isCommunicationManager() ? 'Ready to archive' : (getSubmittedAssignmentCount(event) + ' submitted') }}</span>
+                    </div>
+                  </div>
+                  <div class="list-item-right">
+                    <button class="pill review-pill" (click)="quickReview(event)">
+                      <mat-icon>rate_review</mat-icon>
+                      <span>{{ authService.isCommunicationManager() ? 'Archive' : 'Quick Review' }}</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
 
           <!-- Staff Action Center (Moved to Sidebar) -->
           <div class="sidebar-card staff-center-card" *ngIf="isStaff() && (pendingAssignmentsCount > 0 || pendingUploads.length > 0)">

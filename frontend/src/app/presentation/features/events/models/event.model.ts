@@ -191,6 +191,7 @@ export interface Event {
   cancellationReviewedBy?: User;
   cancellationReviewedAt?: string;
   cancellationReviewComment?: string;
+  hasSubmittedAssignments?: boolean;
 
   assignments?: EventAssignments;
 }

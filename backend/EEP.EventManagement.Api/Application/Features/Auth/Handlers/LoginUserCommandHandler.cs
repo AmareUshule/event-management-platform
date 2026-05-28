@@ -52,6 +52,7 @@ namespace EEP.EventManagement.Api.Application.Features.Auth.Handlers
                 {
                     departmentName = department.Name;
                     claims.Add(new System.Security.Claims.Claim("Department", departmentName));
+                    claims.Add(new System.Security.Claims.Claim("DepartmentId", user.DepartmentId.Value.ToString()));
 
                     // Add IsCommunicationManager claim if user is a Manager in the Communication department
                     if (roles.Contains("Manager") && departmentName == "Communication")

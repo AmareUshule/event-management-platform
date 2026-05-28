@@ -74,6 +74,7 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
   isLoading = false; 
   mediaFiles: MediaFile[] = [];
   selectedFilter: string = 'all';
+  selectedTabIndex = 0;
   isSubscribed = true;
 
   // Available roles for assignment - using the exported roles
@@ -90,6 +91,7 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
+      this.applyRequestedTab();
       this.loadEventData();
     }
   }
@@ -111,6 +113,17 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
       this.loadMedia(eventId);
     } else {
       this.handleNoEventFound();
+    }
+  }
+
+  private applyRequestedTab(): void {
+    const tab = this.route.snapshot.queryParamMap.get('tab')?.toLowerCase();
+    if (tab === 'staff') {
+      this.selectedTabIndex = 1;
+    } else if (tab === 'media') {
+      this.selectedTabIndex = 2;
+    } else {
+      this.selectedTabIndex = 0;
     }
   }
 

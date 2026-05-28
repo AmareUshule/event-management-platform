@@ -68,7 +68,9 @@ namespace EEP.EventManagement.Api.Application.Features.Reports.Handlers
                     ScheduledCount = visibleEvents.Count(e => e.Status == EventStatus.Scheduled),
                     OngoingCount = visibleEvents.Count(e => e.Status == EventStatus.Ongoing),
                     CompletedCount = visibleEvents.Count(e => e.Status == EventStatus.Completed),
-                    ArchivedCount = visibleEvents.Count(e => e.Status == EventStatus.Archived || e.Status == EventStatus.Covered || e.Status == EventStatus.Uncovered),
+                    CoveredCount = visibleEvents.Count(e => e.Status == EventStatus.Covered),
+                    UncoveredCount = visibleEvents.Count(e => e.Status == EventStatus.Uncovered),
+                    ArchivedCount = 0,
                     CancelledCount = visibleEvents.Count(e => e.Status == EventStatus.Cancelled),
                     PendingApprovalsCount = visibleEvents.Count(e => e.Status == EventStatus.Draft)
                 };
@@ -85,7 +87,9 @@ namespace EEP.EventManagement.Api.Application.Features.Reports.Handlers
                     ScheduledCount = assignedEvents.Count(e => e.Status == EventStatus.Scheduled),
                     OngoingCount = assignedEvents.Count(e => e.Status == EventStatus.Ongoing),
                     CompletedCount = assignedEvents.Count(e => e.Status == EventStatus.Completed),
-                    ArchivedCount = assignedEvents.Count(e => e.Status == EventStatus.Archived || e.Status == EventStatus.Covered || e.Status == EventStatus.Uncovered),
+                    CoveredCount = assignedEvents.Count(e => e.Status == EventStatus.Covered),
+                    UncoveredCount = assignedEvents.Count(e => e.Status == EventStatus.Uncovered),
+                    ArchivedCount = 0,
                     PendingAssignmentsCount = assignedEvents.Sum(e => e.Assignments.Count(a => a.EmployeeId == userId && a.Status == AssignmentStatus.Pending))
                 };
             }

@@ -59,15 +59,31 @@ namespace EEP.EventManagement.Api.Controllers
             // Filter for other roles
             var visibleEvents = allEvents.Where(e =>
             {
-                // Anyone can see Scheduled, Ongoing, Completed, Archived
+                // Core Department Scoping for Managers
+                // Non-Communication Managers only see events from their own department
+                if (roles.Contains("Manager") && !isCommManager)
+                {
+                    if (e.Department == null || e.Department.Id != currentUserDeptId)
+                    {
+                        // Exception: If they are assigned as staff, let them see it
+                        if (e.Assignments == null || 
+                            (!e.Assignments.Cameraman.Any(a => a.EmployeeId == currentUserId) && 
+                             !e.Assignments.Expert.Any(a => a.EmployeeId == currentUserId)))
+                        {
+                            return false;
+                        }
+                    }
+                }
+
+                // Anyone can see Scheduled, Ongoing, Completed, Archived, Covered, or Uncovered in their scope
                 if (e.Status == EventStatus.Scheduled.ToString() || e.Status == EventStatus.Ongoing.ToString() || 
-                    e.Status == EventStatus.Completed.ToString() || e.Status == EventStatus.Archived.ToString())
+                    e.Status == EventStatus.Completed.ToString() || e.Status == EventStatus.Archived.ToString() ||
+                    e.Status == EventStatus.Covered.ToString() || e.Status == EventStatus.Uncovered.ToString())
                 {
                     return true;
                 }
 
                 // Requirement: Managers/Creators only see their OWN cancelled events
-                // Admins and Communication Managers see ALL (already handled above)
                 if (e.Status == EventStatus.Cancelled.ToString())
                 {
                     if (e.CreatedBy != null && e.CreatedBy.Id == currentUserId)
@@ -96,7 +112,7 @@ namespace EEP.EventManagement.Api.Controllers
                     return false;
                 }
 
-                // Assigned staff can see events they are assigned to (even if not yet Scheduled)
+                // Assigned staff can see events they are assigned to
                 if (e.Assignments != null && 
                     (e.Assignments.Cameraman.Any(a => a.EmployeeId == currentUserId) || 
                      e.Assignments.Expert.Any(a => a.EmployeeId == currentUserId)))

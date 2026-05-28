@@ -30,6 +30,7 @@ namespace EEP.EventManagement.Api.Application.Features.Events.DTOs
         public SimplifiedUserDto? CancellationReviewedBy { get; set; }
         public DateTime? CancellationReviewedAt { get; set; }
         public string? CancellationReviewComment { get; set; }
+        public bool HasSubmittedAssignments { get; set; }
         public GroupedAssignmentsDto? Assignments { get; set; }
     }
 }
