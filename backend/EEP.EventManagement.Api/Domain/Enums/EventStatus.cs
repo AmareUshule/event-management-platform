@@ -6,7 +6,6 @@ public enum EventStatus
     Scheduled,
     Ongoing,
     Completed,
-    Archived,
     Cancelled,
     Covered,
     Uncovered

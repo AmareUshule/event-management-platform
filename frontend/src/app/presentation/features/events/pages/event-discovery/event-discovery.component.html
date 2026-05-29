@@ -90,7 +90,7 @@
         <span class="filter-label">Quick event telemetry:</span>
         <button
           class="quick-filter-pill"
-          *ngFor="let status of ['Scheduled', 'Ongoing', 'Archived', 'Cancelled']"
+          *ngFor="let status of ['Scheduled', 'Ongoing', 'Covered', 'Uncovered', 'Cancelled']"
           (click)="quickFilterByStatus(status)"
           [class.active]="activeFilters().status.includes(status)"
         >
@@ -98,7 +98,7 @@
         </button>
         <button
           class="quick-filter-pill"
-          *ngFor="let category of ['Project Launch', 'Workshop']"
+          *ngFor="let category of ['Project Launch', 'Workshop / Training']"
           (click)="quickFilterByCategory(category)"
           [class.active]="activeFilters().category.includes(category)"
         >
@@ -142,13 +142,6 @@
         <div class="filter-chip" *ngFor="let loc of activeFilters().location">
           <span>{{ loc }}</span>
           <button type="button" aria-label="Remove location filter" (click)="removeFilter('location', loc)">
-            <mat-icon>close</mat-icon>
-          </button>
-        </div>
-
-        <div class="filter-chip priority-chip" *ngFor="let pri of activeFilters().priority" [ngClass]="pri.toLowerCase()">
-          <span>{{ pri }}</span>
-          <button type="button" aria-label="Remove priority filter" (click)="removeFilter('priority', pri)">
             <mat-icon>close</mat-icon>
           </button>
         </div>

@@ -7,6 +7,7 @@ namespace EEP.EventManagement.Api.Infrastructure.Repositories.Interfaces
 {
     public interface IEventRepository
     {
+        IQueryable<Event> GetQueryable();
         Task<Event> GetByIdAsync(Guid id);
         Task<List<Event>> GetAllAsync();
         Task<List<Event>> GetUpcomingAsync();
