@@ -27,13 +27,16 @@ import {
   ASSIGNMENT_ROLES,
   AssignmentUser,
   MediaFile,
-  MediaType
+  MediaType,
+  EventFormData,
+  EventType
 } from '../../models/event.model';
 
 import { EventService } from '../../services/event.service';
 import { AuthService } from '../../../../../core/auth/auth.service';
 import { environment } from '../../../../../../environments/environment';
 import { AssignmentDialogComponent } from './assignment-dialog.component';
+import { RequestDateChangeDialogComponent } from './request-date-change-dialog.component';
 import { ConfirmationDialogComponent, ConfirmationDialogData } from '../../../confirmation-dialog.component';
 import { ImageLightboxComponent } from '../../../internal-announcements/components/image-lightbox/image-lightbox.component';
 
@@ -461,6 +464,139 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
 
     // Only allow editing in Draft state, and only for creator, admin, comm manager, or dept manager
     this.router.navigate(['/events/edit', this.event.id]);
+  }
+
+  canEditDateLocation(): boolean {
+    if (!this.event || this.isArchived() || this.event.status === EventStatus.CANCELLED || this.event.dateChangeRequestStatus === 'Pending') {
+      return false;
+    }
+
+    const user = this.authService.getCurrentUser();
+    const isCommManager = this.authService.isCommunicationManager();
+    const isDeptManager = this.authService.isManager() && user?.departmentGuid === this.event.department?.id;
+    const isCreator = this.event.createdBy?.id === user?.adObjectId;
+
+    return this.authService.isAdmin() || isCommManager || isDeptManager || isCreator;
+  }
+
+  openDateLocationEdit(): void {
+    if (!this.event) return;
+
+    const dialogRef = this.dialog.open(RequestDateChangeDialogComponent, {
+      width: '500px',
+      data: {
+        eventTitle: this.event.title,
+        currentStartDate: this.event.startDate,
+        currentEndDate: this.event.endDate,
+        currentEventPlace: this.event.eventPlace,
+        isDraft: this.isDraft()
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        if (this.isDraft()) {
+          this.performDirectDateUpdate(result);
+        } else {
+          this.performRequestDateChange(result);
+        }
+      }
+    });
+  }
+
+  private performDirectDateUpdate(data: any): void {
+    if (!this.event?.id) return;
+    this.isLoading = true;
+    
+    // Convert form data to Partial<EventFormData>
+    const updatePayload: Partial<EventFormData> = {
+      startDateTime: data.proposedStartDate,
+      endDateTime: data.proposedEndDate,
+      address: data.proposedEventPlace,
+      eventType: EventType.PHYSICAL // Default to physical if place is provided
+    };
+
+    this.eventService.updateEvent(this.event.id, updatePayload, EventStatus.DRAFT).subscribe({
+      next: () => {
+        this.isLoading = false;
+        this.showSuccess('Event updated successfully');
+        this.refreshEventData();
+      },
+      error: (error) => {
+        this.isLoading = false;
+        this.showError(error.message || 'Failed to update event');
+      }
+    });
+  }
+
+  private performRequestDateChange(data: any): void {
+    if (!this.event?.id) return;
+    this.isLoading = true;
+
+    this.eventService.requestDateChange(this.event.id, {
+      proposedStartDate: data.proposedStartDate,
+      proposedEndDate: data.proposedEndDate,
+      proposedEventPlace: data.proposedEventPlace,
+      reason: data.reason
+    }).subscribe({
+      next: (updatedEvent) => {
+        this.isLoading = false;
+        this.event = updatedEvent;
+        this.showSuccess('Date change request submitted');
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        this.isLoading = false;
+        this.showError(error.message || 'Failed to submit date change request');
+      }
+    });
+  }
+
+  canReviewDateChange(): boolean {
+    return this.event?.dateChangeRequestStatus === 'Pending' &&
+      (this.authService.isAdmin() || this.authService.isCommunicationManager());
+  }
+
+  approveDateChangeRequest(): void {
+    if (!this.event?.id) return;
+    const comment = prompt('Optional approval comment:') || '';
+    
+    this.isLoading = true;
+    this.eventService.reviewDateChange(this.event.id, true, comment).subscribe({
+      next: (updatedEvent) => {
+        this.isLoading = false;
+        this.event = updatedEvent;
+        this.showSuccess('Date change request approved');
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        this.isLoading = false;
+        this.showError(error.message || 'Failed to approve date change request');
+      }
+    });
+  }
+
+  rejectDateChangeRequest(): void {
+    if (!this.event?.id) return;
+    const comment = prompt('Reason for rejection (mandatory):');
+    if (!comment || comment.trim() === '') {
+      this.showError('Rejection reason is required');
+      return;
+    }
+
+    this.isLoading = true;
+    this.eventService.reviewDateChange(this.event.id, false, comment).subscribe({
+      next: (updatedEvent) => {
+        this.isLoading = false;
+        this.event = updatedEvent;
+        this.showSuccess('Date change request rejected');
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        this.isLoading = false;
+        this.showError(error.message || 'Failed to reject date change request');
+      }
+    });
   }
 
   canApprove(): boolean {

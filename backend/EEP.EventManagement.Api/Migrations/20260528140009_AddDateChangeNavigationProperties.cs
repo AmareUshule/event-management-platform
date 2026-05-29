@@ -31,6 +31,12 @@ namespace EEP.EventManagement.Api.Migrations
                 nullable: true);
 
             migrationBuilder.AddColumn<string>(
+                name: "DateChangeReason",
+                table: "Events",
+                type: "text",
+                nullable: true);
+
+            migrationBuilder.AddColumn<string>(
                 name: "DateChangeReviewComment",
                 table: "Events",
                 type: "text",
@@ -120,6 +126,10 @@ namespace EEP.EventManagement.Api.Migrations
 
             migrationBuilder.DropColumn(
                 name: "DateChangeRequestedBy",
+                table: "Events");
+
+            migrationBuilder.DropColumn(
+                name: "DateChangeReason",
                 table: "Events");
 
             migrationBuilder.DropColumn(

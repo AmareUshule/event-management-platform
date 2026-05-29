@@ -134,9 +134,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
       title: 'Substations'
     },
     {
-      src: 'assets/images/transmission-tower.jpg',
-      alt: 'Transmission Line Tower',
-      title: 'Transmission Towers'
+      src: 'assets/images/Gibe 3.jpg',
+      alt: 'Gibe III Power Plant',
+      title: 'Gibe III Power Plant'
     },
     {
       src: 'assets/images/dam.jpg',

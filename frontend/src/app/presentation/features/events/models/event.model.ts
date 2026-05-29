@@ -72,6 +72,7 @@ export interface EventCategory {
 --------------------------------*/
 export interface User {
   id: string;
+  name?: string;
   firstName: string;
   lastName: string;
   email: string;
@@ -191,6 +192,18 @@ export interface Event {
   cancellationReviewedBy?: User;
   cancellationReviewedAt?: string;
   cancellationReviewComment?: string;
+  
+  dateChangeRequestStatus?: 'None' | 'Pending' | 'Approved' | 'Rejected' | string;
+  proposedStartDate?: string;
+  proposedEndDate?: string;
+  proposedEventPlace?: string;
+  dateChangeReason?: string;
+  dateChangeRequestedBy?: User;
+  dateChangeRequestedAt?: string;
+  dateChangeReviewedBy?: User;
+  dateChangeReviewedAt?: string;
+  dateChangeReviewComment?: string;
+
   hasSubmittedAssignments?: boolean;
 
   assignments?: EventAssignments;

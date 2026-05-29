@@ -15,6 +15,7 @@ export interface RequestDateChangeDialogData {
   currentStartDate: string;
   currentEndDate: string;
   currentEventPlace?: string;
+  isDraft?: boolean;
 }
 
 @Component({
@@ -32,24 +33,23 @@ export interface RequestDateChangeDialogData {
     MatIconModule,
   ],
   template: `
-    <h2 mat-dialog-title>Request Date/Location Change</h2>
+    <h2 mat-dialog-title>{{ data.isDraft ? 'Edit Date/Location' : 'Request Date/Location Change' }}</h2>
     <mat-dialog-content [formGroup]="form">
-      <p>Proposing changes for: <strong>{{ data.eventTitle }}</strong></p>
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Current Start Date</mat-label>
-        <input matInput [value]="data.currentStartDate | date:'medium'" readonly>
-      </mat-form-field>
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Current End Date</mat-label>
-        <input matInput [value]="data.currentEndDate | date:'medium'" readonly>
-      </mat-form-field>
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Current Location</mat-label>
-        <input matInput [value]="data.currentEventPlace || 'N/A'" readonly>
-      </mat-form-field>
+      <p>Modifying: <strong>{{ data.eventTitle }}</strong></p>
+      
+      <div class="current-info-grid">
+        <mat-form-field appearance="outline" class="small-field">
+          <mat-label>Current Start</mat-label>
+          <input matInput [value]="data.currentStartDate | date:'medium'" readonly>
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="small-field">
+          <mat-label>Current End</mat-label>
+          <input matInput [value]="data.currentEndDate | date:'medium'" readonly>
+        </mat-form-field>
+      </div>
 
       <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Proposed Start Date</mat-label>
+        <mat-label>Proposed Start Date & Time</mat-label>
         <input matInput [matDatepicker]="startDatePicker" formControlName="proposedStartDate" readonly (click)="startDatePicker.open()">
         <mat-datepicker-toggle matSuffix [for]="startDatePicker"></mat-datepicker-toggle>
         <mat-datepicker #startDatePicker></mat-datepicker>
@@ -57,7 +57,7 @@ export interface RequestDateChangeDialogData {
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Proposed End Date</mat-label>
+        <mat-label>Proposed End Date & Time</mat-label>
         <input matInput [matDatepicker]="endDatePicker" formControlName="proposedEndDate" readonly (click)="endDatePicker.open()">
         <mat-datepicker-toggle matSuffix [for]="endDatePicker"></mat-datepicker-toggle>
         <mat-datepicker #endDatePicker></mat-datepicker>
@@ -65,19 +65,21 @@ export interface RequestDateChangeDialogData {
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Proposed Location</mat-label>
-        <input matInput formControlName="proposedEventPlace">
+        <mat-label>New Location/Event Place</mat-label>
+        <input matInput formControlName="proposedEventPlace" placeholder="Enter new location">
       </mat-form-field>
 
-      <mat-form-field appearance="outline" class="full-width">
+      <mat-form-field appearance="outline" class="full-width" *ngIf="!data.isDraft">
         <mat-label>Reason for Change</mat-label>
-        <textarea matInput formControlName="reason" rows="3"></textarea>
-        <mat-error *ngIf="form.get('reason')?.hasError('required')">Reason is required</mat-error>
+        <textarea matInput formControlName="reason" rows="3" placeholder="Provide a justification for the change"></textarea>
+        <mat-error *ngIf="form.get('reason')?.hasError('required')">Reason is required for scheduled events</mat-error>
       </mat-form-field>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
       <button mat-button (click)="onCancel()">Cancel</button>
-      <button mat-flat-button color="primary" (click)="onSubmit()" [disabled]="form.invalid">Submit Request</button>
+      <button mat-flat-button color="primary" (click)="onSubmit()" [disabled]="form.invalid">
+        {{ data.isDraft ? 'Update Event' : 'Submit Request' }}
+      </button>
     </mat-dialog-actions>
   `,
   styles: [
@@ -85,10 +87,19 @@ export interface RequestDateChangeDialogData {
       .full-width {
         width: 100%;
       }
+      .current-info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+      .small-field {
+        font-size: 12px;
+      }
       mat-dialog-content {
         display: flex;
         flex-direction: column;
-        gap: 10px;
+        gap: 4px;
+        min-width: 400px;
       }
     `,
   ],
@@ -106,8 +117,12 @@ export class RequestDateChangeDialogComponent implements OnInit {
       proposedStartDate: [null, Validators.required],
       proposedEndDate: [null, Validators.required],
       proposedEventPlace: [data.currentEventPlace || ''],
-      reason: ['', Validators.required],
+      reason: [null],
     });
+
+    if (!data.isDraft) {
+      this.form.get('reason')?.setValidators([Validators.required]);
+    }
   }
 
   ngOnInit(): void {

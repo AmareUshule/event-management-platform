@@ -28,6 +28,17 @@ namespace EEP.EventManagement.Api.Domain.Entities
         public DateTime? CancellationReviewedAt { get; set; }
         public string? CancellationReviewComment { get; set; }
 
+        public DateChangeRequestStatus DateChangeRequestStatus { get; set; } = DateChangeRequestStatus.None;
+        public DateTime? ProposedStartDate { get; set; }
+        public DateTime? ProposedEndDate { get; set; }
+        public string? ProposedEventPlace { get; set; }
+        public string? DateChangeReason { get; set; }
+        public Guid? DateChangeRequestedBy { get; set; }
+        public DateTime? DateChangeRequestedAt { get; set; }
+        public Guid? DateChangeReviewedBy { get; set; }
+        public DateTime? DateChangeReviewedAt { get; set; }
+        public string? DateChangeReviewComment { get; set; }
+
         // Navigation properties
         public Department Department { get; set; } = null!;
         public EEP.EventManagement.Api.Infrastructure.Security.Identity.ApplicationUser CreatedByUser { get; set; } = null!;
@@ -43,6 +54,13 @@ namespace EEP.EventManagement.Api.Domain.Entities
 
         [System.ComponentModel.DataAnnotations.Schema.ForeignKey("CancellationReviewedBy")]
         public EEP.EventManagement.Api.Infrastructure.Security.Identity.ApplicationUser? CancellationReviewedByUser { get; set; }
+
+        [System.ComponentModel.DataAnnotations.Schema.ForeignKey("DateChangeRequestedBy")]
+        public EEP.EventManagement.Api.Infrastructure.Security.Identity.ApplicationUser? DateChangeRequestedByUser { get; set; }
+
+        [System.ComponentModel.DataAnnotations.Schema.ForeignKey("DateChangeReviewedBy")]
+        public EEP.EventManagement.Api.Infrastructure.Security.Identity.ApplicationUser? DateChangeReviewedByUser { get; set; }
+
         public ICollection<Assignment> Assignments { get; set; } = new List<Assignment>();
         public ICollection<MediaFile> MediaFiles { get; set; } = new List<MediaFile>();
     }

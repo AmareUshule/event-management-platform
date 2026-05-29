@@ -615,6 +615,47 @@ assignMultipleEmployees(eventId: string, assignments: AssignmentPayload[]): Obse
   }
 
   /**
+   * Request event date/location change (for Scheduled events)
+   */
+  requestDateChange(eventId: string, payload: {
+    proposedStartDate: string;
+    proposedEndDate: string;
+    proposedEventPlace?: string;
+    reason: string;
+  }): Observable<Event> {
+    return this.http.post<Event>(
+      `${this.API_URL}/${eventId}/date-change-request`,
+      { eventId, ...payload },
+      {
+        headers: this.getHeaders(),
+        responseType: 'json'
+      }
+    ).pipe(
+      timeout(this.REQUEST_TIMEOUT),
+      retry(1),
+      catchError(this.handleError.bind(this))
+    );
+  }
+
+  /**
+   * Review event date/location change request
+   */
+  reviewDateChange(eventId: string, approved: boolean, comment?: string): Observable<Event> {
+    return this.http.post<Event>(
+      `${this.API_URL}/${eventId}/date-change-request/review`,
+      { eventId, approved, reviewComment: comment },
+      {
+        headers: this.getHeaders(),
+        responseType: 'json'
+      }
+    ).pipe(
+      timeout(this.REQUEST_TIMEOUT),
+      retry(1),
+      catchError(this.handleError.bind(this))
+    );
+  }
+
+  /**
    * Upload media for an event
    */
   uploadMedia(eventId: string, fileType: string, file?: File, externalUrl?: string): Observable<any> {

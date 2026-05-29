@@ -28,6 +28,9 @@ namespace EEP.EventManagement.Api.Application.Mappings
                 .ForMember(dest => dest.CancellationRequestStatus, opt => opt.MapFrom(src => src.CancellationRequestStatus.ToString()))
                 .ForMember(dest => dest.CancellationRequestedBy, opt => opt.MapFrom(src => src.CancellationRequestedByUser))
                 .ForMember(dest => dest.CancellationReviewedBy, opt => opt.MapFrom(src => src.CancellationReviewedByUser))
+                .ForMember(dest => dest.DateChangeRequestStatus, opt => opt.MapFrom(src => src.DateChangeRequestStatus.ToString()))
+                .ForMember(dest => dest.DateChangeRequestedBy, opt => opt.MapFrom(src => src.DateChangeRequestedByUser))
+                .ForMember(dest => dest.DateChangeReviewedBy, opt => opt.MapFrom(src => src.DateChangeReviewedByUser))
                 .ForMember(dest => dest.HasSubmittedAssignments, opt => opt.MapFrom(src => src.Assignments.Any(a => a.Status == AssignmentStatus.Submitted)))
                 .ForMember(dest => dest.Assignments, opt => opt.MapFrom(src => src.Assignments));
 

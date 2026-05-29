@@ -179,6 +179,7 @@ namespace EEP.EventManagement.Api.Controllers
             }
 
             // Admin can edit any event (except Cancelled) in any status
+            if (User.IsInRole("Admin"))
             {
                 var command = new UpdateEventCommand { UpdateEventDto = updateEventDto };
                 await _mediator.Send(command);
@@ -342,6 +343,31 @@ namespace EEP.EventManagement.Api.Controllers
                 Approved = false,
                 ReviewComment = request.Comment
             };
+            var result = await _mediator.Send(command);
+            return Ok(result);
+        }
+
+        [HttpPost("{id}/date-change-request")]
+        public async Task<ActionResult<EventDto>> RequestDateChange(Guid id, [FromBody] RequestEventDateChangeCommand command)
+        {
+            if (id != command.EventId)
+            {
+                return BadRequest(new { message = "ID in route does not match ID in body." });
+            }
+
+            var result = await _mediator.Send(command);
+            return Ok(result);
+        }
+
+        [HttpPost("{id}/date-change-request/review")]
+        [Authorize(Policy = EEP.EventManagement.Api.Infrastructure.Security.Authorization.AuthorizationPolicies.CanApproveAndAssign)]
+        public async Task<ActionResult<EventDto>> ReviewDateChange(Guid id, [FromBody] ReviewEventDateChangeCommand command)
+        {
+            if (id != command.EventId)
+            {
+                return BadRequest(new { message = "ID in route does not match ID in body." });
+            }
+
             var result = await _mediator.Send(command);
             return Ok(result);
         }

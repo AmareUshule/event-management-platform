@@ -197,6 +197,32 @@
                                     </div>
                                 </div>
 
+                                <!-- Date Change Request Display -->
+                                <div class="closure-comment-box info-box" *ngIf="event.dateChangeRequestStatus === 'Pending'">
+                                    <div class="comment-header">
+                                        <mat-icon>event_repeat</mat-icon>
+                                        <span>Date/Location Change Request Pending</span>
+                                    </div>
+                                    <div class="change-details">
+                                        <div class="change-item">
+                                            <span class="label">Proposed Start:</span>
+                                            <span class="value">{{ event.proposedStartDate | date:'medium' }}</span>
+                                        </div>
+                                        <div class="change-item">
+                                            <span class="label">Proposed End:</span>
+                                            <span class="value">{{ event.proposedEndDate | date:'medium' }}</span>
+                                        </div>
+                                        <div class="change-item" *ngIf="event.proposedEventPlace">
+                                            <span class="label">Proposed Place:</span>
+                                            <span class="value">{{ event.proposedEventPlace }}</span>
+                                        </div>
+                                    </div>
+                                    <p class="comment-text">"{{ event.dateChangeReason }}"</p>
+                                    <div class="comment-footer" *ngIf="event.dateChangeRequestedBy">
+                                        — Requested by {{ event.dateChangeRequestedBy?.name }}
+                                    </div>
+                                </div>
+
                                 <div class="closure-comment-box" *ngIf="event.cancellationRequestStatus === 'Rejected'">
                                     <div class="comment-header">
                                         <mat-icon>block</mat-icon>
@@ -524,9 +550,24 @@
                             Reject Cancellation
                         </button>
 
+                        <button class="command-btn primary" *ngIf="canReviewDateChange()" (click)="approveDateChangeRequest()">
+                            <mat-icon>event_available</mat-icon>
+                            Approve Date Change
+                        </button>
+
+                        <button class="command-btn secondary" *ngIf="canReviewDateChange()" (click)="rejectDateChangeRequest()">
+                            <mat-icon>event_busy</mat-icon>
+                            Reject Date Change
+                        </button>
+
                         <button class="command-btn secondary" *ngIf="isDraft() && (authService.isAdmin() || authService.isCommunicationManager() || (authService.isManager() && authService.getDepartmentGuid() === event.department?.id) || (event.createdBy?.id === authService.getCurrentUser()?.adObjectId))" (click)="editEvent()">
                             <mat-icon>edit_note</mat-icon>
                             Edit Event
+                        </button>
+
+                        <button class="command-btn secondary" *ngIf="canEditDateLocation()" (click)="openDateLocationEdit()">
+                            <mat-icon>edit_calendar</mat-icon>
+                            Edit Date/Location
                         </button>
 
                         <button class="command-btn primary" *ngIf="canAssignEmployees()" (click)="assignEmployee()">
