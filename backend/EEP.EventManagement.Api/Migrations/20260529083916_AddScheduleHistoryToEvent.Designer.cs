@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EEP.EventManagement.Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260528140009_AddDateChangeNavigationProperties")]
-    partial class AddDateChangeNavigationProperties
+    [Migration("20260529083916_AddScheduleHistoryToEvent")]
+    partial class AddScheduleHistoryToEvent
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -312,6 +312,9 @@ namespace EEP.EventManagement.Api.Migrations
                     b.Property<Guid>("CreatedBy")
                         .HasColumnType("uuid");
 
+                    b.Property<string>("DateChangeReason")
+                        .HasColumnType("text");
+
                     b.Property<int>("DateChangeRequestStatus")
                         .HasColumnType("integer");
 
@@ -354,6 +357,9 @@ namespace EEP.EventManagement.Api.Migrations
 
                     b.Property<DateTime?>("ProposedStartDate")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ScheduleHistory")
+                        .HasColumnType("text");
 
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("timestamp with time zone");

@@ -472,15 +472,21 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
     }
 
     const user = this.authService.getCurrentUser();
-    const isCommManager = this.authService.isCommunicationManager();
-    const isDeptManager = this.authService.isManager() && user?.departmentGuid === this.event.department?.id;
+    const isAdmin = this.authService.isAdmin();
     const isCreator = this.event.createdBy?.id === user?.adObjectId;
+    const isDeptManager = this.authService.isManager() && user?.departmentGuid === this.event.department?.id;
 
-    return this.authService.isAdmin() || isCommManager || isDeptManager || isCreator;
+    // Admin can always initiate changes (will be direct).
+    // Creator or Dept Manager can initiate changes (will be request if Scheduled).
+    // Communication Manager can only approve (unless they are the Admin or Creator).
+    return isAdmin || isCreator || isDeptManager;
   }
 
   openDateLocationEdit(): void {
     if (!this.event) return;
+
+    const isAdmin = this.authService.isAdmin();
+    const isDraft = this.isDraft();
 
     const dialogRef = this.dialog.open(RequestDateChangeDialogComponent, {
       width: '500px',
@@ -489,13 +495,13 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
         currentStartDate: this.event.startDate,
         currentEndDate: this.event.endDate,
         currentEventPlace: this.event.eventPlace,
-        isDraft: this.isDraft()
+        isDraft: isDraft || isAdmin // Admin treats it as a direct edit even if not Draft
       }
     });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        if (this.isDraft()) {
+        if (isDraft || isAdmin) {
           this.performDirectDateUpdate(result);
         } else {
           this.performRequestDateChange(result);
@@ -508,23 +514,35 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
     if (!this.event?.id) return;
     this.isLoading = true;
     
-    // Convert form data to Partial<EventFormData>
-    const updatePayload: Partial<EventFormData> = {
+    // Map the status correctly for direct updates
+    // If it's already Scheduled/Ongoing, keep that status
+    const currentStatus = this.event.status as EventStatus;
+
+    const updatePayload: any = {
+      id: this.event.id,
+      title: this.event.title,
+      description: this.event.description,
+      startDate: data.proposedStartDate,
+      endDate: data.proposedEndDate,
+      eventPlace: data.proposedEventPlace,
+      status: currentStatus
+    };
+
+    // Need to use the raw HTTP put or update EventService to accept these fields easily
+    this.eventService.updateEvent(this.event.id, {
       startDateTime: data.proposedStartDate,
       endDateTime: data.proposedEndDate,
       address: data.proposedEventPlace,
-      eventType: EventType.PHYSICAL // Default to physical if place is provided
-    };
-
-    this.eventService.updateEvent(this.event.id, updatePayload, EventStatus.DRAFT).subscribe({
+      eventType: EventType.PHYSICAL
+    }, currentStatus).subscribe({
       next: () => {
         this.isLoading = false;
-        this.showSuccess('Event updated successfully');
+        this.showSuccess('Event schedule updated directly');
         this.refreshEventData();
       },
       error: (error) => {
         this.isLoading = false;
-        this.showError(error.message || 'Failed to update event');
+        this.showError(error.message || 'Failed to update event directly');
       }
     });
   }

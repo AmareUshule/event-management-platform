@@ -38,6 +38,7 @@ namespace EEP.EventManagement.Api.Domain.Entities
         public Guid? DateChangeReviewedBy { get; set; }
         public DateTime? DateChangeReviewedAt { get; set; }
         public string? DateChangeReviewComment { get; set; }
+        public string? ScheduleHistory { get; set; }
 
         // Navigation properties
         public Department Department { get; set; } = null!;

@@ -35,6 +35,25 @@ namespace EEP.EventManagement.Api.Application.Features.Events.Handlers
                 throw new NotFoundException(nameof(Event), request.UpdateEventDto.Id);
             }
 
+            // Check if date or location is changing for history tracking
+            bool dateChanged = eventToUpdate.StartDate != request.UpdateEventDto.StartDate || 
+                               eventToUpdate.EndDate != request.UpdateEventDto.EndDate;
+            bool locationChanged = eventToUpdate.EventPlace != request.UpdateEventDto.EventPlace;
+
+            if (dateChanged || locationChanged)
+            {
+                var userName = _userContext.IsInRole("Admin") ? "Administrator" : "Manager";
+                var timestamp = DateTime.UtcNow.ToString("MMM dd, yyyy HH:mm");
+                var historyEntry = $"[{timestamp}] {userName} DIRECTLY UPDATED schedule: ";
+                
+                if (dateChanged) historyEntry += $"Date: {eventToUpdate.StartDate:g} -> {request.UpdateEventDto.StartDate:g}. ";
+                if (locationChanged) historyEntry += $"Location: {eventToUpdate.EventPlace} -> {request.UpdateEventDto.EventPlace}. ";
+
+                eventToUpdate.ScheduleHistory = string.IsNullOrEmpty(eventToUpdate.ScheduleHistory) 
+                    ? historyEntry 
+                    : $"{historyEntry}\n{eventToUpdate.ScheduleHistory}";
+            }
+
             _mapper.Map(request.UpdateEventDto, eventToUpdate);
             
             eventToUpdate.UpdatedAt = DateTime.UtcNow;

@@ -203,6 +203,7 @@ export interface Event {
   dateChangeReviewedBy?: User;
   dateChangeReviewedAt?: string;
   dateChangeReviewComment?: string;
+  scheduleHistory?: string;
 
   hasSubmittedAssignments?: boolean;
 

@@ -171,11 +171,14 @@ export class AuthService {
 
   isCommunicationManager(): boolean {
     const user = this.getCurrentUser();
+    const deptName = user?.departmentName?.toLowerCase() || '';
+    
     // Allow if they have the specific permission claim from backend OR match the hardcoded department ID
     return this.isManager() && (
       user?.permissions?.includes('IsCommunicationManager') || 
       user?.departmentId === DEPARTMENTS.COMMUNICATION ||
-      user?.departmentName === 'Communication'
+      deptName === 'communication' ||
+      deptName.includes('communication')
     );
   }
 

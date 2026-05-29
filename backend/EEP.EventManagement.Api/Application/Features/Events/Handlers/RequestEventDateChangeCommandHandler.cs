@@ -55,7 +55,7 @@ namespace EEP.EventManagement.Api.Application.Features.Events.Handlers
             ev.ProposedStartDate = request.ProposedStartDate;
             ev.ProposedEndDate = request.ProposedEndDate;
             ev.ProposedEventPlace = request.ProposedEventPlace;
-            ev.DateChangeReviewComment = request.Reason; // Re-using comment for initial reason
+            ev.DateChangeReason = request.Reason;
             ev.DateChangeRequestStatus = DateChangeRequestStatus.Pending;
             ev.DateChangeRequestedBy = _userContext.GetUserId();
             ev.DateChangeRequestedAt = DateTime.UtcNow;

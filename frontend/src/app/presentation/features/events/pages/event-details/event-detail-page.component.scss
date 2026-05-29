@@ -1075,6 +1075,66 @@
   }
 }
 
+// History Box
+.history-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-left: 4px solid #94a3b8 !important;
+
+  .comment-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 800;
+    color: #64748b;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 16px;
+
+    mat-icon { color: #94a3b8; font-size: 18px; width: 18px; height: 18px; }
+  }
+
+  .history-entries {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+
+    .history-entry {
+      display: flex;
+      gap: 12px;
+      position: relative;
+
+      .entry-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #cbd5e1;
+        margin-top: 6px;
+        flex-shrink: 0;
+      }
+
+      .entry-text {
+        margin: 0;
+        font-size: 14px;
+        color: #475569;
+        line-height: 1.5;
+        font-weight: 500;
+      }
+
+      &:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        left: 3.5px;
+        top: 14px;
+        bottom: -12px;
+        width: 1px;
+        background: #e2e8f0;
+      }
+    }
+  }
+}
+
 // Hero Section Cancelled State
 .hero-section.cancelled {
   .hero-overlay { background: linear-gradient(180deg, transparent 0%, rgba(153, 27, 27, 0.8) 100%); }

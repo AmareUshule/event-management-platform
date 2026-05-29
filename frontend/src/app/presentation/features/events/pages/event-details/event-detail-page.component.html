@@ -276,6 +276,20 @@
                                 </div>
                             </div>
 
+                            <!-- Schedule Change History -->
+                            <div class="intelligence-brief history-box" *ngIf="event.scheduleHistory">
+                                <div class="comment-header">
+                                    <mat-icon>history</mat-icon>
+                                    <span>Schedule Change History</span>
+                                </div>
+                                <div class="history-entries">
+                                    <div class="history-entry" *ngFor="let entry of event.scheduleHistory.split('\n')">
+                                        <div class="entry-dot"></div>
+                                        <p class="entry-text">{{ entry }}</p>
+                                    </div>
+                                </div>
+                            </div>
+
                             <!-- Description -->
                             <div class="intelligence-brief">
                                 <h3>Event Description</h3>

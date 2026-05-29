@@ -9,6 +9,7 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { provideNativeDateAdapter } from '@angular/material/core';
 
 export interface RequestDateChangeDialogData {
   eventTitle: string;
@@ -32,6 +33,7 @@ export interface RequestDateChangeDialogData {
     MatNativeDateModule,
     MatIconModule,
   ],
+  providers: [provideNativeDateAdapter()],
   template: `
     <h2 mat-dialog-title>{{ data.isDraft ? 'Edit Date/Location' : 'Request Date/Location Change' }}</h2>
     <mat-dialog-content [formGroup]="form">
@@ -50,7 +52,7 @@ export interface RequestDateChangeDialogData {
 
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Proposed Start Date & Time</mat-label>
-        <input matInput [matDatepicker]="startDatePicker" formControlName="proposedStartDate" readonly (click)="startDatePicker.open()">
+        <input matInput [matDatepicker]="startDatePicker" formControlName="proposedStartDate">
         <mat-datepicker-toggle matSuffix [for]="startDatePicker"></mat-datepicker-toggle>
         <mat-datepicker #startDatePicker></mat-datepicker>
         <mat-error *ngIf="form.get('proposedStartDate')?.hasError('required')">Start Date is required</mat-error>
@@ -58,7 +60,7 @@ export interface RequestDateChangeDialogData {
 
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Proposed End Date & Time</mat-label>
-        <input matInput [matDatepicker]="endDatePicker" formControlName="proposedEndDate" readonly (click)="endDatePicker.open()">
+        <input matInput [matDatepicker]="endDatePicker" formControlName="proposedEndDate">
         <mat-datepicker-toggle matSuffix [for]="endDatePicker"></mat-datepicker-toggle>
         <mat-datepicker #endDatePicker></mat-datepicker>
         <mat-error *ngIf="form.get('proposedEndDate')?.hasError('required')">End Date is required</mat-error>

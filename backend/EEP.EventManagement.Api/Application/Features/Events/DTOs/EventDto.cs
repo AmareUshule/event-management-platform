@@ -40,6 +40,7 @@ namespace EEP.EventManagement.Api.Application.Features.Events.DTOs
         public SimplifiedUserDto? DateChangeReviewedBy { get; set; }
         public DateTime? DateChangeReviewedAt { get; set; }
         public string? DateChangeReviewComment { get; set; }
+        public string? ScheduleHistory { get; set; }
         public bool HasSubmittedAssignments { get; set; }
         public GroupedAssignmentsDto? Assignments { get; set; }
     }
