@@ -14,7 +14,11 @@
       ],
       "options": {
         "outputPath": "dist/event-management-platform",
+        "index": "src/index.html",
         "browser": "./src/main.ts",
+        "polyfills": [
+          "zone.js"
+        ],
         "tsConfig": "tsconfig.app.json",
         "inlineStyleLanguage": "scss",
         "assets": [
@@ -35,8 +39,7 @@
         "server": "src/main.server.ts",
         "ssr": {
           "entry": "src/server.ts"
-        },
-        "outputMode": "server"
+        }
       },
       "configurations": {
         "production": {

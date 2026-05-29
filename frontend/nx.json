@@ -3,11 +3,7 @@
   "defaultBase": "master",
   "namedInputs": {
     "default": ["{projectRoot}/**/*", "sharedGlobals"],
-    "production": [
-      "default",
-      "!{projectRoot}/.eslintrc.json",
-      "!{projectRoot}/eslint.config.mjs"
-    ],
+    "production": ["default", "!{projectRoot}/.eslintrc.json", "!{projectRoot}/eslint.config.mjs"],
     "sharedGlobals": []
   },
   "targetDefaults": {
@@ -52,5 +48,6 @@
       "unitTestRunner": "vitest-angular"
     }
   },
-  "defaultProject": "event-management-platform"
+  "defaultProject": "event-management-platform",
+  "analytics": true
 }
