@@ -338,8 +338,8 @@
       <!-- Batch Intelligence Actions -->
       <div class="batch-actions" *ngIf="selectedEvents().length > 0">
         <span class="selection-count">{{ selectedEvents().length }} units selected</span>
-        <button class="batch-btn" (click)="batchArchive()" mat-stroked-button>
-          <mat-icon>inventory_2</mat-icon>
+        <button class="batch-btn" (click)="batchFinalize()" mat-stroked-button>
+          <mat-icon>task_alt</mat-icon>
           Finalize
         </button>
         <button class="batch-btn" (click)="batchExport()" mat-stroked-button>

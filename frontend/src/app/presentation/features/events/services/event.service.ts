@@ -188,7 +188,7 @@ export class EventService {
   }
 
   /**
-   * Get all events with rich filters for discovery/archive
+   * Get all events with rich filters for discovery/finalized
    */
   getAllEvents(filters?: { 
     departmentId?: string; 

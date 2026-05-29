@@ -558,6 +558,13 @@ export class EventDiscoveryComponent implements OnInit {
   }
 
   // Batch operations
+  batchFinalize(): void {
+    const selectedIds = this.selectedEvents();
+    console.log('Batch finalizing events:', selectedIds);
+    // TODO: Implement batch finalize logic (e.g. open a dialog for collective closure)
+    this.clearSelection();
+  }
+
   batchExport(): void {
     const selectedEvents = this.events().filter(e => this.selectedEvents().includes(e.id || ''));
     console.log('Exporting events:', selectedEvents);
