@@ -258,11 +258,11 @@ namespace EEP.EventManagement.Api.Controllers
             return Ok(result);
         }
 
-        [HttpPost("{id}/archive")]
+        [HttpPost("{id}/finalize")]
         [Authorize(Policy = EEP.EventManagement.Api.Infrastructure.Security.Authorization.AuthorizationPolicies.CanApproveAndAssign)]
-        public async Task<ActionResult<EventDto>> ArchiveEvent(Guid id, [FromBody] ClosureCommentRequest request)
+        public async Task<ActionResult<EventDto>> FinalizeEvent(Guid id, [FromBody] ClosureCommentRequest request)
         {
-            var command = new ArchiveEventCommand { EventId = id, ClosureComment = request.Comment, AllowOverride = request.AllowOverride };
+            var command = new FinalizeEventCommand { EventId = id, ClosureComment = request.Comment, AllowOverride = request.AllowOverride };
             var result = await _mediator.Send(command);
             return Ok(result);
         }

@@ -70,7 +70,6 @@ namespace EEP.EventManagement.Api.Application.Features.Reports.Handlers
                     CompletedCount = visibleEvents.Count(e => e.Status == EventStatus.Completed),
                     CoveredCount = visibleEvents.Count(e => e.Status == EventStatus.Covered),
                     UncoveredCount = visibleEvents.Count(e => e.Status == EventStatus.Uncovered),
-                    ArchivedCount = 0,
                     CancelledCount = visibleEvents.Count(e => e.Status == EventStatus.Cancelled),
                     PendingApprovalsCount = visibleEvents.Count(e => e.Status == EventStatus.Draft)
                 };
@@ -89,7 +88,6 @@ namespace EEP.EventManagement.Api.Application.Features.Reports.Handlers
                     CompletedCount = assignedEvents.Count(e => e.Status == EventStatus.Completed),
                     CoveredCount = assignedEvents.Count(e => e.Status == EventStatus.Covered),
                     UncoveredCount = assignedEvents.Count(e => e.Status == EventStatus.Uncovered),
-                    ArchivedCount = 0,
                     PendingAssignmentsCount = assignedEvents.Sum(e => e.Assignments.Count(a => a.EmployeeId == userId && a.Status == AssignmentStatus.Pending))
                 };
             }

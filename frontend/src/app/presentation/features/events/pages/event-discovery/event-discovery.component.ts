@@ -427,7 +427,8 @@ export class EventDiscoveryComponent implements OnInit {
       [EventStatus.ONGOING]: '#3B82F6',
       [EventStatus.COMPLETED]: '#1E590C',
       [EventStatus.CANCELLED]: '#DD1407',
-      [EventStatus.ARCHIVED]: '#6B7280'
+      [EventStatus.COVERED]: '#1E590C',
+      [EventStatus.UNCOVERED]: '#DD1407'
     };
     return colors[status] || '#64748B';
   }
@@ -550,12 +551,6 @@ export class EventDiscoveryComponent implements OnInit {
     });
   }
 
-  archiveEvent(event: Event): void {
-    // Implementation for archiving event
-    console.log('Archiving event:', event.title);
-    // TODO: Implement archive functionality
-  }
-
   manageResources(event: Event): void {
     // Implementation for managing event resources
     console.log('Managing resources for:', event.title);
@@ -563,13 +558,6 @@ export class EventDiscoveryComponent implements OnInit {
   }
 
   // Batch operations
-  batchArchive(): void {
-    const selectedIds = this.selectedEvents();
-    console.log('Batch archiving events:', selectedIds);
-    // TODO: Implement batch archive
-    this.clearSelection();
-  }
-
   batchExport(): void {
     const selectedEvents = this.events().filter(e => this.selectedEvents().includes(e.id || ''));
     console.log('Exporting events:', selectedEvents);

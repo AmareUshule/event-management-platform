@@ -297,7 +297,6 @@
                         </div>
                         <div class="event-status-badge"
                           [class.scheduled]="element.status === 'Scheduled' || element.status === 'Ongoing' || element.status === 'Completed' || element.status === 'Covered'"
-                          [class.archived]="element.status === 'Archived'" 
                           [class.draft]="element.status === 'Draft'"
                           [class.cancelled]="element.status === 'Cancelled' || element.status === 'Uncovered'">
                           {{ element.status === 'Draft' ? 'Pending Approval' : (element.status | titlecase) }}
@@ -345,7 +344,7 @@
                         (click)="viewEvent(element)">
                         <mat-icon>visibility</mat-icon>
                       </button>
-                      <!-- Edit Button - Only for non-completed/archived events -->
+                      <!-- Edit Button - Only for non-completed/finalized events -->
                       <button class="icon-btn edit" *ngIf="canEditEvent(element)" (click)="editEvent(element)"
                         matTooltip="Edit Event">
                         <mat-icon>edit</mat-icon>
@@ -492,32 +491,31 @@
               <span class="queue-count-badge" *ngIf="managerActionQueueCount > 0">{{ managerActionQueueCount }}</span>
             </div>
             <div class="sidebar-content">
-              <div class="empty-state accomplished" *ngIf="managerActionQueue.length === 0">
-                <mat-icon>task_alt</mat-icon>
-                <div>
-                  <div class="empty-title">Mission Accomplished!</div>
-                  <div class="empty-subtitle">{{ authService.isCommunicationManager() ? 'All approved events have been archived.' : 'All staff coverage has been verified.' }}</div>
-                </div>
-              </div>
-
-              <div class="list" *ngIf="managerActionQueue.length > 0">
-                <div class="list-item verification-event" *ngFor="let event of managerActionQueue | slice:0:5">
-                  <div class="list-item-main">
-                    <div class="list-item-title">{{ event.title }}</div>
-                    <div class="list-item-meta">
-                      <mat-icon>pending_actions</mat-icon>
-                      <span>{{ authService.isCommunicationManager() ? 'Ready to archive' : (getSubmittedAssignmentCount(event) + ' submitted') }}</span>
-                    </div>
-                  </div>
-                  <div class="list-item-right">
-                    <button class="pill review-pill" (click)="quickReview(event)">
-                      <mat-icon>rate_review</mat-icon>
-                      <span>{{ authService.isCommunicationManager() ? 'Archive' : 'Quick Review' }}</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
+                                <div class="empty-state accomplished" *ngIf="managerActionQueue.length === 0">
+                              <mat-icon>task_alt</mat-icon>
+                              <div>
+                                <div class="empty-title">Mission Accomplished!</div>
+                                <div class="empty-subtitle">{{ authService.isCommunicationManager() ? 'All approved events have been finalized.' : 'All staff coverage has been verified.' }}</div>
+                              </div>
+                            </div>
+              
+                            <div class="list" *ngIf="managerActionQueue.length > 0">
+                              <div class="list-item verification-event" *ngFor="let event of managerActionQueue | slice:0:5">
+                                <div class="list-item-main">
+                                  <div class="list-item-title">{{ event.title }}</div>
+                                  <div class="list-item-meta">
+                                    <mat-icon>pending_actions</mat-icon>
+                                    <span>{{ authService.isCommunicationManager() ? 'Ready to finalize' : (getSubmittedAssignmentCount(event) + ' submitted') }}</span>
+                                  </div>
+                                </div>
+                                <div class="list-item-right">
+                                  <button class="pill review-pill" (click)="quickReview(event)">
+                                    <mat-icon>rate_review</mat-icon>
+                                    <span>{{ authService.isCommunicationManager() ? 'Finalize' : 'Quick Review' }}</span>
+                                  </button>
+                                </div>
+                              </div>
+                            </div>            </div>
           </div>
 
           <!-- Staff Action Center (Moved to Sidebar) -->

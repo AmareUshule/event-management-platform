@@ -225,13 +225,13 @@ export class StaffWorkloadComponent implements OnInit {
       case 'Scheduled':
       case 'Ongoing':
       case 'Completed':
+      case 'Covered':
         return 'status-published';
       case 'Draft':
         return 'status-draft';
-      case 'Archived':
-        return 'status-archived';
       case 'Cancelled':
       case 'Rejected':
+      case 'Uncovered':
         return 'status-rejected';
       default:
         return status.toLowerCase();

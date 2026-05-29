@@ -63,7 +63,8 @@ namespace EEP.EventManagement.Api.Controllers
             csv.AppendLine($"Scheduled,{result.ScheduledCount}");
             csv.AppendLine($"Ongoing,{result.OngoingCount}");
             csv.AppendLine($"Completed,{result.CompletedCount}");
-            csv.AppendLine($"Archived,{result.ArchivedCount}");
+            csv.AppendLine($"Covered,{result.CoveredCount}");
+            csv.AppendLine($"Uncovered,{result.UncoveredCount}");
             csv.AppendLine($"Cancelled,{result.CancelledCount}");
             csv.AppendLine($"Pending Approvals,{result.PendingApprovalsCount}");
 

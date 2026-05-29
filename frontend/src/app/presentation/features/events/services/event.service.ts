@@ -514,11 +514,11 @@ assignMultipleEmployees(eventId: string, assignments: AssignmentPayload[]): Obse
   }
 
   /**
-   * Archive event
+   * Finalize event
    */
-  archiveEvent(eventId: string, closureComment: string, allowOverride: boolean = false): Observable<Event> {
+  finalizeEvent(eventId: string, closureComment: string, allowOverride: boolean = false): Observable<Event> {
     return this.http.post<Event>(
-      `${this.API_URL}/${eventId}/archive`,
+      `${this.API_URL}/${eventId}/finalize`,
       { eventId, closureComment, allowOverride },
       {
         headers: this.getHeaders(),
