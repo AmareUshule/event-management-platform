@@ -175,7 +175,7 @@
                                          [class.completed]="isConcluded() || event.status === 'Cancelled' || event.status === 'Covered' || event.status === 'Uncovered'"
                                          [class.cancelled-node]="event.status === 'Cancelled' || event.status === 'Uncovered'">
                                         <div class="node-icon">
-                                            <mat-icon>{{ event.status === 'Cancelled' || event.status === 'Uncovered' ? 'cancel' : 'inventory_2' }}</mat-icon>
+                                            <mat-icon>{{ event.status === 'Cancelled' || event.status === 'Uncovered' ? 'cancel' : 'task_alt' }}</mat-icon>
                                         </div>
                                         <div class="node-content">
                                             <span class="node-label">{{ event.status === 'Cancelled' ? 'Cancelled' : (event.status === 'Uncovered' ? 'Uncovered' : (event.status === 'Covered' ? 'Covered' : 'Concluded')) }}</span>
@@ -594,9 +594,9 @@
                             Sync to Calendar
                         </button>
 
-                        <button class="command-btn warn" *ngIf="canArchive()" (click)="archiveEvent()">
-                            <mat-icon>archive</mat-icon>
-                            Archive Event
+                        <button class="command-btn primary" *ngIf="canFinalize()" (click)="finalizeEvent()">
+                            <mat-icon>task_alt</mat-icon>
+                            Finalize Event
                         </button>
                     </div>
                 </div>

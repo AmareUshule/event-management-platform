@@ -98,7 +98,7 @@
         </button>
         <button
           class="quick-filter-pill"
-          *ngFor="let category of ['Project Launch', 'Workshop']"
+          *ngFor="let category of ['Project Launch', 'Workshop / Training']"
           (click)="quickFilterByCategory(category)"
           [class.active]="activeFilters().category.includes(category)"
         >
@@ -142,13 +142,6 @@
         <div class="filter-chip" *ngFor="let loc of activeFilters().location">
           <span>{{ loc }}</span>
           <button type="button" aria-label="Remove location filter" (click)="removeFilter('location', loc)">
-            <mat-icon>close</mat-icon>
-          </button>
-        </div>
-
-        <div class="filter-chip priority-chip" *ngFor="let pri of activeFilters().priority" [ngClass]="pri.toLowerCase()">
-          <span>{{ pri }}</span>
-          <button type="button" aria-label="Remove priority filter" (click)="removeFilter('priority', pri)">
             <mat-icon>close</mat-icon>
           </button>
         </div>
@@ -342,8 +335,8 @@
       <!-- Batch Intelligence Actions -->
       <div class="batch-actions" *ngIf="selectedEvents().length > 0">
         <span class="selection-count">{{ selectedEvents().length }} units selected</span>
-        <button class="batch-btn" (click)="batchArchive()" mat-stroked-button>
-          <mat-icon>inventory_2</mat-icon>
+        <button class="batch-btn" (click)="batchFinalize()" mat-stroked-button>
+          <mat-icon>task_alt</mat-icon>
           Finalize
         </button>
         <button class="batch-btn" (click)="batchExport()" mat-stroked-button>

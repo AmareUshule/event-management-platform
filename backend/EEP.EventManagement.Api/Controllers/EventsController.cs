@@ -38,7 +38,13 @@ namespace EEP.EventManagement.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<EventDto>>> GetAllEvents([FromQuery] EventStatus? status)
+        public async Task<ActionResult<List<EventDto>>> GetAllEvents(
+            [FromQuery] EventStatus? status,
+            [FromQuery] string? searchTerm,
+            [FromQuery] string? category,
+            [FromQuery] Guid? departmentId,
+            [FromQuery] DateTime? startDate,
+            [FromQuery] DateTime? endDate)
         {
             var roles = _userContext.GetRoles();
             var currentUserId = _userContext.GetUserId();
@@ -48,32 +54,39 @@ namespace EEP.EventManagement.Api.Controllers
                 null,
                 Infrastructure.Security.Authorization.AuthorizationPolicies.IsCommunicationManager)).Succeeded;
 
-            var allEvents = await _mediator.Send(new GetAllEventsQuery { Status = status });
+            // Admin and Communication Manager can include Drafts in their results
+            bool includeDrafts = roles.Contains("Admin") || isCommManager;
 
-            // Admin and Communication Manager can see everything
+            var query = new GetAllEventsQuery 
+            { 
+                Status = status,
+                SearchTerm = searchTerm,
+                Category = category,
+                DepartmentId = departmentId,
+                StartDate = startDate,
+                EndDate = endDate,
+                IncludeDrafts = includeDrafts
+            };
+
+            var allEvents = await _mediator.Send(query);
+
+            // If Admin or Comm Manager, return the full list (handler already respects includeDrafts)
             if (roles.Contains("Admin") || isCommManager)
             {
                 return Ok(allEvents);
             }
 
-            // Filter for other roles
-            var visibleEvents = allEvents.Where(e =>
+            // For other users, we already excluded Drafts at the handler level if includeDrafts is false.
+            // But we still need to allow them to see their OWN Drafts if they are creators.
+            if (!includeDrafts)
             {
-                // Core Department Scoping for Managers
-                // Non-Communication Managers only see events from their own department
-                if (roles.Contains("Manager") && !isCommManager)
-                {
-                    if (e.Department == null || e.Department.Id != currentUserDeptId)
-                    {
-                        // Exception: If they are assigned as staff, let them see it
-                        if (e.Assignments == null || 
-                            (!e.Assignments.Cameraman.Any(a => a.EmployeeId == currentUserId) && 
-                             !e.Assignments.Expert.Any(a => a.EmployeeId == currentUserId)))
-                        {
-                            return false;
-                        }
-                    }
-                }
+                // Fetch creators' own drafts and merge
+                var ownDraftsQuery = new GetAllEventsQuery { Status = EventStatus.Draft, IncludeDrafts = true };
+                var allDrafts = await _mediator.Send(ownDraftsQuery);
+                var ownDrafts = allDrafts.Where(e => e.CreatedBy != null && e.CreatedBy.Id == currentUserId).ToList();
+                
+                allEvents.AddRange(ownDrafts);
+            }
 
                 // Anyone can see Scheduled, Ongoing, Completed, Covered, or Uncovered in their scope
                 if (e.Status == EventStatus.Scheduled.ToString() || e.Status == EventStatus.Ongoing.ToString() || 
@@ -318,11 +331,11 @@ namespace EEP.EventManagement.Api.Controllers
             return Ok(result);
         }
 
-        [HttpPost("{id}/archive")]
+        [HttpPost("{id}/finalize")]
         [Authorize(Policy = EEP.EventManagement.Api.Infrastructure.Security.Authorization.AuthorizationPolicies.CanApproveAndAssign)]
-        public async Task<ActionResult<EventDto>> ArchiveEvent(Guid id, [FromBody] ClosureCommentRequest request)
+        public async Task<ActionResult<EventDto>> FinalizeEvent(Guid id, [FromBody] ClosureCommentRequest request)
         {
-            var command = new ArchiveEventCommand { EventId = id, ClosureComment = request.Comment, AllowOverride = request.AllowOverride };
+            var command = new FinalizeEventCommand { EventId = id, ClosureComment = request.Comment, AllowOverride = request.AllowOverride };
             var result = await _mediator.Send(command);
             return Ok(result);
         }

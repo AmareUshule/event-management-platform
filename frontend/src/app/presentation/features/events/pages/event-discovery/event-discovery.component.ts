@@ -159,18 +159,14 @@ export class EventDiscoveryComponent implements OnInit {
     department: string[];
     organizer: string[];
     location: string[];
-    priority: string[];
     dateRange: { start: Date | null, end: Date | null };
-    tags: string[];
   }>({
     category: [],
     status: [],
     department: [],
     organizer: [],
     location: [],
-    priority: [],
-    dateRange: { start: null, end: null },
-    tags: []
+    dateRange: { start: null, end: null }
   });
 
   showAdvancedFilters = signal<boolean>(false);
@@ -275,22 +271,25 @@ export class EventDiscoveryComponent implements OnInit {
   hasActiveFilters = computed(() => {
     const f = this.activeFilters();
     return f.category.length > 0 || f.status.length > 0 || f.department.length > 0 ||
-      f.organizer.length > 0 || f.location.length > 0 || f.priority.length > 0 ||
-      f.tags.length > 0 || !!f.dateRange.start || !!f.dateRange.end;
+      f.organizer.length > 0 || f.location.length > 0 || !!f.dateRange.start || !!f.dateRange.end;
   });
 
   activeFilterCount = computed(() => {
     const f = this.activeFilters();
     return f.category.length + f.status.length + f.department.length +
-      f.organizer.length + f.location.length + f.priority.length + f.tags.length +
+      f.organizer.length + f.location.length +
       (f.dateRange.start ? 1 : 0) + (f.dateRange.end ? 1 : 0);
   });
 
   categories = [
-    'Project Launch', 'Workshop / Training', 'Media Visit',
-    'Inspection', 'Team Building',
-    'Conference', 'Networking Event', 'Product Demo',
-    'Client Meeting', 'Training Session', 'All Hands'
+    'Project Launch', 
+    'Workshop / Training', 
+    'Media Visit',
+    'Inspection', 
+    'Board Meeting',
+    'Team Building',
+    'Conference', 
+    'Networking Event'
   ];
 
   // Original statuses array - used as a source
@@ -301,8 +300,7 @@ export class EventDiscoveryComponent implements OnInit {
 
   departments: string[] = [];
 
-  priorities = ['High', 'Medium', 'Low'];
-  locations = ['Main Office', 'Conference Room A', 'Conference Room B', 'Auditorium', 'Virtual'];
+  locations = ['Headquarters', 'Field Site', 'Regional Office', 'Virtual/Online'];
 
   ngOnInit(): void {
     this.loadDepartments();
@@ -466,9 +464,7 @@ export class EventDiscoveryComponent implements OnInit {
       department: [],
       organizer: [],
       location: [],
-      priority: [],
-      dateRange: { start: null, end: null },
-      tags: []
+      dateRange: { start: null, end: null }
     });
     this.searchControl.setValue('');
     this.searchTerm.set('');
@@ -619,12 +615,6 @@ export class EventDiscoveryComponent implements OnInit {
     });
   }
 
-  archiveEvent(event: Event): void {
-    // Implementation for archiving event
-    console.log('Archiving event:', event.title);
-    // TODO: Implement archive functionality
-  }
-
   manageResources(event: Event): void {
     // Implementation for managing event resources
     console.log('Managing resources for:', event.title);
@@ -632,10 +622,10 @@ export class EventDiscoveryComponent implements OnInit {
   }
 
   // Batch operations
-  batchArchive(): void {
+  batchFinalize(): void {
     const selectedIds = this.selectedEvents();
-    console.log('Batch archiving events:', selectedIds);
-    // TODO: Implement batch archive
+    console.log('Batch finalizing events:', selectedIds);
+    // TODO: Implement batch finalize logic (e.g. open a dialog for collective closure)
     this.clearSelection();
   }
 

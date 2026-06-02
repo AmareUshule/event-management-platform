@@ -402,7 +402,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         description: 'Open drafts awaiting review'
       },
       {
-        label: this.authService.isCommunicationManager() ? 'Archive Pending' : 'Verify Coverage',
+        label: this.authService.isCommunicationManager() ? 'Finalize Pending' : 'Verify Coverage',
         icon: 'rate_review',
         visible: this.isManagerView(),
         click: () => this.onStatCardClick('verification'),
@@ -428,7 +428,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   get heroSubText(): string {
     if (this.isManagerView() && this.managerActionQueueCount > 0) {
       if (this.authService.isCommunicationManager()) {
-        return 'Archive completed events after manager coverage approval is in place.';
+        return 'Finalize completed events after manager coverage approval is in place.';
       }
 
       return 'Review submitted staff coverage while the work is still fresh.';

@@ -193,16 +193,29 @@ export class EventService {
   }
 
   /**
-   * Get all events with optional filters
+   * Get all events with rich filters for discovery/finalized
    */
-  getAllEvents(filters?: { departmentId?: string; status?: string }): Observable<Event[]> {
+  getAllEvents(filters?: { 
+    departmentId?: string; 
+    status?: string;
+    searchTerm?: string;
+    category?: string;
+    startDate?: string;
+    endDate?: string;
+  }): Observable<Event[]> {
     let url = this.API_URL;
     
     if (filters) {
       const params = new URLSearchParams();
       if (filters.departmentId) params.set('departmentId', filters.departmentId);
       if (filters.status) params.set('status', filters.status);
-      url += `?${params.toString()}`;
+      if (filters.searchTerm) params.set('searchTerm', filters.searchTerm);
+      if (filters.category) params.set('category', filters.category);
+      if (filters.startDate) params.set('startDate', filters.startDate);
+      if (filters.endDate) params.set('endDate', filters.endDate);
+      
+      const queryString = params.toString();
+      if (queryString) url += `?${queryString}`;
     }
     
     return this.http.get<Event[]>(url, { 
@@ -550,11 +563,11 @@ assignMultipleEmployees(eventId: string, assignments: AssignmentPayload[]): Obse
   }
 
   /**
-   * Archive event
+   * Finalize event
    */
-  archiveEvent(eventId: string, closureComment: string, allowOverride: boolean = false): Observable<Event> {
+  finalizeEvent(eventId: string, closureComment: string, allowOverride: boolean = false): Observable<Event> {
     return this.http.post<Event>(
-      `${this.API_URL}/${eventId}/archive`,
+      `${this.API_URL}/${eventId}/finalize`,
       { eventId, closureComment, allowOverride },
       {
         headers: this.getHeaders(),

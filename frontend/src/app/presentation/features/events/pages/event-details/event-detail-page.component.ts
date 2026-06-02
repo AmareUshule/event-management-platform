@@ -212,13 +212,13 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
     });
   }
 
-  archiveEvent(): void {
+  finalizeEvent(): void {
     if (!this.event?.id) return;
     
     const eventId = this.event.id;
-    const comment = prompt('Enter final archive comment (mandatory):');
+    const comment = prompt('Enter final closure comment (mandatory):');
     if (!comment || comment.trim() === '') {
-      this.showError('Archive comment is required');
+      this.showError('Closure comment is required');
       return;
     }
 
@@ -243,7 +243,7 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
     }
 
     this.isLoading = true;
-    this.eventService.archiveEvent(eventId, comment, allowOverride).subscribe({
+    this.eventService.finalizeEvent(eventId, comment, allowOverride).subscribe({
       next: (updatedEvent) => {
         this.isLoading = false;
         this.event = updatedEvent;
@@ -622,7 +622,7 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
     return this.authService.isAdmin() || this.authService.isCommunicationManager();
   }
 
-  canArchive(): boolean {
+  canFinalize(): boolean {
     if (!this.event || this.event.status !== EventStatus.COMPLETED) return false;
     return this.authService.isAdmin() || this.authService.isCommunicationManager();
   }

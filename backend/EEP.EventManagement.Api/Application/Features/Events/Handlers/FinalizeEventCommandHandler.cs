@@ -11,20 +11,20 @@ using System.Threading.Tasks;
 
 namespace EEP.EventManagement.Api.Application.Features.Events.Handlers
 {
-    public class ArchiveEventCommandHandler : IRequestHandler<ArchiveEventCommand, EventDto>
+    public class FinalizeEventCommandHandler : IRequestHandler<FinalizeEventCommand, EventDto>
     {
         private readonly IEventRepository _eventRepository;
         private readonly IMapper _mapper;
         private readonly EEP.EventManagement.Api.Infrastructure.Security.Claims.IUserContext _userContext;
 
-        public ArchiveEventCommandHandler(IEventRepository eventRepository, IMapper mapper, EEP.EventManagement.Api.Infrastructure.Security.Claims.IUserContext userContext)
+        public FinalizeEventCommandHandler(IEventRepository eventRepository, IMapper mapper, EEP.EventManagement.Api.Infrastructure.Security.Claims.IUserContext userContext)
         {
             _eventRepository = eventRepository;
             _mapper = mapper;
             _userContext = userContext;
         }
 
-        public async Task<EventDto> Handle(ArchiveEventCommand request, CancellationToken cancellationToken)
+        public async Task<EventDto> Handle(FinalizeEventCommand request, CancellationToken cancellationToken)
         {
             var ev = await _eventRepository.GetByIdAsync(request.EventId);
             if (ev == null)
