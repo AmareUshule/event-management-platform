@@ -55,7 +55,7 @@ namespace EEP.EventManagement.Api.Application.Features.Events.Handlers
 
             if (request.Approved)
             {
-                if (ev.Status == EventStatus.Archived || ev.Status == EventStatus.Completed || ev.Status == EventStatus.Cancelled)
+                if (ev.Status == EventStatus.Completed || ev.Status == EventStatus.Cancelled)
                 {
                     throw new BadRequestException($"Events in {ev.Status} status cannot be cancelled.");
                 }

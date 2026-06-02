@@ -12,7 +12,7 @@ export interface ReportSummary {
   completedCount: number;
   coveredCount: number;
   uncoveredCount: number;
-  archivedCount: number;
+  concludedCount: number;
   cancelledCount: number;
   pendingApprovalsCount: number;
   assignedEventsCount: number;

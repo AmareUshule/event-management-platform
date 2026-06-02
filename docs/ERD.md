@@ -41,7 +41,7 @@
 | event_place    | varchar    | NULL                                                                                |
 | start_date    | TIMESTAMP    | NOT NULL                                                                                     |
 | end_date      | TIMESTAMP    | NOT NULL                                                                                     |
-| status        | VARCHAR(20)  | NOT NULL (`Draft`, `Scheduled`, `Ongoing`, `Completed`, `Archived`, `Cancelled`) |
+| status        | VARCHAR(20)  | NOT NULL (`Draft`, `Scheduled`, `Ongoing`, `Completed`, `Covered/Uncovered`, `Cancelled`) |
 | created_by    | INT          | FK → Users(user_id), NOT NULL                                                                |
 | approved_by   | INT          | FK → Users(user_id), NULL                                                                    |
 | created_at    | TIMESTAMP    | DEFAULT now()                                                                                |

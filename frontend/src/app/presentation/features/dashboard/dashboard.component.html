@@ -297,7 +297,7 @@
                         </div>
                         <div class="event-status-badge"
                           [class.scheduled]="element.status === 'Scheduled' || element.status === 'Ongoing' || element.status === 'Completed' || element.status === 'Covered'"
-                          [class.archived]="element.status === 'Archived'" 
+                          [class.concluded]="element.status === 'Concluded'" 
                           [class.draft]="element.status === 'Draft'"
                           [class.cancelled]="element.status === 'Cancelled' || element.status === 'Uncovered'">
                           {{ element.status === 'Draft' ? 'Pending Approval' : (element.status | titlecase) }}
@@ -345,7 +345,7 @@
                         (click)="viewEvent(element)">
                         <mat-icon>visibility</mat-icon>
                       </button>
-                      <!-- Edit Button - Only for non-completed/archived events -->
+                      <!-- Edit Button - Only for non-completed/concluded events -->
                       <button class="icon-btn edit" *ngIf="canEditEvent(element)" (click)="editEvent(element)"
                         matTooltip="Edit Event">
                         <mat-icon>edit</mat-icon>
@@ -496,7 +496,7 @@
                 <mat-icon>task_alt</mat-icon>
                 <div>
                   <div class="empty-title">Mission Accomplished!</div>
-                  <div class="empty-subtitle">{{ authService.isCommunicationManager() ? 'All approved events have been archived.' : 'All staff coverage has been verified.' }}</div>
+                  <div class="empty-subtitle">{{ authService.isCommunicationManager() ? 'All approved events have been concluded.' : 'All staff coverage has been verified.' }}</div>
                 </div>
               </div>
 

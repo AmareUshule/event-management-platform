@@ -380,7 +380,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return [
       { label: 'Ongoing events', value: this.ongoingEvents, description: 'Active now' },
       { label: 'Upcoming', value: this.upcomingEventsCount, description: 'Within 7 days' },
-      { label: 'Past events', value: this.pastEventsCount, description: 'Completed or archived' },
+      { label: 'Past events', value: this.pastEventsCount, description: 'Completed or concluded' },
       { label: 'Announcements', value: this.latestAnnouncements.length, description: 'Recent updates' }
     ];
   }
@@ -1063,7 +1063,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     if (this.canEditEvent(event)) {
       this.router.navigate(['/events/edit', event.id]);
     } else {
-      this.showError('You cannot edit completed or archived events');
+      this.showError('You cannot edit completed or concluded events');
     }
   }
 
@@ -1126,8 +1126,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
         return 'published';
       case 'Draft':
         return 'draft';
-      case 'Archived':
-        return 'archived';
+      case 'Concluded':
+        return 'concluded';
       case 'Cancelled':
       case 'Rejected':
       case 'Uncovered':
@@ -1162,7 +1162,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     // Edit is only allowed for non-final events
     const isFinalStatus = 
       event.status === 'Completed' || 
-      event.status === 'Archived' || 
+      event.status === 'Concluded' || 
       event.status === 'Cancelled' ||
       event.status === 'Covered' ||
       event.status === 'Uncovered';

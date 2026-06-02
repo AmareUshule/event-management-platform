@@ -63,7 +63,7 @@ IF role == Employee
 ## 4. Event Workflow (Backend-Enforced)
 
 ```text
-Draft → Scheduled → Ongoing → Completed → Archived -> Cancelled
+Draft → Scheduled → Ongoing → Completed → Covered/Uncovered -> Cancelled
 ```
 
 ### Important Rules

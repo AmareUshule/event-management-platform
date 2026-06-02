@@ -75,9 +75,9 @@ namespace EEP.EventManagement.Api.Controllers
                     }
                 }
 
-                // Anyone can see Scheduled, Ongoing, Completed, Archived, Covered, or Uncovered in their scope
+                // Anyone can see Scheduled, Ongoing, Completed, Covered, or Uncovered in their scope
                 if (e.Status == EventStatus.Scheduled.ToString() || e.Status == EventStatus.Ongoing.ToString() || 
-                    e.Status == EventStatus.Completed.ToString() || e.Status == EventStatus.Archived.ToString() ||
+                    e.Status == EventStatus.Completed.ToString() ||
                     e.Status == EventStatus.Covered.ToString() || e.Status == EventStatus.Uncovered.ToString())
                 {
                     return true;
@@ -124,6 +124,31 @@ namespace EEP.EventManagement.Api.Controllers
             }).ToList();
 
             return Ok(visibleEvents);
+        }
+
+        [HttpGet("discovery")]
+        public async Task<ActionResult<List<EventDto>>> GetDiscoveryEvents(
+            [FromQuery] string? searchTerm,
+            [FromQuery] string? category,
+            [FromQuery] Guid? departmentId,
+            [FromQuery(Name = "departmentName")] string[]? departmentNames,
+            [FromQuery] DateTime? startDate,
+            [FromQuery] DateTime? endDate,
+            [FromQuery] EventStatus? status)
+        {
+            var query = new GetDiscoveryEventsQuery
+            {
+                SearchTerm = searchTerm,
+                Category = category,
+                DepartmentId = departmentId,
+                DepartmentNames = departmentNames?.Where(n => !string.IsNullOrWhiteSpace(n)).ToList(),
+                StartDate = startDate,
+                EndDate = endDate,
+                Status = status
+            };
+
+            var result = await _mediator.Send(query);
+            return Ok(result);
         }
 
         [HttpGet("upcoming")]

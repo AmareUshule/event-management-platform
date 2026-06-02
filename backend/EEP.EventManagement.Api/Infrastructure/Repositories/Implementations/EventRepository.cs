@@ -18,6 +18,11 @@ namespace EEP.EventManagement.Api.Infrastructure.Repositories.Implementations
             _context = context;
         }
 
+        public IQueryable<Event> GetQueryable()
+        {
+            return _context.Events.AsQueryable();
+        }
+
         public async Task<Event> GetByIdAsync(Guid id)
         {
             return await _context.Events

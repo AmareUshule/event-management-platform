@@ -34,7 +34,7 @@ namespace EEP.EventManagement.Api.Application.Features.Events.Handlers
 
             if (ev.Status != EventStatus.Completed)
             {
-                throw new BadRequestException("Only completed events can be archived.");
+                throw new BadRequestException("Only completed events can be finalized via the archive process.");
             }
 
             // Check if all assignments are verified if override is not allowed

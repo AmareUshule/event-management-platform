@@ -234,7 +234,7 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
 
     let allowOverride = false;
     if (unverifiedAssignments.length > 0) {
-      const msg = `There are ${unverifiedAssignments.length} assignments not yet verified by the creator. Do you want to override and archive anyway?`;
+      const msg = `There are ${unverifiedAssignments.length} assignments not yet verified by the creator. Do you want to override and finalize anyway?`;
       if (confirm(msg)) {
         allowOverride = true;
       } else {
@@ -247,12 +247,12 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
       next: (updatedEvent) => {
         this.isLoading = false;
         this.event = updatedEvent;
-        this.showSuccess('Event archived successfully!');
+        this.showSuccess('Event concluded successfully!');
         this.cdr.detectChanges();
       },
       error: (error) => {
         this.isLoading = false;
-        this.showError(error.message || 'Failed to archive event');
+        this.showError(error.message || 'Failed to conclude event');
       }
     });
   }
@@ -467,7 +467,7 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
   }
 
   canEditDateLocation(): boolean {
-    if (!this.event || this.isArchived() || this.event.status === EventStatus.CANCELLED || this.event.dateChangeRequestStatus === 'Pending') {
+    if (!this.event || this.isConcluded() || this.event.status === EventStatus.CANCELLED || this.event.dateChangeRequestStatus === 'Pending') {
       return false;
     }
 
@@ -983,15 +983,13 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
   isCompleted(): boolean {
     const status = this.event?.status;
     return status === EventStatus.COMPLETED || 
-           status === EventStatus.ARCHIVED || 
            status === EventStatus.COVERED || 
            status === EventStatus.UNCOVERED;
   }
 
-  isArchived(): boolean {
+  isConcluded(): boolean {
     const status = this.event?.status;
-    return status === EventStatus.ARCHIVED || 
-           status === EventStatus.COVERED || 
+    return status === EventStatus.COVERED || 
            status === EventStatus.UNCOVERED;
   }
 
@@ -1009,7 +1007,6 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
     const isFinal =
       this.event.status === EventStatus.COMPLETED ||
       this.event.status === EventStatus.CANCELLED ||
-      this.event.status === EventStatus.ARCHIVED ||
       this.event.status === EventStatus.COVERED ||
       this.event.status === EventStatus.UNCOVERED;
 

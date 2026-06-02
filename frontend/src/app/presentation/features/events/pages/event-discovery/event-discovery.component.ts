@@ -21,6 +21,7 @@ import { Subject } from 'rxjs';
 
 import { EventService } from '../../services/event.service';
 import { Event, EventStatus } from '../../models/event.model';
+import { DepartmentService } from '../../../internal-announcements/services/department.service';
 import { AuthService } from '../../../../../core/auth/auth.service';
 import { PageHeaderComponent } from '../../../../../shared/components/page-header/page-header.component';
 import { environment } from '../../../../../../environments/environment';
@@ -104,9 +105,21 @@ export class EventDiscoveryComponent implements OnInit {
   private router = inject(Router);
   private platformId = inject(PLATFORM_ID);
   private authService = inject(AuthService);
+  private departmentService = inject(DepartmentService);
 
   get canCreateEvents(): boolean {
     return this.authService.canCreateEvents();
+  }
+
+  // Helper method to check for privileged roles
+  private isPrivilegedUserForDraftEvents(): boolean {
+    const currentUser = this.authService.getCurrentUser();
+    if (!currentUser || !currentUser.roles) {
+      return false; // No user or roles, assume not privileged
+    }
+    // Assuming roles are strings like 'Admin', 'Creator', 'Communication Manager'
+    const privilegedRoles = ['Admin', 'Creator', 'Communication Manager'];
+    return currentUser.roles.some(role => privilegedRoles.includes(role));
   }
 
   // Core state
@@ -114,6 +127,7 @@ export class EventDiscoveryComponent implements OnInit {
   isLoading = signal<boolean>(true);
   searchTerm = signal<string>('');
   searchControl = new FormControl('');
+  locationInput = new FormControl('');
   isSearchFocused = signal<boolean>(false);
   showSuggestions = signal<boolean>(false);
 
@@ -182,6 +196,9 @@ export class EventDiscoveryComponent implements OnInit {
       list = list.filter(e => filters.category.includes(e.category));
     }
 
+    // Client-side status filtering is secondary to backend filtering.
+    // If backend correctly filters out DRAFT for unauthorized users, this might not be strictly necessary
+    // but it's good to have for consistency or if backend filtering is bypassed.
     if (filters.status.length > 0) {
       list = list.filter(e => filters.status.includes(e.status));
     }
@@ -234,6 +251,16 @@ export class EventDiscoveryComponent implements OnInit {
     return list;
   });
 
+  // Computed property to determine which statuses to display in the filter
+  displayableStatuses = computed(() => {
+    if (this.isPrivilegedUserForDraftEvents()) {
+      return this.statuses; // Show all statuses, including Draft
+    } else {
+      // Filter out DRAFT if the user is not privileged
+      return this.statuses.filter(status => status !== EventStatus.DRAFT);
+    }
+  });
+
   paginatedEvents = computed(() => {
     const events = this.filteredEvents();
     const start = this.currentPage() * this.pageSize();
@@ -266,21 +293,19 @@ export class EventDiscoveryComponent implements OnInit {
     'Client Meeting', 'Training Session', 'All Hands'
   ];
 
+  // Original statuses array - used as a source
   statuses = [
     EventStatus.DRAFT, EventStatus.SCHEDULED, EventStatus.ONGOING,
-    EventStatus.COMPLETED, EventStatus.ARCHIVED, EventStatus.CANCELLED
+    EventStatus.COMPLETED, EventStatus.COVERED, EventStatus.UNCOVERED, EventStatus.CANCELLED
   ];
 
-  departments = [
-    'Information Technology', 'Communication', 'Operations',
-    'Marketing', 'Finance', 'Human Resources', 'Legal',
-    'Sales', 'Research & Development', 'Quality Assurance'
-  ];
+  departments: string[] = [];
 
   priorities = ['High', 'Medium', 'Low'];
   locations = ['Main Office', 'Conference Room A', 'Conference Room B', 'Auditorium', 'Virtual'];
 
   ngOnInit(): void {
+    this.loadDepartments();
     this.loadEvents();
     this.setupSearchDebouncing();
     this.loadRecentSearches();
@@ -288,12 +313,43 @@ export class EventDiscoveryComponent implements OnInit {
 
   loadEvents(): void {
     this.isLoading.set(true);
-    this.eventService.getAllEvents()
+
+    // Convert active filters to backend format
+    const filters = this.activeFilters();
+    const params: any = {};
+
+    if (this.searchTerm()) params.searchTerm = this.searchTerm();
+    if (filters.category.length > 0) params.category = filters.category[0];
+    if (filters.status.length > 0) params.status = filters.status[0];
+    if (filters.dateRange.start) params.startDate = filters.dateRange.start.toISOString();
+    if (filters.dateRange.end) params.endDate = filters.dateRange.end.toISOString();
+
+    if (filters.department.length > 0) {
+      filters.department.forEach(department => {
+        if (department) {
+          params['departmentName'] = params['departmentName'] || [];
+          params['departmentName'].push(department);
+        }
+      });
+    }
+
+    this.eventService.getDiscoveryEvents(params)
       .pipe(finalize(() => this.isLoading.set(false)))
       .subscribe({
         next: (data) => this.events.set(data),
         error: (err) => console.error('Failed to load events', err)
       });
+  }
+
+  private loadDepartments(): void {
+    this.departmentService.getAllDepartments().subscribe({
+      next: (departments) => {
+        this.departments = departments.map(dept => dept.name).sort();
+      },
+      error: (err) => {
+        console.error('Failed to load departments', err);
+      }
+    });
   }
 
   private setupSearchDebouncing(): void {
@@ -376,6 +432,21 @@ export class EventDiscoveryComponent implements OnInit {
     this.activeFilters.set(current);
   }
 
+  addLocationFilter(): void {
+    const value = this.locationInput.value?.toString().trim();
+    if (!value) {
+      return;
+    }
+
+    const current = { ...this.activeFilters() };
+    if (!current.location.includes(value)) {
+      current.location = [...current.location, value];
+      this.activeFilters.set(current);
+    }
+
+    this.locationInput.setValue('');
+  }
+
   setDateRange(start: Date | null, end: Date | null): void {
     const current = { ...this.activeFilters() };
     current.dateRange = { start, end };
@@ -422,7 +493,8 @@ export class EventDiscoveryComponent implements OnInit {
       [EventStatus.ONGOING]: '#3B82F6',
       [EventStatus.COMPLETED]: '#1E590C',
       [EventStatus.CANCELLED]: '#DD1407',
-      [EventStatus.ARCHIVED]: '#6B7280'
+      [EventStatus.COVERED]: '#1E590C',
+      [EventStatus.UNCOVERED]: '#DD1407'
     };
     return colors[status] || '#64748B';
   }
@@ -517,6 +589,8 @@ export class EventDiscoveryComponent implements OnInit {
   // Quick action methods
   quickFilterByStatus(status: string): void {
     this.clearFilters();
+    // Note: This assumes the status is still available in the displayed filter options.
+    // If 'Draft' is hidden, this might not work as expected if 'status' is 'Draft'.
     this.toggleFilter('status', status);
   }
 

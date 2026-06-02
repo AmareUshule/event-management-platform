@@ -228,8 +228,8 @@ export class StaffWorkloadComponent implements OnInit {
         return 'status-published';
       case 'Draft':
         return 'status-draft';
-      case 'Archived':
-        return 'status-archived';
+      case 'Concluded':
+        return 'status-concluded';
       case 'Cancelled':
       case 'Rejected':
         return 'status-rejected';

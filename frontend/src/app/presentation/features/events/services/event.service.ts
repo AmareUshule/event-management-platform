@@ -43,11 +43,16 @@ export class EventService {
    */
   private getHeaders(): HttpHeaders {
     const token = this.authService.getToken();
-    return new HttpHeaders({
+    const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      'Accept': 'application/json',
-      'Authorization': `Bearer ${token}`
-    });
+      'Accept': 'application/json'
+    };
+
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    return new HttpHeaders(headers);
   }
 
   /**
@@ -198,6 +203,50 @@ export class EventService {
       if (filters.departmentId) params.set('departmentId', filters.departmentId);
       if (filters.status) params.set('status', filters.status);
       url += `?${params.toString()}`;
+    }
+    
+    return this.http.get<Event[]>(url, { 
+      headers: this.getHeaders(),
+      responseType: 'json'
+    }).pipe(
+      timeout(this.REQUEST_TIMEOUT),
+      retry(1),
+      catchError(this.handleError.bind(this))
+    );
+  }
+
+  /**
+   * Get events for the public discovery registry
+   */
+  getDiscoveryEvents(filters?: { 
+    searchTerm?: string; 
+    category?: string; 
+    departmentId?: string;
+    departmentName?: string[];
+    startDate?: string;
+    endDate?: string;
+    status?: string;
+  }): Observable<Event[]> {
+    let url = `${this.API_URL}/discovery`;
+    
+    if (filters) {
+      const params = new URLSearchParams();
+      if (filters.searchTerm) params.set('searchTerm', filters.searchTerm);
+      if (filters.category) params.set('category', filters.category);
+      if (filters.departmentId) params.set('departmentId', filters.departmentId);
+      if (filters.departmentName) {
+        filters.departmentName.forEach(name => {
+          if (name) {
+            params.append('departmentName', name);
+          }
+        });
+      }
+      if (filters.startDate) params.set('startDate', filters.startDate);
+      if (filters.endDate) params.set('endDate', filters.endDate);
+      if (filters.status) params.set('status', filters.status);
+      
+      const queryString = params.toString();
+      if (queryString) url += `?${queryString}`;
     }
     
     return this.http.get<Event[]>(url, { 

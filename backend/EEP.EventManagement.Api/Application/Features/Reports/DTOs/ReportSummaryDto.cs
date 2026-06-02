@@ -7,7 +7,6 @@ namespace EEP.EventManagement.Api.Application.Features.Reports.DTOs
         public int ScheduledCount { get; set; }
         public int OngoingCount { get; set; }
         public int CompletedCount { get; set; }
-        public int ArchivedCount { get; set; }
         public int CancelledCount { get; set; }
         public int PendingApprovalsCount { get; set; }
         public int CoveredCount { get; set; }

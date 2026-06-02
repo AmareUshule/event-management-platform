@@ -90,7 +90,7 @@
         <span class="filter-label">Quick event telemetry:</span>
         <button
           class="quick-filter-pill"
-          *ngFor="let status of ['Scheduled', 'Ongoing', 'Archived', 'Cancelled']"
+          *ngFor="let status of ['Scheduled', 'Ongoing', 'Covered', 'Uncovered', 'Cancelled']"
           (click)="quickFilterByStatus(status)"
           [class.active]="activeFilters().status.includes(status)"
         >
@@ -160,9 +160,9 @@
   <div class="advanced-filters-panel" *ngIf="showAdvancedFilters()" [@expandCollapse]>
     <div class="filters-grid">
       <div class="filter-group">
-        <label>Intelligence Category</label>
+        <label>Event Category</label>
         <mat-form-field appearance="outline" class="premium-field">
-          <mat-label>Select Categories</mat-label>
+          <mat-label>Select Category</mat-label>
           <mat-select
             [value]="activeFilters().category"
             multiple
@@ -184,7 +184,7 @@
             multiple
             (selectionChange)="setMultiFilter('status', $event.value)"
           >
-            <mat-option *ngFor="let status of statuses" [value]="status">
+            <mat-option *ngFor="let status of displayableStatuses()" [value]="status">
               {{ status }}
             </mat-option>
           </mat-select>
@@ -208,23 +208,20 @@
       </div>
 
       <div class="filter-group">
-        <label>Ops Theater / Location</label>
+        <label>Location</label>
         <mat-form-field appearance="outline" class="premium-field">
-          <mat-label>Select Location</mat-label>
-          <mat-select
-            [value]="activeFilters().location"
-            multiple
-            (selectionChange)="setMultiFilter('location', $event.value)"
-          >
-            <mat-option *ngFor="let location of locations" [value]="location">
-              {{ location }}
-            </mat-option>
-          </mat-select>
+          <mat-label>Type location and press enter</mat-label>
+          <input
+            matInput
+            [formControl]="locationInput"
+            (keyup.enter)="addLocationFilter()"
+            placeholder="Enter a location"
+          />
         </mat-form-field>
       </div>
 
       <div class="filter-group">
-        <label>Temporal Start</label>
+        <label>Start Date</label>
         <mat-form-field appearance="outline" class="premium-field">
           <mat-label>Start Date</mat-label>
           <input
@@ -239,7 +236,7 @@
       </div>
 
       <div class="filter-group">
-        <label>Temporal Conclusion</label>
+        <label>End Date</label>
         <mat-form-field appearance="outline" class="premium-field">
           <mat-label>End Date</mat-label>
           <input
@@ -535,9 +532,9 @@
           </div>
 
           <div class="card-overlay">
-            <div class="view-indicator" [class.archived]="event.status === 'Archived'">
-              <span>{{ event.status === 'Archived' ? 'Open Archive' : 'Access Intelligence' }}</span>
-              <mat-icon>{{ event.status === 'Archived' ? 'inventory_2' : 'arrow_forward' }}</mat-icon>
+            <div class="view-indicator">
+              <span>Access Intelligence</span>
+              <mat-icon>arrow_forward</mat-icon>
             </div>
           </div>
         </div>
@@ -567,12 +564,6 @@
             <div class="department-tag">
               <mat-icon>business</mat-icon>
               <span>{{ event.department.name }}</span>
-            </div>
-            <div class="event-stats">
-              <span class="stat-item">
-                <mat-icon>person</mat-icon>
-                {{ getAssignmentCount(event) }}
-              </span>
             </div>
           </div>
         </div>

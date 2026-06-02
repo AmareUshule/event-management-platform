@@ -136,11 +136,11 @@
                                             <span class="node-meta">by {{ event.createdBy?.firstName }}</span>
                                         </div>
                                     </div>
-                                    <div class="timeline-connector" [class.active]="event.approvedBy || isScheduled() || isCompleted() || isArchived() || event.status === 'Cancelled'"></div>
+                                    <div class="timeline-connector" [class.active]="event.approvedBy || isScheduled() || isCompleted() || isConcluded() || event.status === 'Cancelled'"></div>
                                     
                                     <!-- Stage 2: Approved -->
                                     <div class="timeline-node" 
-                                         [class.completed]="event.approvedBy || isScheduled() || isCompleted() || isArchived()"
+                                         [class.completed]="event.approvedBy || isScheduled() || isCompleted() || isConcluded()"
                                          [class.skipped]="event.status === 'Cancelled'">
                                         <div class="node-icon">
                                             <mat-icon>{{ event.status === 'Cancelled' ? 'block' : 'verified' }}</mat-icon>
@@ -149,37 +149,37 @@
                                             <span class="node-label">Approved</span>
                                             <span class="node-date" *ngIf="event.approvedBy">{{ event.updatedAt | date:'shortDate' }}</span>
                                             <span class="node-meta" *ngIf="event.approvedBy">by {{ event.approvedBy?.firstName }}</span>
-                                            <span class="node-meta" *ngIf="!event.approvedBy && (isScheduled() || isCompleted() || isArchived())">Approved</span>
+                                            <span class="node-meta" *ngIf="!event.approvedBy && (isScheduled() || isCompleted() || isConcluded())">Approved</span>
                                             <span class="node-meta" *ngIf="!event.approvedBy && event.status === 'Draft'">Pending</span>
                                             <span class="node-meta" *ngIf="event.status === 'Cancelled'">Cancelled</span>
                                         </div>
                                     </div>
-                                    <div class="timeline-connector" [class.active]="isCompleted() || isArchived()"></div>
+                                    <div class="timeline-connector" [class.active]="isCompleted() || isConcluded()"></div>
                                     
                                     <!-- Stage 3: Concluded -->
                                     <div class="timeline-node" 
-                                         [class.completed]="isCompleted() || isArchived()"
+                                         [class.completed]="isCompleted() || isConcluded()"
                                          [class.skipped]="event.status === 'Cancelled'">
                                         <div class="node-icon"><mat-icon>task_alt</mat-icon></div>
                                         <div class="node-content">
                                             <span class="node-label">Concluded</span>
-                                            <span class="node-date" *ngIf="isCompleted() || isArchived()">{{ event.updatedAt | date:'shortDate' }}</span>
-                                            <span class="node-meta" *ngIf="!isCompleted() && !isArchived() && event.status !== 'Cancelled'">Awaiting</span>
+                                            <span class="node-date" *ngIf="isCompleted() || isConcluded()">{{ event.updatedAt | date:'shortDate' }}</span>
+                                            <span class="node-meta" *ngIf="!isCompleted() && !isConcluded() && event.status !== 'Cancelled'">Awaiting</span>
                                             <span class="node-meta" *ngIf="event.status === 'Cancelled'">Cancelled</span>
                                         </div>
                                     </div>
-                                    <div class="timeline-connector" [class.active]="isArchived() || event.status === 'Cancelled'"></div>
+                                    <div class="timeline-connector" [class.active]="isConcluded() || event.status === 'Cancelled'"></div>
 
-                                    <!-- Stage 4: Archived -->
+                                    <!-- Stage 4: Concluded -->
                                     <div class="timeline-node" 
-                                         [class.completed]="isArchived() || event.status === 'Cancelled' || event.status === 'Covered' || event.status === 'Uncovered'"
+                                         [class.completed]="isConcluded() || event.status === 'Cancelled' || event.status === 'Covered' || event.status === 'Uncovered'"
                                          [class.cancelled-node]="event.status === 'Cancelled' || event.status === 'Uncovered'">
                                         <div class="node-icon">
                                             <mat-icon>{{ event.status === 'Cancelled' || event.status === 'Uncovered' ? 'cancel' : 'inventory_2' }}</mat-icon>
                                         </div>
                                         <div class="node-content">
-                                            <span class="node-label">{{ event.status === 'Cancelled' ? 'Cancelled' : (event.status === 'Uncovered' ? 'Uncovered' : (event.status === 'Covered' ? 'Covered' : 'Archived')) }}</span>
-                                            <span class="node-date" *ngIf="isArchived() || event.status === 'Cancelled' || event.status === 'Covered' || event.status === 'Uncovered'">{{ event.updatedAt | date:'shortDate' }}</span>
+                                            <span class="node-label">{{ event.status === 'Cancelled' ? 'Cancelled' : (event.status === 'Uncovered' ? 'Uncovered' : (event.status === 'Covered' ? 'Covered' : 'Concluded')) }}</span>
+                                            <span class="node-date" *ngIf="isConcluded() || event.status === 'Cancelled' || event.status === 'Covered' || event.status === 'Uncovered'">{{ event.updatedAt | date:'shortDate' }}</span>
                                             <span class="node-meta" *ngIf="event.finalizedBy">by {{ event.finalizedBy?.firstName }}</span>
                                         </div>
                                     </div>
@@ -264,7 +264,7 @@
                                     </div>
                                 </div>
 
-                                <div class="closure-comment-box" *ngIf="event.status === 'Archived' && event.closureComment">
+                                <div class="closure-comment-box" *ngIf="event.status === 'Concluded' && event.closureComment">
                                     <div class="comment-header">
                                         <mat-icon>assignment_turned_in</mat-icon>
                                         <span>Final Closure Comment</span>
@@ -589,7 +589,7 @@
                             Assign Staff
                         </button>
                         
-                        <button class="command-btn info" *ngIf="(!isCompleted() && !isArchived() && event.status !== 'Cancelled')" (click)="downloadICS()">
+                        <button class="command-btn info" *ngIf="(!isCompleted() && !isConcluded() && event.status !== 'Cancelled')" (click)="downloadICS()">
                             <mat-icon>event_available</mat-icon>
                             Sync to Calendar
                         </button>

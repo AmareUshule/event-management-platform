@@ -17,7 +17,6 @@ export enum EventStatus {
   ONGOING = 'Ongoing',
   CANCELLED = 'Cancelled',
   COMPLETED = 'Completed',
-  ARCHIVED = 'Archived',
   COVERED = 'Covered',
   UNCOVERED = 'Uncovered'
 }
