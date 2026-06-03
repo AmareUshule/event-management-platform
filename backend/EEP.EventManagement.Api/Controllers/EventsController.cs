@@ -88,7 +88,10 @@ namespace EEP.EventManagement.Api.Controllers
                 allEvents.AddRange(ownDrafts);
             }
 
-                // Anyone can see Scheduled, Ongoing, Completed, Covered, or Uncovered in their scope
+                // Filter visibility for non-admin, non-comm-manager users
+                var visibleEvents = allEvents.Where(e =>
+                {
+                    // Anyone can see Scheduled, Ongoing, Completed, Covered, or Uncovered in their scope
                 if (e.Status == EventStatus.Scheduled.ToString() || e.Status == EventStatus.Ongoing.ToString() || 
                     e.Status == EventStatus.Completed.ToString() ||
                     e.Status == EventStatus.Covered.ToString() || e.Status == EventStatus.Uncovered.ToString())
