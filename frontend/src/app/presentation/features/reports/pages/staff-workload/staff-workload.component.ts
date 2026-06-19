@@ -22,6 +22,7 @@ import { ReportService, StaffWorkload, StaffEventSummary } from '../../../../../
 import { AuthService } from '../../../../../core/auth/auth.service';
 import { EmployeeService } from '../../../../../core/services/employee.service';
 import { Employee } from '../../../../../core/models/employee.model';
+import { WorkloadCardComponent } from '../../components/workload-card/workload-card.component';
 
 @Component({
   selector: 'app-staff-workload',
@@ -30,6 +31,7 @@ import { Employee } from '../../../../../core/models/employee.model';
     CommonModule,
     FormsModule,
     RouterModule,
+    WorkloadCardComponent,
     MatCardModule,
     MatIconModule,
     MatButtonModule,
@@ -44,6 +46,11 @@ import { Employee } from '../../../../../core/models/employee.model';
     MatChipsModule,
     MatTooltipModule
   ],
+  // Use the workload card standalone component
+  // Importing here ensures the component is available in the template
+  providers: [],
+  // Import workload card component
+  // (component is standalone so it can be used directly in template imports)
   templateUrl: './staff-workload.component.html',
   styleUrls: ['./staff-workload.component.scss']
 })
@@ -64,8 +71,8 @@ export class StaffWorkloadComponent implements OnInit {
   endDate: Date | null = null;
   selectedRole = '';
   selectedStaffId = '';
-  sortBy: 'name' | 'assignments' = 'name';
-  sortOrder: 'asc' | 'desc' = 'asc';
+  sortBy: 'name' | 'assignments' | 'active' = 'assignments';
+  sortOrder: 'asc' | 'desc' = 'desc';
   
   roles = [
     { value: '', label: 'All Roles' },
@@ -134,6 +141,9 @@ export class StaffWorkloadComponent implements OnInit {
         case 'assignments':
           comparison = a.totalAssignments - b.totalAssignments;
           break;
+        case 'active':
+          comparison = a.scheduledAssignments - b.scheduledAssignments;
+          break;
       }
       return this.sortOrder === 'asc' ? comparison : -comparison;
     });
@@ -141,7 +151,7 @@ export class StaffWorkloadComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
-  toggleSort(field: 'name' | 'assignments'): void {
+  toggleSort(field: 'name' | 'assignments' | 'active'): void {
     if (this.sortBy === field) {
       this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
     } else {
@@ -156,8 +166,8 @@ export class StaffWorkloadComponent implements OnInit {
     this.endDate = null;
     this.selectedRole = '';
     this.selectedStaffId = '';
-    this.sortBy = 'name';
-    this.sortOrder = 'asc';
+    this.sortBy = 'assignments';
+    this.sortOrder = 'desc';
     this.loadWorkload();
   }
 
@@ -174,15 +184,46 @@ export class StaffWorkloadComponent implements OnInit {
     return this.staffWorkload.reduce((sum, staff) => sum + staff.totalAssignments, 0);
   }
 
+  getActiveAssignments(): number {
+    return this.staffWorkload.reduce((sum, staff) => sum + staff.scheduledAssignments, 0);
+  }
+
+  getPastAssignments(): number {
+    return this.staffWorkload.reduce((sum, staff) => sum + staff.pastAssignments, 0);
+  }
+
+  getAverageAssignments(): string {
+    if (!this.staffWorkload.length) return '0.0';
+    return (this.getTotalAssignments() / this.staffWorkload.length).toFixed(1);
+  }
+
+  getBusyStaffCount(): number {
+    return this.staffWorkload.filter((staff) => staff.scheduledAssignments >= 3 || staff.totalAssignments >= 4).length;
+  }
+
+  getAvailableStaffCount(): number {
+    return this.staffWorkload.filter((staff) => staff.scheduledAssignments <= 1 && staff.totalAssignments <= 2).length;
+  }
+
+  getCurrentPeriodLabel(): string {
+    if (this.startDate && this.endDate) {
+      return `${this.startDate.toLocaleDateString()} - ${this.endDate.toLocaleDateString()}`;
+    }
+
+    if (this.startDate) return `From ${this.startDate.toLocaleDateString()}`;
+    if (this.endDate) return `Until ${this.endDate.toLocaleDateString()}`;
+    return 'All scheduled assignments';
+  }
+
   getInitials(fullName: string): string {
     return fullName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   }
 
   getAvailabilityStatus(staff: StaffWorkload): string {
-    const utilization = this.getUtilizationPercentage(staff);
-    if (utilization >= 80) return 'overloaded';
-    if (utilization >= 60) return 'busy';
-    if (utilization >= 30) return 'moderate';
+    const assignments = staff.scheduledAssignments || staff.totalAssignments;
+    if (assignments >= 4) return 'overloaded';
+    if (assignments >= 3) return 'busy';
+    if (assignments >= 2) return 'moderate';
     return 'available';
   }
 
@@ -194,12 +235,7 @@ export class StaffWorkloadComponent implements OnInit {
     }
   }
 
-  getUtilizationPercentage(staff: StaffWorkload): number {
-    // Assuming a baseline of 5 assignments per month as 100% utilization
-    const baseline = 5;
-    const utilization = (staff.totalAssignments / baseline) * 100;
-    return Math.min(Math.round(utilization), 100);
-  }
+  /* utilization removed */
 
   getRecentEvents(events: StaffEventSummary[]): StaffEventSummary[] {
     return events.slice(0, 3);

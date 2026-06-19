@@ -95,8 +95,11 @@ namespace EEP.EventManagement.Api.Application.Features.Reports.Handlers
                     PastAssignments = assignments.Count(a => a.Event.Status == EventStatus.Completed || a.Event.Status == EventStatus.Covered || a.Event.Status == EventStatus.Uncovered),
                     Events = assignments.Select(a => new StaffEventSummaryDto
                     {
+                        AssignmentId = a.Id,
                         EventId = a.EventId,
                         Title = a.Event.Title,
+                        EventPlace = a.Event.EventPlace,
+                        EventDepartmentName = a.Event.Department != null ? a.Event.Department.Name : null,
                         StartDate = a.Event.StartDate,
                         EndDate = a.Event.EndDate,
                         Status = a.Event.Status.ToString(),

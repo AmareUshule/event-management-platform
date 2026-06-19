@@ -1,0 +1,84 @@
+<article class="workload-card" role="button" tabindex="0" (click)="openDetail()" (keydown.enter)="openDetail()">
+  <header class="card-header">
+    <div class="identity">
+      <div class="avatar" [ngClass]="staff.role.toLowerCase()">{{ getInitials(staff.fullName) }}</div>
+      <div class="person-meta">
+        <h3>{{ staff.fullName }}</h3>
+        <div class="subline">
+          <span>{{ staff.role }}</span>
+        </div>
+      </div>
+    </div>
+
+    <span class="load-badge" [ngClass]="getAvailabilityStatus()">
+      <span></span>
+      {{ getAvailabilityLabel() }}
+    </span>
+  </header>
+
+  <section class="load-panel">
+    <div class="total-load">
+      <span>Total</span>
+      <strong>{{ staff.totalAssignments }}</strong>
+    </div>
+    <div class="load-bars" aria-label="Assignment split">
+      <div class="bar active" [style.width.%]="getActivePercentage()"></div>
+      <div class="bar past" [style.width.%]="getPastPercentage()"></div>
+    </div>
+    <div class="split-row">
+      <span><b>{{ staff.scheduledAssignments }}</b> active</span>
+      <span><b>{{ staff.pastAssignments }}</b> past</span>
+    </div>
+  </section>
+
+  <section class="next-event" *ngIf="getNextEvent() as nextEvent; else noAssignments">
+    <div class="section-label">Next assignment</div>
+    <button class="event-preview" (click)="openEvent(nextEvent.eventId); $event.stopPropagation()">
+      <span class="status-rail" [ngClass]="getStatusClass(nextEvent.status)"></span>
+      <span class="event-copy">
+        <strong>{{ nextEvent.title }}</strong>
+        <span>
+          <mat-icon>schedule</mat-icon>
+          {{ nextEvent.startDate | date:'MMM d, h:mm a' }}
+        </span>
+        <span *ngIf="nextEvent.eventPlace">
+          <mat-icon>location_on</mat-icon>
+          {{ nextEvent.eventPlace }}
+        </span>
+      </span>
+      <mat-icon>chevron_right</mat-icon>
+    </button>
+  </section>
+
+  <ng-template #noAssignments>
+    <section class="empty-mini">
+      <mat-icon>event_available</mat-icon>
+      No assignments in this period
+    </section>
+  </ng-template>
+
+  <section class="recent-list" *ngIf="staff.events && staff.events.length > 1">
+    <div class="section-label">Recent events</div>
+    <div class="event-chips">
+      <button
+        *ngFor="let e of staff.events | slice:0:3"
+        class="event-chip"
+        (click)="openEvent(e.eventId); $event.stopPropagation()"
+      >
+        <span>{{ e.title }}</span>
+        <small>{{ e.status }}</small>
+      </button>
+    </div>
+  </section>
+
+  <footer class="card-actions">
+    <button class="text-action" (click)="quickAssign(); $event.stopPropagation()">
+      <mat-icon>assignment_ind</mat-icon>
+      Quick assign
+    </button>
+    <button class="text-action primary" (click)="openDetail(); $event.stopPropagation()">
+      Details
+      <mat-icon>arrow_forward</mat-icon>
+    </button>
+  </footer>
+</article>

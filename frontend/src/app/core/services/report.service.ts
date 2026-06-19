@@ -21,7 +21,10 @@ export interface ReportSummary {
 
 export interface StaffEventSummary {
   eventId: string;
+  assignmentId?: string;
   title: string;
+  eventPlace?: string;
+  eventDepartmentName?: string;
   startDate: string;
   endDate: string;
   status: string;

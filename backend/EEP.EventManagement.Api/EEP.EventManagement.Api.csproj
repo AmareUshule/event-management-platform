@@ -4,6 +4,9 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Avoid requiring platform-specific host packs during local development -->
+    <UseAppHost>false</UseAppHost>
+    <SelfContained>false</SelfContained>
   </PropertyGroup>
 
 <ItemGroup>

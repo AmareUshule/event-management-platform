@@ -1,0 +1,202 @@
+<div class="workload-detail-page">
+  <div *ngIf="isLoading" class="loading-state">
+    <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+    <span>Loading workload profile...</span>
+  </div>
+
+  <ng-container *ngIf="!isLoading && staffWorkload">
+    <header class="detail-hero">
+      <a class="back-link" routerLink="/staff-workload">
+        <mat-icon>arrow_back</mat-icon>
+        Workload
+      </a>
+
+      <div class="hero-main">
+        <div class="avatar">{{ getInitials(staffWorkload.fullName) }}</div>
+        <div class="hero-copy">
+          <span class="eyebrow">{{ getLoadLabel() }} capacity</span>
+          <h1>{{ staffWorkload.fullName }}</h1>
+          <div class="profile-meta">
+            <span><mat-icon>badge</mat-icon>{{ staffWorkload.role }}</span>
+            <span><mat-icon>apartment</mat-icon>{{ staffWorkload.departmentName }}</span>
+            <span><mat-icon>date_range</mat-icon>{{ getPeriodLabel() }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-actions">
+        <button class="icon-action" aria-label="Message"><mat-icon>message</mat-icon></button>
+        <button class="primary-action" (click)="exportData()">
+          <mat-icon>download</mat-icon>
+          Export
+        </button>
+      </div>
+    </header>
+
+    <section class="summary-grid">
+      <article>
+        <span>Total assignments</span>
+        <strong>{{ staffWorkload.totalAssignments }}</strong>
+      </article>
+      <article>
+        <span>Active</span>
+        <strong>{{ staffWorkload.scheduledAssignments }}</strong>
+      </article>
+      <article>
+        <span>Past</span>
+        <strong>{{ staffWorkload.pastAssignments }}</strong>
+      </article>
+      <article>
+        <span>Visible events</span>
+        <strong>{{ getFilteredSortedEvents().length }}</strong>
+      </article>
+    </section>
+
+    <div class="detail-layout">
+      <aside class="insights-panel">
+        <section class="insight-card load-card">
+          <div class="section-heading">
+            <span>Workload split</span>
+            <strong>{{ getActivePercentage() }}% active</strong>
+          </div>
+          <div class="load-bars">
+            <div class="bar active" [style.width.%]="getActivePercentage()"></div>
+            <div class="bar past" [style.width.%]="getPastPercentage()"></div>
+          </div>
+          <div class="legend-row">
+            <span><i class="active"></i> Active</span>
+            <span><i class="past"></i> Past</span>
+          </div>
+        </section>
+
+        <section class="insight-card" *ngIf="getNextEvent() as nextEvent">
+          <div class="section-heading">
+            <span>Next assignment</span>
+          </div>
+          <button class="next-event-card" [routerLink]="['/events', nextEvent.eventId]">
+            <strong>{{ nextEvent.title }}</strong>
+            <span><mat-icon>schedule</mat-icon>{{ nextEvent.startDate | date:'MMM d, y h:mm a' }}</span>
+            <span *ngIf="nextEvent.eventPlace || nextEvent.eventDepartmentName">
+              <mat-icon>location_on</mat-icon>{{ nextEvent.eventPlace || nextEvent.eventDepartmentName }}
+            </span>
+          </button>
+        </section>
+
+        <section class="insight-card">
+          <div class="section-heading">
+            <span>Role distribution</span>
+          </div>
+          <div class="role-stack" *ngIf="getRoleBreakdown().length; else noRoles">
+            <div class="role-row" *ngFor="let item of getRoleBreakdown()">
+              <span>{{ item.role }}</span>
+              <strong>{{ item.count }}</strong>
+            </div>
+          </div>
+          <ng-template #noRoles>
+            <p class="muted">No assignment roles in this period.</p>
+          </ng-template>
+        </section>
+
+        <section class="insight-card">
+          <div class="section-heading">
+            <span>Quick range</span>
+          </div>
+          <div class="preset-row">
+            <button (click)="applyPreset(7)">7d</button>
+            <button (click)="applyPreset(30)">30d</button>
+            <button (click)="applyPreset(60)">60d</button>
+          </div>
+        </section>
+      </aside>
+
+      <main class="events-panel">
+        <section class="controls-card">
+          <div class="date-controls">
+            <label>
+              <span>Start</span>
+              <input matInput [matDatepicker]="startPicker" placeholder="Any date" [(ngModel)]="startDate">
+              <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+              <mat-datepicker #startPicker></mat-datepicker>
+            </label>
+            <label>
+              <span>End</span>
+              <input matInput [matDatepicker]="endPicker" placeholder="Any date" [(ngModel)]="endDate">
+              <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
+              <mat-datepicker #endPicker></mat-datepicker>
+            </label>
+            <button class="secondary-action" (click)="applyCustom()">Apply range</button>
+          </div>
+
+          <div class="list-controls">
+            <mat-select class="status-select" placeholder="All statuses" [(ngModel)]="statusFilter">
+              <mat-option value="">All statuses</mat-option>
+              <mat-option *ngFor="let status of getStatusOptions()" [value]="status">{{ status }}</mat-option>
+            </mat-select>
+            <mat-select class="coverage-select" placeholder="Coverage" [(ngModel)]="coverageFilter">
+              <mat-option value="">All</mat-option>
+              <mat-option value="Covered">Covered</mat-option>
+              <mat-option value="Uncovered">Uncovered</mat-option>
+            </mat-select>
+            <button class="icon-action" (click)="sortOrder = (sortOrder === 'asc' ? 'desc' : 'asc')" matTooltip="Toggle date sort">
+              <mat-icon>{{ sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</mat-icon>
+            </button>
+          </div>
+        </section>
+
+        <section class="events-list">
+          <div class="events-heading">
+            <div>
+              <span class="eyebrow">Assignments</span>
+              <h2>Assigned Events</h2>
+            </div>
+            <span class="count-pill">{{ getFilteredSortedEvents().length }} shown</span>
+          </div>
+
+          <div *ngIf="!staffWorkload.events || staffWorkload.events.length === 0" class="empty-state">
+            <mat-icon>event_busy</mat-icon>
+            <h3>No assignments found</h3>
+            <p>This staff member has no events in the selected period.</p>
+          </div>
+
+          <article class="event-row" *ngFor="let ev of getFilteredSortedEvents()">
+            <div class="event-status-rail" [ngClass]="getStatusClass(ev.status)"></div>
+            <div class="event-body">
+              <div class="event-main">
+                <div>
+                  <h3>{{ ev.title }}</h3>
+                  <div class="event-meta">
+                    <span><mat-icon>schedule</mat-icon>{{ ev.startDate | date:'MMM d, y h:mm a' }}</span>
+                    <span><mat-icon>event</mat-icon>{{ ev.endDate | date:'MMM d, y h:mm a' }}</span>
+                    <span *ngIf="ev.eventPlace"><mat-icon>location_on</mat-icon>{{ ev.eventPlace }}</span>
+                    <span *ngIf="ev.eventDepartmentName"><mat-icon>apartment</mat-icon>{{ ev.eventDepartmentName }}</span>
+                  </div>
+                </div>
+                <div class="badges">
+                  <span class="badge role">{{ ev.roleInEvent }}</span>
+                  <span class="badge status" [ngClass]="getStatusClass(ev.status)">{{ ev.status }}</span>
+                </div>
+              </div>
+
+              <div class="event-actions">
+                <button class="secondary-action" [routerLink]="['/events', ev.eventId]">
+                  <mat-icon>open_in_new</mat-icon>
+                  Open
+                </button>
+                <ng-container *ngIf="!isPast(ev)">
+                  <button class="ghost-action" (click)="assignToEvent(ev)">
+                    <mat-icon>assignment_ind</mat-icon>
+                    Assign
+                  </button>
+                  <button class="danger-action" (click)="removeAssignment(ev)">
+                    <mat-icon>person_remove</mat-icon>
+                    Unassign
+                  </button>
+                </ng-container>
+              </div>
+            </div>
+          </article>
+        </section>
+      </main>
+    </div>
+  </ng-container>
+</div>

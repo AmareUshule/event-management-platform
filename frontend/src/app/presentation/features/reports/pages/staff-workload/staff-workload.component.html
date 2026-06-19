@@ -1,304 +1,165 @@
-
-<div class="resource-planning-container">
-  <!-- Premium Header -->
-  <header class="page-header-premium animate-fade-in">
-    <div class="header-content">
-      <div class="header-left">
-        <div class="header-icon-wrapper">
-          <mat-icon class="header-icon">groups_3</mat-icon>
-        </div>
-        <div class="header-text">
-          <h1 class="gradient-text">Resource Planning</h1>
-          <p>Optimize team capacity and track assignment distribution across projects</p>
-        </div>
-      </div>
-      
-      <div class="header-actions">
-        <button class="btn-premium primary" (click)="exportData()" matTooltip="Export detailed workload report">
-          <mat-icon>download</mat-icon>
-          <span>Export Report</span>
-        </button>
+<div class="workload-page">
+  <header class="workload-hero">
+    <div class="hero-copy">
+      <span class="eyebrow">
+        <mat-icon>monitoring</mat-icon>
+        Workload command center
+      </span>
+      <h1>Resource Planning</h1>
+      <p>Balance communication staff assignments, spot heavy loads, and open the right person detail fast.</p>
+      <div class="period-pill">
+        <mat-icon>date_range</mat-icon>
+        {{ getCurrentPeriodLabel() }}
       </div>
     </div>
 
-    <div class="header-metrics-row animate-slide-up">
-      <div class="metric-glass-card">
-        <div class="metric-icon-box green">
-          <mat-icon>person</mat-icon>
-        </div>
-        <div class="metric-info">
-          <span class="metric-label">Active Staff</span>
-          <span class="metric-value">{{ getTotalStaff() }}</span>
-        </div>
-        <div class="metric-trend positive">
-          <mat-icon>trending_up</mat-icon>
-          <span>Stable</span>
-        </div>
-      </div>
-
-      <div class="metric-glass-card">
-        <div class="metric-icon-box blue">
-          <mat-icon>assignment</mat-icon>
-        </div>
-        <div class="metric-info">
-          <span class="metric-label">Total Assignments</span>
-          <span class="metric-value">{{ getTotalAssignments() }}</span>
-        </div>
-      </div>
+    <div class="hero-actions">
+      <button class="icon-action" (click)="loadWorkload()" matTooltip="Refresh workload">
+        <mat-icon>refresh</mat-icon>
+      </button>
+      <button class="primary-action" (click)="exportData()" matTooltip="Export detailed workload report">
+        <mat-icon>download</mat-icon>
+        Export
+      </button>
     </div>
   </header>
 
-  <!-- Advanced Filters & Sorting -->
-  <section class="controls-section animate-slide-up">
-    <div class="filters-card-modern">
-      <div class="controls-row">
-        <div class="filters-group">
-          <div class="filter-field">
-            <label class="field-label">
-              <mat-icon>work_outline</mat-icon>
-              <span>Resource Role</span>
-            </label>
-            <mat-select
-              [(ngModel)]="selectedRole"
-              (selectionChange)="applyFilters()"
-              placeholder="All Roles"
-              class="premium-select">
-              @for (role of roles; track role.value) {
-                <mat-option [value]="role.value">
-                  {{ role.label }}
-                </mat-option>
-              }
-            </mat-select>
-          </div>
-
-          <div class="filter-field">
-            <label class="field-label">
-              <mat-icon>person_outline</mat-icon>
-              <span>Staff Member</span>
-            </label>
-            <mat-select
-              [(ngModel)]="selectedStaffId"
-              (selectionChange)="applyFilters()"
-              placeholder="Search Staff"
-              class="premium-select">
-              <mat-option value="">All Staff</mat-option>
-              @for (staff of allStaff; track staff.id) {
-                <mat-option [value]="staff.id">
-                  {{ staff.name }}
-                </mat-option>
-              }
-            </mat-select>
-          </div>
-
-          <div class="filter-field date-range">
-            <label class="field-label">
-              <mat-icon>date_range</mat-icon>
-              <span>Analysis Period</span>
-            </label>
-            <div class="date-inputs-wrapper">
-              <input
-                matInput
-                [matDatepicker]="startPicker"
-                [(ngModel)]="startDate"
-                (dateChange)="applyFilters()"
-                placeholder="Start Date">
-              <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
-              <mat-datepicker #startPicker></mat-datepicker>
-              <span class="date-sep"></span>
-              <input
-                matInput
-                [matDatepicker]="endPicker"
-                [(ngModel)]="endDate"
-                (dateChange)="applyFilters()"
-                placeholder="End Date">
-              <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
-              <mat-datepicker #endPicker></mat-datepicker>
-            </div>
-          </div>
-
-          <div class="filter-field reset-field">
-            <label class="field-label">&nbsp;</label>
-            <button class="btn-reset" (click)="resetFilters()" matTooltip="Clear all filters">
-              <mat-icon>restart_alt</mat-icon>
-              <span>Reset</span>
-            </button>
-          </div>
-        </div>
-
-        <div class="sorting-group">
-          <span class="sort-label">Sort by:</span>
-          <div class="sort-chips">
-            <button class="sort-chip" [class.active]="sortBy === 'name'" (click)="toggleSort('name')">
-              Name
-              @if (sortBy === 'name') {
-                <mat-icon>{{ sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</mat-icon>
-              }
-            </button>
-            <button class="sort-chip" [class.active]="sortBy === 'assignments'" (click)="toggleSort('assignments')">
-              Assignments
-              @if (sortBy === 'assignments') {
-                <mat-icon>{{ sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</mat-icon>
-              }
-            </button>
-          </div>
-        </div>
+  <section class="metric-grid" aria-label="Workload summary">
+    <article class="metric-card">
+      <div class="metric-icon green"><mat-icon>groups_3</mat-icon></div>
+      <div>
+        <span class="metric-label">Staff in view</span>
+        <strong>{{ getTotalStaff() }}</strong>
       </div>
+    </article>
+
+    <article class="metric-card">
+      <div class="metric-icon blue"><mat-icon>assignment</mat-icon></div>
+      <div>
+        <span class="metric-label">Total assignments</span>
+        <strong>{{ getTotalAssignments() }}</strong>
+      </div>
+    </article>
+
+    <article class="metric-card">
+      <div class="metric-icon amber"><mat-icon>bolt</mat-icon></div>
+      <div>
+        <span class="metric-label">Active assignments</span>
+        <strong>{{ getActiveAssignments() }}</strong>
+      </div>
+    </article>
+
+    <article class="metric-card">
+      <div class="metric-icon red"><mat-icon>insights</mat-icon></div>
+      <div>
+        <span class="metric-label">Completed or past</span>
+        <strong>{{ getPastAssignments() }}</strong>
+      </div>
+    </article>
+  </section>
+
+  <section class="controls-panel">
+    <div class="filter-grid">
+      <label class="control-field">
+        <span><mat-icon>work_outline</mat-icon> Role</span>
+        <mat-select [(ngModel)]="selectedRole" (selectionChange)="applyFilters()" placeholder="All Roles">
+          @for (role of roles; track role.value) {
+            <mat-option [value]="role.value">{{ role.label }}</mat-option>
+          }
+        </mat-select>
+      </label>
+
+      <label class="control-field">
+        <span><mat-icon>person_search</mat-icon> Staff</span>
+        <mat-select [(ngModel)]="selectedStaffId" (selectionChange)="applyFilters()" placeholder="All Staff">
+          <mat-option value="">All Staff</mat-option>
+          @for (staff of allStaff; track staff.id) {
+            <mat-option [value]="staff.id">{{ staff.name }}</mat-option>
+          }
+        </mat-select>
+      </label>
+
+      <label class="control-field date-control">
+        <span><mat-icon>event</mat-icon> Start</span>
+        <input matInput [matDatepicker]="startPicker" [(ngModel)]="startDate" (dateChange)="applyFilters()" placeholder="Any date">
+        <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+        <mat-datepicker #startPicker></mat-datepicker>
+      </label>
+
+      <label class="control-field date-control">
+        <span><mat-icon>event_available</mat-icon> End</span>
+        <input matInput [matDatepicker]="endPicker" [(ngModel)]="endDate" (dateChange)="applyFilters()" placeholder="Any date">
+        <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
+        <mat-datepicker #endPicker></mat-datepicker>
+      </label>
+
+      <button class="reset-action" (click)="resetFilters()" matTooltip="Clear all filters">
+        <mat-icon>restart_alt</mat-icon>
+        Reset
+      </button>
+    </div>
+
+    <div class="sort-row">
+      <span>Sort</span>
+      <button class="sort-chip" [class.active]="sortBy === 'assignments'" (click)="toggleSort('assignments')">
+        Assignments
+        @if (sortBy === 'assignments') {
+          <mat-icon>{{ sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</mat-icon>
+        }
+      </button>
+      <button class="sort-chip" [class.active]="sortBy === 'active'" (click)="toggleSort('active')">
+        Active
+        @if (sortBy === 'active') {
+          <mat-icon>{{ sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</mat-icon>
+        }
+      </button>
+      <button class="sort-chip" [class.active]="sortBy === 'name'" (click)="toggleSort('name')">
+        Name
+        @if (sortBy === 'name') {
+          <mat-icon>{{ sortOrder === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</mat-icon>
+        }
+      </button>
     </div>
   </section>
 
-  <!-- Loading State (Skeletons) -->
   @if (isLoading) {
-    <div class="resources-grid-modern">
+    <div class="resources-grid">
       @for (i of [1,2,3,4,5,6]; track i) {
-        <div class="resource-card-modern skeleton">
-          <div class="skeleton-header">
+        <div class="resource-skeleton">
+          <div class="skeleton-head">
             <div class="skeleton-avatar"></div>
-            <div class="skeleton-text-group">
+            <div>
               <div class="skeleton-line title"></div>
-              <div class="skeleton-line subtitle"></div>
+              <div class="skeleton-line sub"></div>
             </div>
           </div>
-          <div class="skeleton-content">
-            <div class="skeleton-box"></div>
-            <div class="skeleton-line full"></div>
-            <div class="skeleton-line full"></div>
-          </div>
+          <div class="skeleton-block"></div>
+          <div class="skeleton-line"></div>
+          <div class="skeleton-line short"></div>
         </div>
       }
     </div>
   } @else {
-    <!-- Resource Grid -->
-    <div class="resources-grid-modern">
-      @for (staff of filteredWorkload; track staff.staffId; let i = $index) {
-        <!-- Staff Cards -->
-        <article 
-                 class="resource-card-modern animate-slide-up"
-                 [style.animation-delay]="(i * 0.05) + 's'">
-          
-          <div class="card-glow"></div>
-          
-          <div class="card-main-content">
-            <!-- Staff Header -->
-            <div class="staff-header-row">
-              <div class="staff-avatar-wrapper">
-                <div class="avatar-circle" [ngClass]="getRoleClass(staff.role)">
-                  {{ getInitials(staff.fullName) }}
-                </div>
-                <div class="availability-status" [ngClass]="getAvailabilityStatus(staff)">
-                  <span class="status-dot"></span>
-                  {{ getAvailabilityStatus(staff) | titlecase }}
-                </div>
-              </div>
-              
-              <div class="staff-meta">
-                <h3 class="staff-name">{{ staff.fullName }}</h3>
-                <div class="staff-labels">
-                  <span class="role-badge" [ngClass]="getRoleClass(staff.role)">
-                    <mat-icon>{{ staff.role === 'Expert' ? 'workspace_premium' : 'videocam' }}</mat-icon>
-                    {{ staff.role }}
-                  </span>
-                  <span class="dept-info">{{ staff.departmentName }}</span>
-                </div>
-              </div>
+    <div class="resources-grid">
+      <ng-container *ngIf="filteredWorkload.length > 0; else emptyState">
+        <app-workload-card
+          *ngFor="let staff of filteredWorkload"
+          [staff]="staff"
+          (refreshed)="loadWorkload()">
+        </app-workload-card>
+      </ng-container>
 
-              <button class="btn-action-ghost" [routerLink]="['/admin/dashboard']" [queryParams]="{ staffId: staff.staffId }" matTooltip="Detailed Analytics">
-                <mat-icon>bar_chart</mat-icon>
-              </button>
-            </div>
-
-            <!-- Workload Analytics -->
-            <div class="workload-stats-card">
-              <div class="utilization-section">
-                <div class="utilization-header">
-                  <span class="label">Current Load</span>
-                  <span class="value" [ngClass]="getAvailabilityStatus(staff)">{{ getUtilizationPercentage(staff) }}%</span>
-                </div>
-                <div class="custom-progress-container">
-                  <div class="progress-track">
-                    <div class="progress-bar" 
-                         [ngClass]="getAvailabilityStatus(staff)"
-                         [style.width.%]="getUtilizationPercentage(staff)">
-                      <div class="bar-glow"></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="stats-counter-grid">
-                <div class="counter-item">
-                  <span class="count">{{ staff.totalAssignments }}</span>
-                  <span class="label">Total</span>
-                </div>
-                <div class="counter-item active">
-                  <span class="count">{{ staff.scheduledAssignments }}</span>
-                  <span class="label">Active</span>
-                </div>
-                <div class="counter-item">
-                  <span class="count">{{ staff.pastAssignments }}</span>
-                  <span class="label">History</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Activity Timeline -->
-            @if (staff.events.length > 0) {
-              <div class="timeline-section">
-                <div class="timeline-header">
-                  <h4>Recent Assignments</h4>
-                  <span class="count-pill">{{ staff.events.length }}</span>
-                </div>
-
-                <div class="timeline-list">
-                  @for (event of getRecentEvents(staff.events); track event.eventId) {
-                    <div class="timeline-card"
-                         [routerLink]="['/events', event.eventId]">
-                      <div class="event-status-line" [ngClass]="getStatusClass(event.status)"></div>
-                      <div class="event-info">
-                        <span class="title">{{ event.title }}</span>
-                        <div class="meta">
-                          <span class="date">
-                            <mat-icon>event</mat-icon>
-                            {{ event.startDate | date:'MMM d, yyyy' }}
-                          </span>
-                          <span class="dot">•</span>
-                          <span class="status-text">{{ event.status }}</span>
-                        </div>
-                      </div>
-                      <mat-icon class="action-icon">chevron_right</mat-icon>
-                    </div>
-                  }
-                </div>
-
-                @if (staff.events.length > 3) {
-                  <button 
-                          class="btn-show-more" 
-                          (click)="toggleExpandedView(staff)">
-                    <span>{{ isExpanded(staff) ? 'Hide details' : 'View ' + (staff.events.length - 3) + ' more' }}</span>
-                    <mat-icon>{{ isExpanded(staff) ? 'expand_less' : 'expand_more' }}</mat-icon>
-                  </button>
-                }
-              </div>
-            } @else {
-              <!-- No Activity State -->
-              <div class="no-data-placeholder">
-                <mat-icon>event_available</mat-icon>
-                <p>No active assignments assigned</p>
-              </div>
-            }
-          </div>
-        </article>
-      } @empty {
-        <!-- Empty State -->
-        <div class="empty-state-modern animate-fade-in">
-          <div class="empty-state-visual">
-            <mat-icon>person_off</mat-icon>
-            <div class="pulse-ring"></div>
-          </div>
-          <h3>No matching records</h3>
-          <p>Try adjusting your search filters or date range.</p>
-          <button class="btn-premium secondary" (click)="resetFilters()">Reset Dashboard</button>
+      <ng-template #emptyState>
+        <div class="empty-state">
+          <mat-icon>person_off</mat-icon>
+          <h3>No workload records found</h3>
+          <p>Try a wider date range or clear one of the filters.</p>
+          <button class="primary-action" (click)="resetFilters()">
+            <mat-icon>restart_alt</mat-icon>
+            Reset filters
+          </button>
         </div>
-      }
+      </ng-template>
     </div>
   }
 </div>

@@ -15,10 +15,12 @@ namespace EEP.EventManagement.Api.Controllers
     public class ReportsController : ControllerBase
     {
         private readonly IMediator _mediator;
+        private readonly IAuthorizationService _authorizationService;
 
-        public ReportsController(IMediator mediator)
+        public ReportsController(IMediator mediator, IAuthorizationService authorizationService)
         {
             _mediator = mediator;
+            _authorizationService = authorizationService;
         }
 
         [HttpGet("summary")]
@@ -31,13 +33,23 @@ namespace EEP.EventManagement.Api.Controllers
         }
 
         [HttpGet("staff-workload")]
-        [Authorize(Roles = "Admin,Manager")]
+        [Authorize]
         public async Task<ActionResult<List<StaffWorkloadDto>>> GetStaffWorkload(
             [FromQuery] DateTime? startDate, 
             [FromQuery] DateTime? endDate, 
             [FromQuery] string? role,
             [FromQuery] Guid? staffId)
         {
+            // Allow Admin, Manager or Communication Manager (use existing policy)
+            var isAdmin = User.IsInRole("Admin");
+            var isManager = User.IsInRole("Manager");
+            var isCommunicationManagerAuth = await _authorizationService.AuthorizeAsync(User, null, Infrastructure.Security.Authorization.AuthorizationPolicies.IsCommunicationManager);
+
+            if (!isAdmin && !isManager && !isCommunicationManagerAuth.Succeeded)
+            {
+                return Forbid();
+            }
+
             var query = new GetStaffWorkloadQuery 
             { 
                 StartDate = startDate, 

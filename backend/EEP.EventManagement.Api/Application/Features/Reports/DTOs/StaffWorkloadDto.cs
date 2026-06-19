@@ -19,8 +19,11 @@ namespace EEP.EventManagement.Api.Application.Features.Reports.DTOs
 
     public class StaffEventSummaryDto
     {
+        public Guid AssignmentId { get; set; }
         public Guid EventId { get; set; }
         public string Title { get; set; } = string.Empty;
+        public string? EventPlace { get; set; }
+        public string? EventDepartmentName { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public string Status { get; set; } = string.Empty;
