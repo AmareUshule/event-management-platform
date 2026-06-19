@@ -332,9 +332,12 @@ export class AuthService {
 
     // Map backend role string into our canonical role set.
     // Any role that is not Admin/Manager/Expert/Cameraman is treated as Employee.
-    const backendRole = response.role;
+    const backendRole = response.role || '';
+    const backendRoleNormalized = backendRole.toString().trim().toLowerCase();
     const knownRoles = [ROLES.Admin, ROLES.Manager, ROLES.Expert, ROLES.Cameraman];
-    const mappedRole = knownRoles.includes(backendRole) ? backendRole : ROLES.Employee;
+    // Match known roles case-insensitively and map to canonical role string
+    const matched = knownRoles.find(r => r.toLowerCase() === backendRoleNormalized);
+    const mappedRole = matched ?? ROLES.Employee;
 
     return {
       employeeId: employeeId,
