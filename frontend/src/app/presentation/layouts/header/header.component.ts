@@ -139,6 +139,10 @@ export class HeaderComponent implements OnInit, OnDestroy {
     return this.authService.isAdmin();
   }
 
+  isCommunicationManager(): boolean {
+    return this.authService.isCommunicationManager();
+  }
+
   isInCommunicationDepartment(): boolean {
     return this.authService.isInCommunicationDepartment();
   }

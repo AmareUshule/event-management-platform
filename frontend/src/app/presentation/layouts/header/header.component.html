@@ -28,7 +28,7 @@
             <mat-icon>photo_library</mat-icon>
             <span>Gallery</span>
           </a>
-          <a class="nav-link" routerLink="/staff-workload" [routerLinkActive]="['active']" *ngIf="isAdmin() || isInCommunicationDepartment()">
+          <a class="nav-link" routerLink="/staff-workload" [routerLinkActive]="['active']" *ngIf="isAdmin() || isCommunicationManager()">
             <mat-icon>analytics</mat-icon>
             <span>Workload</span>
           </a>
@@ -167,7 +167,7 @@
         <mat-icon>photo_library</mat-icon>
         Gallery
       </a>
-      <a class="sheet-link" routerLink="/staff-workload" *ngIf="isAdmin() || isInCommunicationDepartment()" (click)="toggleMobileMenu()">
+      <a class="sheet-link" routerLink="/staff-workload" *ngIf="isAdmin() || isCommunicationManager()" (click)="toggleMobileMenu()">
         <mat-icon>analytics</mat-icon>
         Workload
       </a>

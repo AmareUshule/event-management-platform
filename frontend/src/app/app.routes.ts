@@ -4,7 +4,7 @@ import { HomeComponent } from './presentation/features/home/home.component';
 import { LoginComponent } from './presentation/features/login/login.component';
 import { authGuard } from './core/guards/auth.guard';
 import { roleGuard } from './core/guards/role.guard';
-import { communicationManagerGuard } from './core/guards/communication-manager.guard';
+import { adminOrCommManagerGuard } from './core/guards/admin-or-comm-manager.guard';
 import { MainLayoutComponent } from './presentation/layouts/main-layout.component';
 
 export const appRoutes: Routes = [
@@ -86,14 +86,13 @@ export const appRoutes: Routes = [
         path: '',
         loadComponent: () => import('./presentation/features/reports/pages/staff-workload/staff-workload.component')
           .then(m => m.StaffWorkloadComponent),
-        // Allow Admin, Manager, or Communication Manager
-        canActivate: [communicationManagerGuard]
+        canActivate: [adminOrCommManagerGuard]
       },
       {
         path: ':staffId',
         loadComponent: () => import('./presentation/features/reports/pages/workload-detail/workload-detail-page.component')
           .then(m => m.WorkloadDetailPageComponent),
-        canActivate: [communicationManagerGuard]
+        canActivate: [adminOrCommManagerGuard]
       }
     ]
   },

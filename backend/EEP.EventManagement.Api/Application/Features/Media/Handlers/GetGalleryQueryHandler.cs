@@ -31,9 +31,14 @@ namespace EEP.EventManagement.Api.Application.Features.Media.Handlers
                 EventStatus.Covered
             };
 
+            // Define the media types allowed in the gallery.
+            var allowedMediaTypes = new[] { MediaType.Image, MediaType.Video };
+
             var galleryMedia = await _context.MediaFiles
                 .Include(media => media.Event) // Include the related Event data
-                .Where(media => media.Event != null && publicEventStatuses.Contains(media.Event.Status))
+                .Where(media => media.Event != null 
+                                && publicEventStatuses.Contains(media.Event.Status)
+                                && allowedMediaTypes.Contains(media.FileType))
                 .OrderByDescending(media => media.Event.StartDate)
                 .Select(media => new GalleryMediaDto
                 {
