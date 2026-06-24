@@ -1,110 +1,65 @@
-# EventManagementPlatform
+# EEMS Frontend Application
 
-<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
+This document provides developer-focused guidance for the Angular frontend of the EEP Event Management System (EEMS).
 
-✨ Your new, shiny [Nx workspace](https://nx.dev) is ready ✨.
+---
 
-[Learn more about this workspace setup and its capabilities](https://nx.dev/getting-started/tutorials/angular-standalone-tutorial?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
+## 1. Overview
 
-## Run tasks
+This is an Angular 19+ application built using the [Nx](https://nx.dev/) workspace toolkit. It serves as the user interface for the EEMS platform, communicating with the backend via a REST API. It uses Angular Material for UI components and implements a role-based access control system to provide tailored experiences for different users.
 
-To run the dev server for your app, use:
+---
 
-```sh
-npx nx serve event-management-platform
+## 2. Running the Application
+
+### Prerequisites
+*   Node.js (LTS version)
+*   npm or yarn
+
+### Installation
+Navigate to the `frontend` directory and install the required dependencies.
+```bash
+cd frontend
+npm install
 ```
 
-To create a production bundle:
-
-```sh
-npx nx build event-management-platform
+### Development Server
+Run the following command to start the local development server.
+```bash
+nx serve
 ```
+The application will be available at `http://localhost:4200`. The backend API must be running for the application to function correctly.
 
-To see all available targets to run for a project, run:
+---
 
-```sh
-npx nx show project event-management-platform
-```
+## 3. Project Structure
 
-These targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
+The application code is organized into three main directories within `src/app`:
 
-[More about running tasks in the docs &raquo;](https://nx.dev/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+*   `/core`: Contains singleton services, authentication logic, guards, interceptors, and application-wide models. Any service that should have only one instance in the application belongs here (e.g., `AuthService`, `NotificationService`).
+*   `/shared`: Contains reusable components, directives, and pipes that are not specific to any single feature. Examples include custom button components, page headers, or formatting pipes.
+*   `/features`: Contains the main features of the application, with each feature organized into its own module or set of components. This includes pages like `/dashboard`, `/events`, and `/gallery`.
 
-## Add new projects
+---
 
-While you could add new projects to your workspace manually, you might want to leverage [Nx plugins](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) and their [code generation](https://nx.dev/features/generate-code?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) feature.
+## 4. Authentication & Authorization
 
-Use the plugin's generator to create new projects.
+Client-side authorization is handled through a combination of services and route guards.
 
-To generate a new application, use:
+*   **`AuthService` (`src/app/core/auth/auth.service.ts`)**: This is the central service for all authentication-related logic. It holds the current user's information, roles, and permissions. It provides helper methods like `isAdmin()`, `isManager()`, and `isCommunicationManager()` that are used throughout the application to control access.
 
-```sh
-npx nx g @nx/angular:app demo
-```
+*   **Route Guards (`src/app/core/guards/`)**: The application uses functional route guards (`canActivate`) to protect entire pages or features from unauthorized access.
+    *   **`auth.guard.ts`**: Ensures a user is logged in before they can access any protected route.
+    *   **`admin-or-comm-manager.guard.ts`**: An example of a role-specific guard that restricts access to a route to only the specified roles.
 
-To generate a new library, use:
+*   **UI-Level Control**: Within components, `*ngIf` directives are used in the HTML templates to show or hide specific UI elements (like buttons or menu items) based on the user's role by calling methods on the `AuthService`. This prevents users from seeing actions they are not authorized to perform.
 
-```sh
-npx nx g @nx/angular:lib mylib
-```
+---
 
-You can use `npx nx list` to get a list of installed plugins. Then, run `npx nx list <plugin-name>` to learn about more specific capabilities of a particular plugin. Alternatively, [install Nx Console](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) to browse plugins and generators in your IDE.
+## 5. Key UI Features
 
-[Learn more about Nx plugins &raquo;](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) | [Browse the plugin registry &raquo;](https://nx.dev/plugin-registry?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Set up CI!
-
-### Step 1
-
-To connect to Nx Cloud, run the following command:
-
-```sh
-npx nx connect
-```
-
-Connecting to Nx Cloud ensures a [fast and scalable CI](https://nx.dev/ci/intro/why-nx-cloud?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) pipeline. It includes features such as:
-
-- [Remote caching](https://nx.dev/ci/features/remote-cache?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task distribution across multiple machines](https://nx.dev/ci/features/distribute-task-execution?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Automated e2e test splitting](https://nx.dev/ci/features/split-e2e-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task flakiness detection and rerunning](https://nx.dev/ci/features/flaky-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-### Step 2
-
-Use the following command to configure a CI workflow for your workspace:
-
-```sh
-npx nx g ci-workflow
-```
-
-[Learn more about Nx on CI](https://nx.dev/ci/intro/ci-with-nx#ready-get-started-with-your-provider?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Install Nx Console
-
-Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
-
-[Install Nx Console &raquo;](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Useful links
-
-Learn more:
-
-- [Learn more about this workspace setup](https://nx.dev/getting-started/tutorials/angular-standalone-tutorial?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects)
-- [Learn about Nx on CI](https://nx.dev/ci/intro/ci-with-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Releasing Packages with Nx release](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [What are Nx plugins?](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-And join the Nx community:
-- [Discord](https://go.nx.dev/community)
-- [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
-- [Our Youtube channel](https://www.youtube.com/@nxdevtools)
-- [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-<<<<<<< HEAD
-=======
-
-
-# Author
-
-1. Amare Ushule
-2. Solomon Ferede
->>>>>>> f84a1d540d0e6d261c1eeb1f979fde6af1ae5672
+*   **Dashboard**: A role-based landing page that provides at-a-glance statistics and quick access to relevant action items (e.g., events pending approval for a manager, or assigned events for staff).
+*   **Event Discovery**: A searchable and filterable catalog of all public events. Accessible to all authenticated users.
+*   **Event Management**: A full suite of components for creating, editing, and managing the lifecycle of events.
+*   **Media Gallery**: A visual grid displaying all images and videos from public events.
+*   **Workload**: A restricted page for Admins and Communication Managers to view staff assignments and workload metrics.

@@ -10,20 +10,23 @@ The **EEP Event Management System (EEMS)** is a centralized digital platform for
 ### 2.1 Role Definitions
 | Role | Description |
 | :--- | :--- |
-| **Admin** | Full system access, audit logs, user management, and global configuration. |
-| **Communication Manager** | Responsible for approving events, assigning media staff, and publishing internal announcements. (Role = `Manager` AND Dept = `Communication`) |
-| **Department Manager** | Creates event requests for their specific department and manages their own department's announcements. |
-| **Staff (Expert/Cameraman)**| Communication team members assigned to cover events. Can upload media and manage assignments. |
-| **Employee** | Standard users who can view published events and announcements. |
+| **Admin** | Full system access, audit logs, user management, and global configuration. Sees all data. |
+| **Communication Manager** | Global-view manager. Can approve events, assign media staff, and publish announcements for all departments. Has exclusive access to the Workload page. |
+| **Department Manager** | Creates event requests for their specific department and manages their own department's announcements. View is restricted to their own department's events. |
+| **Staff (Expert/Cameraman)**| Communication team members assigned to cover events. Can upload media and manage assignments for events they are assigned to. |
+| **Employee** | Standard users who can view published events and announcements on the discovery and gallery pages. |
 
 ### 2.2 Permissions Matrix
 | Action | Admin | Comm. Manager | Dept. Manager | Staff | Employee |
 | :--- | :---: | :---: | :---: | :---: | :---: |
 | **Create Event** | ✓ | ✓ | ✓ | ✗ | ✗ |
 | **Approve/Assign Event** | ✓ | ✓ | ✗ | ✗ | ✗ |
-| **Upload Event Media** | ✓ | ✓ | ✗ | ✓ (if assigned) | ✗ |
+| **Upload Event Media** | ✓ | ✓ (if assigned) | ✗ | ✓ (if assigned) | ✗ |
 | **Create Announcement** | ✓ | ✓ | ✓ | ✗ | ✗ |
 | **Publish Announcement** | ✓ | ✓ | ✗ | ✗ | ✗ |
+| **View Discovery Page**| ✓ | ✓ | ✓ | ✓ | ✓ |
+| **View Gallery Page** | ✓ | ✓ | ✓ | ✓ | ✓ |
+| **View Workload Page** | ✓ | ✓ | ✗ | ✗ | ✗ |
 | **View Audit Logs** | ✓ | ✗ | ✗ | ✗ | ✗ |
 | **View Statistics** | ✓ | ✓ | ✓ (Own Dept) | ✗ | ✗ |
 
@@ -43,7 +46,8 @@ The system supports three distinct announcement types to match organizational wo
 3.  **Document Post**: Specifically designed to replace manual Telegram conversion. Allows managers to upload **PDFs** or **Multiple Images** directly.
 
 ### 3.3 Media & Document Handling
-- **Image Gallery**: Automatic gallery view for all uploaded images within an announcement or event.
+- **Event-Specific Media**: Users can upload media directly to an event they are assigned to.
+- **Media Gallery**: A global, filterable gallery page accessible to all users. It displays all images and videos from public events, providing a centralized visual repository of the organization's activities.
 - **Embedded PDF Viewer**: Direct on-page viewing of PDF documents (800px height) without requiring downloads or new tabs.
 - **Support Formats**: `.jpg`, `.jpeg`, `.png`, `.webp`, and `.pdf`.
 - **Sequential Uploads**: Robust multi-file upload handling during the creation and editing phases.

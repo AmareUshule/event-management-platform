@@ -1,14 +1,19 @@
 # EEP Event Management System (EEMS)
 
-## Developer README
-
-This document provides **developer-focused guidance** for setting up, understanding, and contributing to the EEP Event Management System based on the approved PRD.
+This document provides developer-focused guidance for setting up, understanding, and contributing to the EEP Event Management System.
 
 ---
 
 ## 1. System Overview
 
-EEMS is a **single monolithic web application** that enables centralized event management, approval workflows, communication staff assignment, and media support storage for Ethiopian Electric Power (EEP).
+EEMS is a comprehensive web application that enables centralized event management, approval workflows, communication staff assignment, and media support storage for Ethiopian Electric Power (EEP).
+
+### Key Features
+*   **Role-Based Dashboards**: Tailored views for different user roles, providing relevant statistics and action items.
+*   **Event Discovery**: A public catalog for all users to browse scheduled and active events across the organization.
+*   **Media Gallery**: A visual gallery displaying all images and videos from public events.
+*   **Approval Workflows**: Multi-step workflows for event creation, approval, cancellation, and staff assignment.
+*   **User & Department Management**: Administrative control over users and organizational departments.
 
 ### High-Level Architecture
 
@@ -26,41 +31,44 @@ PostgreSQL (Database)
 
 | Layer        | Technology                    |
 | ------------ | ----------------------------- |
-| Frontend     | Angular (latest LTS)          |
+| Frontend     | Angular (with Nx Workspaces)  |
 | Backend      | ASP.NET Core Web API          |
 | Database     | PostgreSQL                    |
 | Auth         | Role + Department based RBAC  |
-| Architecture | Single monolithic application |
+| Architecture | Monolithic Application        |
 
 ---
 
 ## 3. Role & Authorization Logic (Critical)
 
-Authorization is determined by **Role + Department**.
+Authorization is determined by a combination of a user's **Role** and, for Managers, their **Department**.
 
 ### Role Resolution Rules
 
 ```text
 IF role == Admin
-  → Full access
+  → Full system access. Can view and manage all data across all departments.
 
-IF role == Manager AND department == Communication
-  → Communication Manager permissions
+IF role == Manager AND department == Communication (Communication Manager)
+  → Global view access, similar to Admin. Can manage and approve events across all departments. Has exclusive access to the Staff Workload page.
 
-IF role == Manager AND department != Communication
-  → Department Manager permissions
+IF role == Manager AND department != Communication (Department Manager)
+  → Restricted access. View is limited to events within their own department. Can create and manage events for their department.
 
-IF role == Staff
-  → Communication Expert / Camera Man permissions
+IF role == Staff (Expert / Cameraman)
+  → Task-based access. View is primarily limited to events they are assigned to.
+
 IF role == Employee
-  → View events/View department-level data
+  → General access. Can view public event data on pages like the Discovery and Gallery.
 ```
 
-> ⚠️ This logic must be enforced **both in the API (policies)** and **UI (guards)**.
+> ⚠️ This logic is enforced **both in the API (policies)** and **UI (guards and component logic)**.
 
 ---
 
 ## 4. Event Workflow (Backend-Enforced)
+
+The system enforces a strict lifecycle for events to ensure proper procedure.
 
 ```text
 Draft → Scheduled → Ongoing → Completed → Covered/Uncovered -> Cancelled
@@ -68,63 +76,22 @@ Draft → Scheduled → Ongoing → Completed → Covered/Uncovered -> Cancelled
 
 ### Important Rules
 
-* Events **cannot be approved** without assigning communication staff
-* Approved events are **read-only** (except system status updates)
-* Assignment and approval happen in a **single transaction**
+* Events cannot be approved without assigning communication staff.
+* Approved events are read-only (except for status changes managed by the system).
+* Assignment and approval workflows are handled via dedicated endpoints.
 
 ---
 
 ## 5. Core Domain Models (Conceptual)
 
-### User
+The system revolves around several core data models. *This is a simplified representation.*
 
-* Id
-* Name
-* Email
-* Role (Admin | Manager | Staff)
-* Department
-* IsActive
-
-### Event
-
-* Id
-* Title
-* Description
-* EventCategory
-* event_type ('PHYSICAL','VIRTUAL')
-* location
-* Department
-* StartDate / EndDate
-* Status
-* CreatedBy
-
-### Assignment
-
-* Id
-* EventId
-* StaffUserId
-* Status (Assigned | Accepted | Declined)
-* DeclineReason (nullable)
-* Timestamp
-
-### Media
-
-* Id
-* EventId
-* UploadedBy
-* Type (Photo | Document | Link)
-* FilePath / ExternalUrl
-* Size
-* CreatedAt
-
-### AuditLog
-
-* Id
-* EntityType
-* EntityId
-* Action
-* PerformedBy
-* Timestamp
+*   **User**: Represents an employee with a specific role and department.
+*   **Event**: The central model, containing all details about a scheduled activity.
+*   **Assignment**: Links a `User` (Staff) to an `Event` with a specific role.
+*   **Media**: Represents a file (image, video, etc.) uploaded and associated with an `Event`.
+*   **Department**: An organizational unit that users and events belong to.
+*   **AuditLog**: Records significant actions taken by users for traceability.
 
 ---
 
@@ -132,70 +99,66 @@ Draft → Scheduled → Ongoing → Completed → Covered/Uncovered -> Cancelled
 
 ### REST Principles
 
-* Use RESTful endpoints
-* Enforce authorization at controller/service level
-* Validate role and department on every protected endpoint
+* Use RESTful endpoints and standard HTTP verbs.
+* Enforce authorization at the controller/handler level using policies and role checks.
+* Validate all incoming data using FluentValidation.
 
 ### Example Endpoints
 
 ```
+// Events
 POST   /api/events
-POST   /api/events/{id}/submit
+GET    /api/events/discovery
+GET    /api/events/{id}
+
+// Media
+GET    /api/media/gallery
+POST   /api/media/upload
+
+// Approvals & Assignments
 POST   /api/events/{id}/approve
 POST   /api/events/{id}/assignments
-POST   /api/assignments/{id}/accept
-POST   /api/assignments/{id}/decline
-POST   /api/events/{id}/media
-GET    /api/dashboard
 ```
 
 ---
 
 ## 7. Media Upload Rules
 
-* Max file size: **5 MB**
-* Allowed types:
-
-  * Images
-  * Documents
-  * External links
-* Only assigned staff or communication managers may upload/delete
-* Backend must validate:
-
-  * Assignment exists
-  * Event status allows upload
+*   Max file size is configured via environment settings.
+*   Allowed types include Images, Videos, Documents, and external links.
+*   Only Admins or staff specifically assigned to an event may upload media.
+*   Backend validates that the event status allows for media uploads.
 
 ---
 
 ## 8. Frontend Guidelines (Angular)
 
-### Recommended Structure
+### Structure
 
+The frontend is an [Nx](https://nx.dev/) workspace.
 ```
 /app
-  /core        → auth, guards, services
-  /shared     → reusable components
-  /features
+  /core        → auth, guards, global services, interceptors
+  /shared      → reusable components, pipes, directives
+  /features    → distinct application features (e.g., events, dashboard)
     /events
-    /assignments
-    /media
     /dashboard
+    /gallery
 ```
 
 ### UI Rules
 
-* Hide actions user cannot perform (do not rely only on backend errors)
-* Display event status clearly
-* Show assignment acceptance/decline actions only to assigned staff
+*   **Hide actions the user cannot perform.** UI elements for unauthorized actions should be hidden with `*ngIf` based on role checks from `AuthService`. Do not rely solely on backend 403 errors.
+*   Clearly display the status of all entities (Events, Assignments, etc.).
+*   Use route guards (`canActivate`) to protect entire pages/features from unauthorized roles.
 
 ---
 
 ## 9. Database Guidelines
 
-* Use migrations for schema changes
-* Enforce foreign keys
-* Prefer soft-delete or archive for events
-* Assignment and audit tables are **append-only**
+*   Use Entity Framework Core migrations for all schema changes.
+*   Enforce foreign keys and relationships at the database level.
+*   Critical data like Events should use a soft-delete or archive pattern where possible.
 
 ---
 
@@ -203,98 +166,74 @@ GET    /api/dashboard
 
 ### Prerequisites
 
-* Node.js (LTS)
-* npm
-* .NET SDK (latest LTS)
-* PostgreSQL
+*   Node.js (LTS version)
+*   npm or yarn
+*   .NET SDK (latest LTS version)
+*   PostgreSQL Server
 
 ### Clone Repository
 
 ```bash
-git clone git@github.com:AmareUshule/event-management-platform.git
+git clone <your-repo-url>
 cd event-management-platform
 ```
 
-### Run Frontend
+### Backend Setup
 
-```bash
-cd frontend
-npm install
-npm start
-```
+1.  **Configure `appsettings.json`**: In `backend/EEP.EventManagement.Api/`, update `appsettings.Development.json` with your PostgreSQL connection string and other required settings.
+2.  **Apply Migrations**:
+    ```bash
+    cd backend/EEP.EventManagement.Api
+    dotnet ef database update
+    ```
+3.  **Run the API**:
+    ```bash
+    # From the root directory
+    dotnet run --project backend/EEP.EventManagement.Api
+    ```
+The backend API will be available at `http://localhost:8080` (or as configured).
 
-The frontend will be available at:
+### Frontend Setup
 
-```
-http://localhost:4200
-```
-
-### Run Backend
-
-```bash
-cd backend
-dotnet restore
-dotnet run
-```
-
-The backend API will be available at:
-
-```
-https://localhost:5001
-```
+1.  **Install Dependencies**:
+    ```bash
+    cd frontend
+    npm install
+    ```
+2.  **Run the Application**:
+    ```bash
+    nx serve
+    ```
+The frontend will be available at `http://localhost:4200`.
 
 ---
 
 ## 11. Environment Configuration
 
-### Required Configuration (Example)
+The project requires environment variables for both frontend and backend.
 
+### Backend (`appsettings.json`)
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=localhost;Port=5432;Database=eep_events;User Id=postgres;Password=password;"
+  },
+  "JwtSettings": {
+    "Secret": "YOUR_SUPER_SECRET_JWT_KEY_THAT_IS_LONG",
+    "Issuer": "EEP.EventManagement.Api",
+    "Audience": "EEP.EventManagement.Users"
+  }
+}
 ```
-DB_CONNECTION_STRING=
-JWT_SECRET=
-FILE_STORAGE_PATH=
-MAX_UPLOAD_SIZE_MB=5
+
+### Frontend (`frontend/src/environments/environment.ts`)
+```typescript
+export const environment = {
+  production: false,
+  apiUrl: 'http://localhost:8080' // Your backend API URL
+};
 ```
 
 ---
-
-## 11. Development Workflow
-
-1. Create feature branch
-2. Implement backend logic with policy checks
-3. Implement frontend UI with guards
-4. Add audit logging
-5. Test role-based access
-6. Create pull request
-
----
-
-## 12. Testing Guidelines
-
-* Unit test authorization rules
-* Test approval + assignment atomicity
-* Test media upload permission boundaries
-* Verify dashboard data scoping
-
----
-
-## 13. Reference Documents
-
-* Product Requirements Document (PRD)
-* System Architecture (to be added)
-* ERD (to be added)
-
----
-
-## Project Status
-
-Design complete. Ready for:
-
-* ERD design
-* API contract definition
-* Sprint planning
-
----
-
 **EEP Event Management System (EEMS)**
 Developer Documentation

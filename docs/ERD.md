@@ -1,184 +1,177 @@
-# **EEP Event Management System – ERD Table List (PostgreSQL)**
+# EEP Event Management System – Entity-Relationship Diagram
+
+This document provides a detailed overview of the database schema, generated from the final EF Core model snapshot. It represents the exact structure of the database.
 
 ---
 
-### 1. **Departments**
+## 1. Visual Diagram (Mermaid)
 
-| Field         | Data Type    | Constraints      |
-| ------------- | ------------ | ---------------- |
-| department_id | SERIAL       | PK               |
-| name          | VARCHAR(100) | NOT NULL, UNIQUE |
-| description   | TEXT         | NULL             |
-| created_at    | TIMESTAMP    | DEFAULT now()    |
-| updated_at    | TIMESTAMP    | DEFAULT now()    |
+This diagram shows the primary relationships between the core entities. Note that `AspNetUsers` contains many more identity-related fields not shown here.
 
----
+```mermaid
+erDiagram
+    AspNetUsers {
+        UUID Id PK
+        string FirstName
+        string LastName
+        string Email
+        UUID DepartmentId FK
+    }
 
-### 2. **Users**
+    Departments {
+        UUID Id PK
+        string Name
+    }
 
-| Field         | Data Type    | Constraints                                          |
-| ------------- | ------------ | ---------------------------------------------------- |
-| id            | SERIAL       | PK                                                   |
-| first_name    | VARCHAR(50)  | NOT NULL                                             |
-| last_name     | VARCHAR(50)  | NOT NULL                                             |
-| email         | VARCHAR(100) | NOT NULL, UNIQUE                                     |
-| role          | VARCHAR(20)  | NOT NULL (`Admin`, `Manager`, `expert`, `cameraman`) |
-| department_id | INT          | FK → Departments(department_id), NOT NULL            |
-| password      | VARCHAR(50)  | DEFAULT now()                                        |
-| created_at    | TIMESTAMP    | DEFAULT now()                                        |
-| updated_at    | TIMESTAMP    | DEFAULT now()                                        |
+    Events {
+        UUID Id PK
+        string Title
+        string Status
+        string Category
+        string EventPlace
+        timestamp StartDate
+        timestamp EndDate
+        string ClosureComment
+        UUID DepartmentId FK
+        UUID CreatedBy FK
+        UUID ApprovedBy FK
+        UUID FinalizedBy FK
+    }
 
----
+    Assignments {
+        UUID Id PK
+        string Role
+        string Status
+        UUID EventId FK
+        UUID EmployeeId FK
+        UUID AssignedBy FK
+    }
 
-### 3. **Events**
+    MediaFiles {
+        UUID Id PK
+        string FilePath
+        integer FileType
+        UUID EventId FK
+        UUID UploadedBy FK
+    }
 
-| Field         | Data Type    | Constraints                                                                                  |
-| ------------- | ------------ | -------------------------------------------------------------------------------------------- |
-| id      | SERIAL       | PK                                                                                           |
-| title         | VARCHAR(150) | NOT NULL                                                                                     |
-| description   | TEXT         | NULL                                                                                         |
-| department_id | INT          | FK → Departments(department_id), NOT NULL                                                    |
-| event_place    | varchar    | NULL                                                                                |
-| start_date    | TIMESTAMP    | NOT NULL                                                                                     |
-| end_date      | TIMESTAMP    | NOT NULL                                                                                     |
-| status        | VARCHAR(20)  | NOT NULL (`Draft`, `Scheduled`, `Ongoing`, `Completed`, `Covered/Uncovered`, `Cancelled`) |
-| created_by    | INT          | FK → Users(user_id), NOT NULL                                                                |
-| approved_by   | INT          | FK → Users(user_id), NULL                                                                    |
-| created_at    | TIMESTAMP    | DEFAULT now()                                                                                |
-| updated_at    | TIMESTAMP    | DEFAULT now()                                                                                |
+    Announcements {
+        UUID Id PK
+        string Title
+        string Type
+        string Status
+        UUID DepartmentId FK
+        UUID CreatedBy FK
+    }
 
----
+    JobVacancies {
+        UUID Id PK
+        string JobTitle
+        string JobCode
+        UUID AnnouncementId FK
+    }
 
-### 4. **Assignments**
-
-| Field          | Data Type   | Constraints                                   |
-| -------------- | ----------- | --------------------------------------------- |
-| id             | SERIAL      | PK                                            |
-| event_id       | INT         | FK → Events(event_id), NOT NULL               |
-| employee_id    | INT         | FK → Users(user_id), NOT NULL                 |
-| assigned_by    | INT         | FK → Users(user_id), NOT NULL                 |
-| status         | VARCHAR(20) | NOT NULL (`Assigned`, `Accepted`, `Declined`) |
-| decline_reason | TEXT        | NULL                                          |
-| assigned_at    | TIMESTAMP   | DEFAULT now()                                 |
-| updated_at     | TIMESTAMP   | DEFAULT now()                                 |
-
----
-
-### 5. **Media**
-
-| Field        | Data Type    | Constraints                            |
-| ------------ | ------------ | -------------------------------------- |
-| media_id     | SERIAL       | PK                                     |
-| event_id     | INT          | FK → Events(event_id), NOT NULL        |
-| uploaded_by  | INT          | FK → Users(user_id), NOT NULL          |
-| type         | VARCHAR(20)  | NOT NULL (`Photo`, `Document`, `Link`) |
-| file_path    | TEXT         | NULL                                   |
-| external_url | TEXT         | NULL                                   |
-| size_mb      | NUMERIC(5,2) | NULL                                   |
-| created_at   | TIMESTAMP    | DEFAULT now()                          |
-| updated_at   | TIMESTAMP    | DEFAULT now()                          |
-
----
-
-### 6. **AuditLogs**
-
-| Field        | Data Type   | Constraints                                                       |
-| ------------ | ----------- | ----------------------------------------------------------------- |
-| audit_id     | SERIAL      | PK                                                                |
-| entity_type  | VARCHAR(50) | NOT NULL (`Event`, `Assignment`, `Media`, `User`, `Notification`) |
-| entity_id    | INT         | NOT NULL                                                          |
-| action       | VARCHAR(50) | NOT NULL (`Created`, `Updated`, `Deleted`, `Approved`, etc.)      |
-| performed_by | INT         | FK → Users(user_id), NOT NULL                                     |
-| timestamp    | TIMESTAMP   | DEFAULT now()                                                     |
-| details      | JSONB       | NULL                                                              |
+    AspNetUsers ||--o{ Departments : "belongs to"
+    Events ||--|{ Departments : "is for"
+    Events ||--|{ Assignments : "has"
+    Events ||--|{ MediaFiles : "has"
+    Events ||--o{ AspNetUsers : "created by"
+    Assignments ||--o{ AspNetUsers : "is assigned to"
+    MediaFiles ||--o{ AspNetUsers : "uploaded by"
+    Announcements ||--o{ Departments : "is for"
+    Announcements ||--|{ JobVacancies : "has"
+```
 
 ---
 
-### 7. **Notifications**
+## 2. Table Definitions (PostgreSQL)
 
-| Field           | Data Type   | Constraints                                   |
-| --------------- | ----------- | --------------------------------------------- |
-| notification_id | SERIAL      | PK                                            |
-| employee_id     | INT         | FK → Users(user_id), NOT NULL                 |
-| event_id        | INT         | FK → Events(event_id), NULL                   |
-| type            | VARCHAR(50) | NOT NULL (`Assignment`, `Approval`, `Update`) |
-| channel         | VARCHAR(20) | NOT NULL (`Email`, `In-app`)                  |
-| status          | VARCHAR(20) | NOT NULL (`Sent`, `Failed`, `Read`)           |
-| message         | TEXT        | NULL                                          |
-| created_at      | TIMESTAMP   | DEFAULT now()                                 |
-| read_at         | TIMESTAMP   | NULL                                          |
+Column names reflect the `PascalCase` convention used by EF Core. All Primary and Foreign Keys are of type `uuid`.
 
----
+### **AspNetUsers**
+Managed by ASP.NET Identity. The fields below are the custom properties for this application.
 
----
-
-### 8. **Announcements**
-
-| Field | Data Type | Constraints |
-| :--- | :--- | :--- |
-| id | UUID | PK |
-| title | VARCHAR(200) | NOT NULL |
-| content | TEXT | NOT NULL |
-| type | VARCHAR(50) | NOT NULL (`General`, `JobOpening`, `DocumentPost`) |
-| status | VARCHAR(50) | NOT NULL (`Draft`, `PendingApproval`, `Rejected`, `Published`) |
-| department_id | UUID | FK → Departments(id), NULL |
-| deadline | TIMESTAMP | NULL |
-| cover_image_url| TEXT | NULL |
-| created_by | UUID | FK → Users(id), NOT NULL |
-| approved_by | UUID | FK → Users(id), NULL |
-| created_at | TIMESTAMP | DEFAULT now() |
-| updated_at | TIMESTAMP | DEFAULT now() |
+| Field         | Data Type                 | Constraints      | Notes                               |
+| ------------- | ------------------------- | ---------------- | ----------------------------------- |
+| Id            | uuid                      | PK               |                                     |
+| FirstName     | text                      | NOT NULL         |                                     |
+| LastName      | text                      | NOT NULL         |                                     |
+| EmployeeId    | text                      | NOT NULL         |                                     |
+| Email         | character varying(256)    | NULLABLE         |                                     |
+| DepartmentId  | uuid                      | FK → Departments(Id), NULL | User's department affiliation.      |
+| ...           | ...                       | ...              | (Other ASP.NET Identity fields)     |
 
 ---
 
-### 9. **AnnouncementMedia**
+### **Departments**
 
-| Field | Data Type | Constraints |
-| :--- | :--- | :--- |
-| id | UUID | PK |
-| announcement_id| UUID | FK → Announcements(id), NOT NULL (Cascade Delete) |
-| file_url | TEXT | NOT NULL |
-| file_name | VARCHAR(250) | NOT NULL |
-| file_type | VARCHAR(50) | NOT NULL (`Image`, `Pdf`) |
-| content_type | VARCHAR(100) | NOT NULL |
-| uploaded_by | UUID | FK → Users(id), NOT NULL |
-| uploaded_at | TIMESTAMP | DEFAULT now() |
+| Field         | Data Type                 | Constraints                |
+| ------------- | ------------------------- | -------------------------- |
+| Id            | uuid                      | PK                         |
+| Name          | character varying(100)    | NOT NULL, UNIQUE           |
+| Description   | text                      | NULL                       |
+| CreatedAt     | timestamp with time zone  | NOT NULL                   |
+| UpdatedAt     | timestamp with time zone  | NOT NULL                   |
 
 ---
 
-### 10. **JobVacancies**
+### **Events**
 
-| Field | Data Type | Constraints |
-| :--- | :--- | :--- |
-| id | UUID | PK |
-| announcement_id| UUID | FK → Announcements(id), NOT NULL (Cascade Delete) |
-| job_title | VARCHAR(250) | NOT NULL |
-| job_code | VARCHAR(50) | NOT NULL |
-| grade | VARCHAR(50) | NOT NULL |
-| required_number| INT | NOT NULL |
-| work_place | VARCHAR(250) | NOT NULL |
-| requirements | TEXT | NOT NULL |
-| experience | TEXT | NOT NULL |
-| training | TEXT | NOT NULL |
-| certificate | TEXT | NOT NULL |
-| other_optional_requirements | TEXT | NOT NULL |
-| work_unit | VARCHAR(250) | NOT NULL |
+| Field                     | Data Type                 | Constraints                | Notes                                       |
+| ------------------------- | ------------------------- | -------------------------- | ------------------------------------------- |
+| Id                        | uuid                      | PK                         |                                             |
+| Title                     | character varying(150)    | NOT NULL                   |                                             |
+| Description               | text                      | NULL                       |                                             |
+| Category                  | character varying(100)    | NOT NULL                   |                                             |
+| DepartmentId              | uuid                      | FK → Departments(Id)       |                                             |
+| EventPlace                | character varying(255)    | NULL                       | Physical address or online meeting URL.     |
+| StartDate                 | timestamp with time zone  | NOT NULL                   |                                             |
+| EndDate                   | timestamp with time zone  | NOT NULL                   |                                             |
+| Status                    | character varying(20)     | NOT NULL, Default: 'Draft' | Enum: `Draft`, `Scheduled`, `Ongoing`, etc. |
+| CoverImageUrl             | text                      | NULL                       |                                             |
+| ClosureComment            | text                      | NULL                       | Comment added when an event is finalized.   |
+| CancellationReason        | text                      | NULL                       |                                             |
+| CancellationRequestStatus | character varying(20)     | NOT NULL, Default: 'None'  |                                             |
+| ScheduleHistory           | text                      | NULL                       | Log of date/time changes.                   |
+| CreatedBy                 | uuid                      | FK → AspNetUsers(Id)       |                                             |
+| ApprovedBy                | uuid                      | FK → AspNetUsers(Id), NULL |                                             |
+| FinalizedBy               | uuid                      | FK → AspNetUsers(Id), NULL |                                             |
+| ...                       | ...                       | ...                        | (Other fields for cancellation/date change) |
 
 ---
 
-### **Relationships Summary**
+### **Assignments**
 
-- **Users ↔ Departments:** Many-to-One
-- **Events ↔ Departments:** Many-to-One
-- **Events ↔ Users:** Many-to-One (`created_by`, `approved_by`)
-- **Assignments ↔ Events:** Many-to-One
-- **Assignments ↔ Users:** Many-to-One
-- **Media ↔ Events:** Many-to-One
-- **Media ↔ Users:** Many-to-One
-- **AuditLogs ↔ Users:** Many-to-One (`performed_by`)
-- **Notifications ↔ Users:** Many-to-One (`user_id`)
-- **Notifications ↔ Events:** Many-to-One (`event_id`, nullable)
-- **Announcements ↔ Departments:** Many-to-One
-- **Announcements ↔ Users:** Many-to-One (`created_by`, `approved_by`)
-- **AnnouncementMedia ↔ Announcements:** Many-to-One
-- **JobVacancies ↔ Announcements:** Many-to-One
+| Field          | Data Type                 | Constraints      |
+| -------------- | ------------------------- | ---------------- |
+| Id             | uuid                      | PK               |
+| EventId        | uuid                      | FK → Events(Id)  |
+| EmployeeId     | uuid                      | FK → AspNetUsers(Id) |
+| AssignedBy     | uuid                      | FK → AspNetUsers(Id) |
+| Role           | character varying(20)     | NOT NULL         |
+| Status         | character varying(20)     | NOT NULL         |
+| DeclineReason  | text                      | NULL             |
+| CommentHistory | text                      | NULL             |
+| VerificationNote| text                     | NULL             |
+| VerifiedAt     | timestamp with time zone  | NULL             |
+| VerifiedById   | uuid                      | FK → AspNetUsers(Id), NULL |
+
+---
+
+### **MediaFiles**
+
+| Field       | Data Type                 | Constraints      | Notes                                   |
+| ----------- | ------------------------- | ---------------- | --------------------------------------- |
+| Id          | uuid                      | PK               |                                         |
+| EventId     | uuid                      | FK → Events(Id)  |                                         |
+| UploadedBy  | uuid                      | FK → AspNetUsers(Id), NULL |                                         |
+| FileType    | integer                   | NOT NULL         | Enum: `Image`, `Video`, `Document`, `Link`|
+| FilePath    | character varying(1000)   | NULL             | URL for links or file path for uploads. |
+| FileName    | character varying(500)    | NULL             |                                         |
+| FileSize    | bigint                    | NOT NULL, Default: 0 | Size in bytes.                          |
+| ThumbnailPath| character varying(1000)  | NULL             |                                         |
+
+---
+
+### **Announcements, JobVacancies, and Other Tables**
+The database also includes tables for **Announcements**, **JobVacancies**, **Notifications**, and **AuditLogs** which follow similar `PascalCase` naming and `uuid` key conventions as detailed in the `ApplicationDbContextModelSnapshot.cs` file.
