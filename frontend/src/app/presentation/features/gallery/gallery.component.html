@@ -1,0 +1,44 @@
+<app-page-header
+  title="Event Gallery"
+  subtitle="A visual collection of media from all public events.">
+</app-page-header>
+
+<div class="gallery-container">
+  <ng-container *ngIf="galleryMedia$ | async as mediaItems; else loading">
+    <div *ngIf="mediaItems.length > 0; else noItems" class="gallery-grid">
+      <div *ngFor="let item of mediaItems" class="gallery-item">
+        <a [href]="getMediaPath(item.filePath)" target="_blank" class="gallery-link">
+          <div class="media-preview">
+            <ng-container [ngSwitch]="item.fileType">
+              <img *ngSwitchCase="'Image'" [src]="getMediaPath(item.filePath)" [alt]="item.eventTitle">
+              <div *ngSwitchCase="'Video'" class="video-preview">
+                <mat-icon>videocam</mat-icon>
+              </div>
+              <div *ngSwitchDefault class="file-preview">
+                <mat-icon>insert_drive_file</mat-icon>
+              </div>
+            </ng-container>
+            <div class="media-overlay">
+              <span class="event-title">{{ item.eventTitle }}</span>
+              <span class="event-date">{{ item.eventDate | date:'longDate' }}</span>
+            </div>
+          </div>
+        </a>
+      </div>
+    </div>
+  </ng-container>
+
+  <ng-template #loading>
+    <div class="loading-spinner">
+      <!-- Add a spinner component here if you have one, e.g., <mat-spinner> -->
+      <p>Loading Media...</p>
+    </div>
+  </ng-template>
+
+  <ng-template #noItems>
+    <div class="no-items-message">
+      <h2>No Media Found</h2>
+      <p>There is currently no media available from public events.</p>
+    </div>
+  </ng-template>
+</div>

@@ -27,6 +27,19 @@ export const appRoutes: Routes = [
   },
 
   {
+    path: 'gallery',
+    component: MainLayoutComponent,
+    canActivate: [authGuard],
+    children: [
+      {
+        path: '',
+        loadComponent: () => import('./presentation/features/gallery/gallery.component')
+          .then(m => m.GalleryComponent)
+      }
+    ]
+  },
+
+  {
     path: 'home',
     component: MainLayoutComponent,
     canActivate: [authGuard],

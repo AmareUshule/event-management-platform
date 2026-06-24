@@ -22,6 +22,14 @@ namespace EEP.EventManagement.Api.Controllers
             _mediator = mediator;
         }
 
+        [HttpGet("gallery")]
+        public async Task<ActionResult<List<GalleryMediaDto>>> GetGalleryMedia()
+        {
+            var query = new GetGalleryQuery();
+            var result = await _mediator.Send(query);
+            return Ok(result);
+        }
+
         [HttpPost("upload")]
         public async Task<ActionResult<MediaFileDto>> UploadMedia([FromForm] UploadMediaDto uploadMediaDto)
         {

@@ -12,7 +12,7 @@ namespace EEP.EventManagement.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize(Roles = "Admin,Manager")] // All actions in this controller require Admin or Manager roles
+    [Authorize] // All actions require authentication at a minimum
     public class DepartmentsController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -23,6 +23,7 @@ namespace EEP.EventManagement.Api.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin,Manager")]
         public async Task<ActionResult<DepartmentResponseDto>> CreateDepartment([FromBody] CreateDepartmentDto departmentDto)
         {
             var command = new CreateDepartmentCommand(departmentDto);
@@ -31,6 +32,7 @@ namespace EEP.EventManagement.Api.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin,Manager")]
         public async Task<ActionResult<DepartmentResponseDto>> UpdateDepartment(Guid id, [FromBody] UpdateDepartmentDto departmentDto)
         {
             if (id != departmentDto.Id)
@@ -43,6 +45,7 @@ namespace EEP.EventManagement.Api.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin,Manager")]
         public async Task<ActionResult> DeleteDepartment(Guid id)
         {
             var command = new DeleteDepartmentCommand(id);

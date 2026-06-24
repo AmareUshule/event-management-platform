@@ -1,0 +1,113 @@
+:host {
+  display: block;
+}
+
+.gallery-container {
+  padding: var(--space-6) 0;
+}
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--space-6);
+}
+
+.gallery-item {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  aspect-ratio: 16 / 10;
+  background-color: var(--bg-subtle);
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-xl);
+
+    .media-overlay {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+.gallery-link {
+  display: block;
+  width: 100%;
+  height: 100%;
+  text-decoration: none;
+}
+
+.media-preview {
+  width: 100%;
+  height: 100%;
+  position: relative;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+  }
+
+  .gallery-item:hover img {
+    transform: scale(1.05);
+  }
+
+  .video-preview, .file-preview {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    background-color: var(--neutral-800);
+    color: var(--neutral-500);
+
+    mat-icon {
+      font-size: 64px;
+      width: 64px;
+      height: 64px;
+    }
+  }
+}
+
+.media-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: var(--space-4);
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0) 100%);
+  color: white;
+  opacity: 0;
+  transform: translateY(100%);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.event-title {
+  font-weight: var(--weight-bold);
+  font-size: var(--text-lg);
+  margin-bottom: var(--space-1);
+}
+
+.event-date {
+  font-size: var(--text-sm);
+  color: var(--neutral-300);
+}
+
+.loading-spinner, .no-items-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-12) 0;
+  text-align: center;
+  color: var(--text-secondary);
+
+  h2 {
+    margin-top: var(--space-4);
+  }
+}

@@ -14,7 +14,8 @@ import {
   EventAssignments,
   AssignmentApiRequest,
   AssignmentResponse,
-  MediaFile} from '../models/event.model';
+  MediaFile,
+  GalleryMediaDto} from '../models/event.model';
 import { environment } from '../../../../../environments/environment';
 import { AuthService } from '../../../../core/auth/auth.service';
 
@@ -33,6 +34,7 @@ export class EventService {
   private authService = inject(AuthService);
   
   private readonly API_URL = `${environment.apiUrl}/api/events`;
+  private readonly MEDIA_API_URL = `${environment.apiUrl}/api/media`;
 
   private readonly REQUEST_TIMEOUT = 30000; // 30 seconds
 
@@ -263,6 +265,21 @@ export class EventService {
     }
     
     return this.http.get<Event[]>(url, { 
+      headers: this.getHeaders(),
+      responseType: 'json'
+    }).pipe(
+      timeout(this.REQUEST_TIMEOUT),
+      retry(1),
+      catchError(this.handleError.bind(this))
+    );
+  }
+
+  /**
+   * Get media for the public gallery page
+   */
+  getGalleryMedia(): Observable<GalleryMediaDto[]> {
+    const url = `${this.MEDIA_API_URL}/gallery`;
+    return this.http.get<GalleryMediaDto[]>(url, { 
       headers: this.getHeaders(),
       responseType: 'json'
     }).pipe(

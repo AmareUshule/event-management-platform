@@ -41,20 +41,20 @@ namespace EEP.EventManagement.Api.Application.Features.Events.Handlers
             query = query.Include(e => e.Department);
             query = query.Include(e => e.CreatedByUser);
 
-            var currentUserId = _userContext.GetUserId();
-            var isAdmin = _userContext.IsInRole("Admin");
-            var isCommManager = false;
+            // For the public discovery endpoint, only show events with public-facing statuses.
+            // This is a whitelist approach for better security.
+            var publicStatuses = new[] {
+                EventStatus.Scheduled,
+                EventStatus.Ongoing,
+                EventStatus.Completed,
+                EventStatus.Covered
+            };
+            query = query.Where(e => publicStatuses.Contains(e.Status));
 
-            if (!isAdmin && _userContext.IsInRole("Manager") && _userContext.GetDepartmentId() is Guid departmentId)
+            // Apply user-specified status filter ONLY if it's one of the public ones
+            if (request.Status.HasValue && publicStatuses.Contains(request.Status.Value))
             {
-                var department = await _departmentRepository.GetByIdAsync(departmentId);
-                isCommManager = department != null && department.Name == "Communication";
-            }
-
-            // Restrict draft visibility for discovery page
-            if (!isAdmin && !isCommManager)
-            {
-                query = query.Where(e => e.Status != EventStatus.Draft || e.CreatedBy == currentUserId);
+                query = query.Where(e => e.Status == request.Status.Value);
             }
 
             // Filtering
@@ -66,11 +66,6 @@ namespace EEP.EventManagement.Api.Application.Features.Events.Handlers
                     EF.Functions.ILike(e.Description ?? string.Empty, $"%{search}%") ||
                     EF.Functions.ILike(e.EventPlace ?? string.Empty, $"%{search}%")
                 );
-            }
-
-            if (request.Status.HasValue)
-            {
-                query = query.Where(e => e.Status == request.Status.Value);
             }
 
             if (!string.IsNullOrWhiteSpace(request.Category))

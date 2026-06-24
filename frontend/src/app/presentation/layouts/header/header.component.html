@@ -24,6 +24,10 @@
             <mat-icon>explore</mat-icon>
             <span>Discovery</span>
           </a>
+          <a class="nav-link" routerLink="/gallery" [routerLinkActive]="['active']">
+            <mat-icon>photo_library</mat-icon>
+            <span>Gallery</span>
+          </a>
           <a class="nav-link" routerLink="/staff-workload" [routerLinkActive]="['active']" *ngIf="isAdmin() || isInCommunicationDepartment()">
             <mat-icon>analytics</mat-icon>
             <span>Workload</span>
@@ -158,6 +162,10 @@
       <a class="sheet-link" routerLink="/events" (click)="toggleMobileMenu()">
         <mat-icon>explore</mat-icon>
         Discovery
+      </a>
+      <a class="sheet-link" routerLink="/gallery" (click)="toggleMobileMenu()">
+        <mat-icon>photo_library</mat-icon>
+        Gallery
       </a>
       <a class="sheet-link" routerLink="/staff-workload" *ngIf="isAdmin() || isInCommunicationDepartment()" (click)="toggleMobileMenu()">
         <mat-icon>analytics</mat-icon>

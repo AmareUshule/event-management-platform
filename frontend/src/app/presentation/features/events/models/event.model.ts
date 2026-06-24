@@ -266,3 +266,15 @@ export interface EventFormData {
   departmentId: number | string;
   coverImageUrl?: string;
 }
+
+/* -----------------------------
+   Gallery DTO
+--------------------------------*/
+export interface GalleryMediaDto {
+  mediaId: string;
+  filePath: string;
+  fileType: MediaType;
+  eventId: string;
+  eventTitle: string;
+  eventDate: string;
+}
