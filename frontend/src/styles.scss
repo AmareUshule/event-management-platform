@@ -112,3 +112,24 @@ h4 { font-size: var(--text-xl); }
   color: transparent;
   -webkit-text-fill-color: transparent;
 }
+
+/* Custom Snackbar Styling */
+.error-snackbar {
+  .mdc-snackbar__surface {
+    background-color: var(--status-error-bg) !important;
+    color: var(--status-error-text) !important;
+    border: 1px solid var(--status-error-border) !important;
+    border-radius: var(--radius-md) !important;
+    box-shadow: var(--shadow-lg) !important;
+  }
+
+  .mdc-snackbar__label {
+    font-family: var(--font-sans) !important;
+    font-weight: var(--weight-medium) !important;
+  }
+
+  .mdc-button__label {
+    color: var(--status-error-text) !important;
+    font-weight: var(--weight-bold) !important;
+  }
+}

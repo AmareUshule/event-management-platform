@@ -9,6 +9,9 @@ namespace EEP.EventManagement.Api.Infrastructure.Persistence.Configurations
     {
         public void Configure(EntityTypeBuilder<Department> builder)
         {
+            // Explicitly set the table name to "Departments" to match the database migration.
+            builder.ToTable("Departments");
+
             builder.HasKey(d => d.Id);
 
             builder.Property(d => d.Name)

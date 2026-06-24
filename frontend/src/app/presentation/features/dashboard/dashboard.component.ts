@@ -610,10 +610,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.masterTableEvents = this.transformToTableEvents(events);
 
     // 3. Calculate all derived data from master
-    this.calculateStatistics();
+    this.calculateStatistics(); // This function now handles calling updateEventsThisWeek internally.
     this.updateInsights();
     
-    this.updateEventsThisWeek();
     this.updateAgendaFromMaster();
 
     // 4. Apply current filters to populate filteredEvents and paginatedEvents for display
@@ -637,58 +636,48 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   private calculateStatistics(): void {
-    const currentUserId = this.user?.adObjectId;
-    this.totalEvents = this.masterEvents.length;
+    let eventsToProcess = [...this.masterEvents];
+
+    // First, apply top-level role-based scoping to the dataset
+    if (this.authService.isManager() && !this.authService.isAdmin()) {
+      const managerDepartmentId = this.user?.departmentGuid;
+      if (managerDepartmentId) {
+        eventsToProcess = this.masterEvents.filter(event => event.department?.id === managerDepartmentId);
+      }
+    } else if (this.isStaff()) {
+      const assignedEventIds = new Set(this.myAssignments.map(a => a.eventId));
+      eventsToProcess = this.masterEvents.filter(e => assignedEventIds.has(e.id));
+    }
     
-    // Drafts (Pending Approval) visibility is now handled by the backend.
-    // So all Draft events in masterEvents are visible to the current user.
-    this.pendingApprovalCount = this.masterEvents.filter(e => e.status === "Draft").length;
-      
-    this.scheduledEvents = this.masterEvents.filter(e => e.status === "Scheduled").length;
-    this.ongoingEvents = this.masterEvents.filter(e => e.status === "Ongoing").length;
-    this.completedEventsCount = this.masterEvents.filter(e => e.status === "Completed").length;
-    this.coveredEvents = this.masterEvents.filter(e => e.status === "Covered").length;
-    this.uncoveredEvents = this.masterEvents.filter(e => e.status === "Uncovered").length;
+    // Now, calculate all statistics based on the correctly scoped 'eventsToProcess' list
+    this.totalEvents = eventsToProcess.length;
     
-    // Merged Past Events (Completed + Covered + Uncovered + Cancelled)
-    this.pastEventsCount = this.masterEvents.filter(e => 
+    this.pendingApprovalCount = eventsToProcess.filter(e => e.status === "Draft").length;
+    this.scheduledEvents = eventsToProcess.filter(e => e.status === "Scheduled").length;
+    this.ongoingEvents = eventsToProcess.filter(e => e.status === "Ongoing").length;
+    this.completedEventsCount = eventsToProcess.filter(e => e.status === "Completed").length;
+    this.coveredEvents = eventsToProcess.filter(e => e.status === "Covered").length;
+    this.uncoveredEvents = eventsToProcess.filter(e => e.status === "Uncovered").length;
+    
+    this.pastEventsCount = eventsToProcess.filter(e => 
       ['Completed', 'Covered', 'Uncovered', 'Cancelled'].includes(e.status)).length;
 
-    this.cancelledEventsCount = this.masterEvents.filter(e => e.status === "Cancelled").length;
+    this.cancelledEventsCount = eventsToProcess.filter(e => e.status === "Cancelled").length;
 
+    // Recalculate staff-specific details if the user is staff
     if (this.isStaff()) {
-      // For staff, we distinguish between 'Assignments' (Roles) and 'Events' (Work items)
-      // Unique event IDs that this staff member is involved in
-      const assignedEventIds = new Set(this.myAssignments.map(a => a.eventId));
+      // 'totalEvents' and 'assignedEventsCount' now correctly reflect the scoped list count
+      this.assignedEventsCount = eventsToProcess.length;
       
-      // The events that are actually loaded and visible to the staff member
-      const myVisibleEvents = this.masterEvents.filter(e => assignedEventIds.has(e.id));
-      
-      // 'totalEvents' should represent the count of unique events visible in the 'ALL' tab
-      this.totalEvents = myVisibleEvents.length;
-      
-      // 'assignedEventsCount' (Summary Card) now matches 'totalEvents' to ensure consistency
-      // between the top statistics and the table tabs.
-      this.assignedEventsCount = this.totalEvents;
-      
-      // Categories derived strictly from visible assigned events
-      this.scheduledEvents = myVisibleEvents.filter(e => e.status === "Scheduled").length;
-      this.ongoingEvents = myVisibleEvents.filter(e => e.status === "Ongoing").length;
-      this.coveredEvents = myVisibleEvents.filter(e => e.status === "Covered").length;
-      this.uncoveredEvents = myVisibleEvents.filter(e => e.status === "Uncovered").length;
-      this.pastEventsCount = myVisibleEvents.filter(e => ['Completed', 'Covered', 'Uncovered', 'Cancelled'].includes(e.status)).length;
-      this.cancelledEventsCount = myVisibleEvents.filter(e => e.status === "Cancelled").length;
-
-      // Specific assignment counts (for the Inbox/Staff Center)
+      // These counts are based on the full assignment list, not the processed event list
       this.pendingInvitations = this.myAssignments.filter(a => a.status === "Pending");
       this.pendingAssignmentsCount = this.pendingInvitations.length;
       
-      // Identify Next Assignment (Confirmed and in future)
       const now = new Date();
       const confirmedAssignments = this.myAssignments
         .filter(a => a.status === "Accepted")
         .map(a => {
-          const ev = this.masterEvents.find(e => e.id === a.eventId);
+          const ev = eventsToProcess.find(e => e.id === a.eventId);
           return ev ? { event: ev, date: new Date(ev.startDate) } : null;
         })
         .filter(item => item !== null && item.date >= now)
@@ -700,9 +689,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
       } else {
         this.nextAssignment = null;
       }
-
-      // Identify Pending Uploads (Completed events with no media from this user)
-      this.pendingUploads = this.masterEvents
+      
+      const assignedEventIds = new Set(this.myAssignments.map(a => a.eventId));
+      this.pendingUploads = eventsToProcess
         .filter(e => e.status === "Completed" && assignedEventIds.has(e.id))
         .filter(e => {
           const userAssignment = this.myAssignments.find(a => a.eventId === e.id);
@@ -711,7 +700,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         .map(e => this.transformToTableEvents([e])[0]);
     }
     
-    this.updateEventsThisWeek();
+    this.updateEventsThisWeek(eventsToProcess);
   }
 
   getUserRoleInEvent(eventId: string): string {
@@ -729,7 +718,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return event ? new Date(event.startDate) : null;
   }
 
-  private updateEventsThisWeek(): void {
+  private updateEventsThisWeek(eventsToProcess: Event[]): void {
     const now = new Date();
     const startOfWeek = new Date(now);
     const day = startOfWeek.getDay(); // 0 (Sun) - 6 (Sat)
@@ -740,7 +729,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     const endOfWeek = new Date(startOfWeek);
     endOfWeek.setDate(endOfWeek.getDate() + 7);
 
-    this.eventsThisWeek = this.masterEvents.filter(e => {
+    this.eventsThisWeek = eventsToProcess.filter(e => {
       const eventDate = new Date(e.startDate);
       const isActive = e.status === "Scheduled" || e.status === "Ongoing";
       return isActive && eventDate >= startOfWeek && eventDate < endOfWeek;
@@ -847,12 +836,20 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private applyFilters(): void {
     let filtered = [...this.masterTableEvents];
 
-    // For Staff roles, the main table should be scoped to their work to match the status card counts
-    if (this.isStaff()) {
+    // Role-based master filtering BEFORE tab/search filters
+    if (this.authService.isManager() && !this.authService.isAdmin()) {
+      // If user is a Manager (but not Admin), scope all views to their department.
+      const managerDepartmentId = this.user?.departmentGuid;
+      if (managerDepartmentId) {
+        filtered = filtered.filter(event => event.raw.department?.id === managerDepartmentId);
+      }
+    } else if (this.isStaff()) {
+      // For Staff roles, scope all views to their assigned events.
       const assignedEventIds = new Set(this.myAssignments.map(a => a.eventId));
       filtered = filtered.filter(e => assignedEventIds.has(e.id));
     }
 
+    // Tab-specific filtering
     if (this.activeTab === 'assignments') {
        this.filteredEvents = [];
        this.paginatedEvents = [];
@@ -1169,20 +1166,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
       
     if (isFinalStatus) return false;
 
-    // Admins can edit any non-final event
+    // Admins can edit any non-final event.
     if (this.authService.isAdmin()) return true;
 
-    // Communication Managers can edit any non-completed event
-    if (this.authService.isCommunicationManager()) return true;
-
-    // Department Managers can edit non-completed events from their own department
+    // Department Managers (including Comm Managers) can edit non-final events from their own department.
     const user = this.authService.getCurrentUser();
-    if (this.authService.isManager() && user?.departmentGuid === event.raw.department.id) {
+    if (this.authService.isManager() && user?.departmentGuid === event.raw.department?.id) {
       return true;
     }
 
-    // Creators can edit their own non-completed events
-    if (event.raw.createdBy.id === user?.adObjectId) {
+    // Creators can only edit their own events while they are still in Draft status.
+    if (event.raw.createdBy?.id === user?.adObjectId && event.status === 'Draft') {
       return true;
     }
 

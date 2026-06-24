@@ -6,38 +6,42 @@ using EEP.EventManagement.Api.Domain.Entities;
 using EEP.EventManagement.Api.Infrastructure.Repositories.Interfaces;
 using EEP.EventManagement.Api.Infrastructure.Security.Claims;
 using MediatR;
-using Microsoft.AspNetCore.Identity; // Added for UserManager
-using EEP.EventManagement.Api.Infrastructure.Security.Identity; // Added for ApplicationUser
-using System.Linq; // Added for Any()
+using Microsoft.AspNetCore.Identity;
+using EEP.EventManagement.Api.Infrastructure.Security.Identity;
+using System.Linq;
+using Microsoft.EntityFrameworkCore; // Eagerly load navigation properties
 
 namespace EEP.EventManagement.Api.Application.Features.Events.Handlers
 {
     public class CreateEventCommandHandler : IRequestHandler<CreateEventCommand, EventDto>
     {
         private readonly IEventRepository _eventRepository;
-        private readonly IDepartmentRepository _departmentRepository; // Added IDepartmentRepository
+        private readonly IDepartmentRepository _departmentRepository;
         private readonly IMapper _mapper;
         private readonly IUserContext _userContext;
-        private readonly UserManager<ApplicationUser> _userManager; // Injected UserManager
+        private readonly UserManager<ApplicationUser> _userManager;
 
         public CreateEventCommandHandler(
-            IEventRepository eventRepository, 
+            IEventRepository eventRepository,
             IDepartmentRepository departmentRepository,
-            IMapper mapper, 
-            IUserContext userContext, 
+            IMapper mapper,
+            IUserContext userContext,
             UserManager<ApplicationUser> userManager)
         {
             _eventRepository = eventRepository;
             _departmentRepository = departmentRepository;
             _mapper = mapper;
             _userContext = userContext;
-            _userManager = userManager; // Initialized UserManager
+            _userManager = userManager;
         }
 
         public async Task<EventDto> Handle(CreateEventCommand request, CancellationToken cancellationToken)
         {
             var userId = _userContext.GetUserId();
-            var user = await _userManager.FindByIdAsync(userId.ToString()); // Find the user by ID
+            // Eagerly load the Department navigation property to ensure it's available for the 72-hour rule check.
+            var user = await _userManager.Users
+                .Include(u => u.Department)
+                .FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
 
             if (user == null || user.DepartmentId == null)
             {
