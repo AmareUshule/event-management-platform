@@ -114,8 +114,8 @@ export interface LightboxData {
     }
 
     .main-image {
-      max-height: 90%;
-      max-width: 90%;
+      max-height: 95%;
+      max-width: 95%;
       object-fit: contain;
       box-shadow: 0 8px 30px rgba(0,0,0,0.5);
       -webkit-user-drag: none;
