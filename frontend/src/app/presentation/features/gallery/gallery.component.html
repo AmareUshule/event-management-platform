@@ -3,6 +3,10 @@
   title="Media Library"
   subtitle="A centralized collection of photos and videos from across Ethiopian Electric Power."
   titleClass="gradient-strip">
+  <button *ngIf="isAdmin" mat-stroked-button class="manage-button" (click)="toggleManagementPanel()" actions>
+    <mat-icon>settings</mat-icon>
+    {{ managementPanelVisible ? 'Close Management' : 'Manage Categories' }}
+  </button>
 </app-page-header>
 
 <div class="gallery-container">
@@ -21,10 +25,27 @@
 
     <div class="spacer"></div>
 
-    <button *ngIf="isAdmin" mat-stroked-button class="manage-button" (click)="toggleManagementPanel()">
-      <mat-icon>settings</mat-icon>
-      {{ managementPanelVisible ? 'Close Management' : 'Manage Categories' }}
-    </button>
+    <div class="filter-bar-container" *ngIf="viewMode === 'all'">
+      <div class="filter-bar">
+        <mat-form-field appearance="outline">
+          <mat-label>Filter by Category</mat-label>
+          <input type="text" matInput [formControl]="categoryControl" [matAutocomplete]="autoCatFilter">
+          <mat-autocomplete #autoCatFilter="matAutocomplete" [displayWith]="displayCategory">
+            <mat-option *ngFor="let option of filteredCategoriesForFilterBar$ | async" [value]="option">{{ option.name }}</mat-option>
+          </mat-autocomplete>
+          <button mat-icon-button matSuffix *ngIf="categoryControl.value" (click)="categoryControl.setValue(null); $event.stopPropagation()"><mat-icon>close</mat-icon></button>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Filter by Sub-Category</mat-label>
+          <input type="text" matInput [formControl]="subCategoryControl" [matAutocomplete]="autoSubCatFilter" [readonly]="!categoryControl.value">
+          <mat-autocomplete #autoSubCatFilter="matAutocomplete" [displayWith]="displayCategory">
+            <mat-option *ngFor="let option of filteredSubCategoriesForFilterBar$ | async" [value]="option">{{ option.name }}</mat-option>
+          </mat-autocomplete>
+          <button mat-icon-button matSuffix *ngIf="subCategoryControl.value" (click)="subCategoryControl.setValue(null); $event.stopPropagation()"><mat-icon>close</mat-icon></button>
+        </mat-form-field>
+      </div>
+    </div>
+
   </div>
 
   <!-- Admin Management Panel -->
@@ -143,24 +164,6 @@
 
         <!-- ALL MEDIA VIEW -->
         <ng-container *ngSwitchCase="'all'">
-          <div class="filter-bar">
-            <mat-form-field appearance="outline">
-              <mat-label>Filter by Category</mat-label>
-              <input type="text" matInput [formControl]="categoryControl" [matAutocomplete]="autoCatFilter">
-              <mat-autocomplete #autoCatFilter="matAutocomplete" [displayWith]="displayCategory">
-                <mat-option *ngFor="let option of filteredCategoriesForFilterBar$ | async" [value]="option">{{ option.name }}</mat-option>
-              </mat-autocomplete>
-              <button mat-icon-button matSuffix *ngIf="categoryControl.value" (click)="categoryControl.setValue(null); $event.stopPropagation()"><mat-icon>close</mat-icon></button>
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>Filter by Sub-Category</mat-label>
-              <input type="text" matInput [formControl]="subCategoryControl" [matAutocomplete]="autoSubCatFilter" [readonly]="!categoryControl.value">
-              <mat-autocomplete #autoSubCatFilter="matAutocomplete" [displayWith]="displayCategory">
-                <mat-option *ngFor="let option of filteredSubCategoriesForFilterBar$ | async" [value]="option">{{ option.name }}</mat-option>
-              </mat-autocomplete>
-              <button mat-icon-button matSuffix *ngIf="subCategoryControl.value" (click)="subCategoryControl.setValue(null); $event.stopPropagation()"><mat-icon>close</mat-icon></button>
-            </mat-form-field>
-          </div>
           <div class="gallery-grid" *ngIf="allMedia$ | async as items">
             <div *ngFor="let item of items" class="gallery-item" (click)="openMedia(item)">
                 <div class="media-preview">
