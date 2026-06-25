@@ -4,6 +4,9 @@ import { Component, OnInit, ChangeDetectorRef, OnDestroy, inject, PLATFORM_ID } 
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Location } from '@angular/common';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { Observable } from 'rxjs';
+import { startWith, map } from 'rxjs/operators';
 
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -15,8 +18,12 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatExpansionModule } from '@angular/material/expansion';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 
 import { FileSizePipe } from '../../../../../shared/pipes/file-size.pipe';
+import { MediaService } from '../../../../../core/services/media.service';
 
 import {
   Event,
@@ -46,6 +53,7 @@ import { ImageLightboxComponent } from '../../../internal-announcements/componen
   imports: [
     CommonModule,
     RouterModule,
+    ReactiveFormsModule,
     MatIconModule,
     MatButtonModule,
     MatProgressSpinnerModule,
@@ -56,6 +64,9 @@ import { ImageLightboxComponent } from '../../../internal-announcements/componen
     MatCardModule,
     MatChipsModule,
     MatExpansionModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatAutocompleteModule,
     FileSizePipe,
   ],
   templateUrl: './event-detail-page.component.html',
@@ -67,6 +78,7 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
   public location = inject(Location);
   public snackBar = inject(MatSnackBar);
   public eventService = inject(EventService);
+  public mediaService = inject(MediaService);
   public cdr = inject(ChangeDetectorRef);
   public dialog = inject(MatDialog);
   public authService = inject(AuthService);
@@ -90,17 +102,70 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
   EventStatus = EventStatus;
   ASSIGNMENT_ROLES = ASSIGNMENT_ROLES; 
 
+  // --- Media categorization controls ---
+  mediaCategories: any[] = [];
+  mediaSubCategories: any[] = [];
+  filteredCategories!: Observable<any[]>;
+  filteredSubCategories!: Observable<any[]>;
+  categoryControl = new FormControl<any | null>(null);
+  subCategoryControl = new FormControl<any | null>(null);
+
   constructor() { }
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       this.applyRequestedTab();
       this.loadEventData();
+      this.setupCategoryControls();
     }
   }
 
   ngOnDestroy(): void {
     this.isSubscribed = false;
+  }
+
+  private setupCategoryControls(): void {
+    this.mediaService.getMediaCategories().subscribe(cats => this.mediaCategories = cats);
+
+    this.filteredCategories = this.categoryControl.valueChanges.pipe(
+      startWith(''),
+      map(value => {
+        const name = typeof value === 'string' ? value : value?.name;
+        return name ? this._filter(this.mediaCategories, name) : this.mediaCategories.slice();
+      })
+    );
+
+    this.categoryControl.valueChanges.subscribe(category => {
+      this.subCategoryControl.setValue(null);
+      this.mediaSubCategories = [];
+      if (category && typeof category !== 'string' && category.id) {
+        this.mediaService.getSubCategories(category.id).subscribe(subCats => {
+          this.mediaSubCategories = subCats;
+          this.subCategoryControl.updateValueAndValidity({ onlySelf: true, emitEvent: true });
+        });
+      }
+    });
+
+    this.filteredSubCategories = this.subCategoryControl.valueChanges.pipe(
+      startWith(''),
+      map(value => {
+        const name = typeof value === 'string' ? value : value?.name;
+        return name ? this._filter(this.mediaSubCategories, name) : this.mediaSubCategories.slice();
+      })
+    );
+  }
+
+  private _filter<T extends { name: string }>(items: T[], value: string): T[] {
+    const filterValue = value.toLowerCase();
+    return items.filter(item => item.name.toLowerCase().includes(filterValue));
+  }
+
+  displayCategory(category: any): string {
+    return category?.name || '';
+  }
+
+  displaySubCategory(subCategory: any): string {
+    return subCategory?.name || '';
   }
 
   private loadEventData(): void {
@@ -412,8 +477,9 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
       return;
     }
 
+    const subCategoryId = this.subCategoryControl.value?.id;
     this.isLoading = true;
-    this.eventService.uploadMedia(eventId, fileType, file).subscribe({
+    this.eventService.uploadMedia(eventId, fileType, file, undefined, subCategoryId).subscribe({
       next: () => {
         this.isLoading = false;
         this.showSuccess('Media uploaded successfully');
@@ -433,8 +499,9 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
     const url = prompt('Enter external link URL:');
     if (!url) return;
 
+    const subCategoryId = this.subCategoryControl.value?.id;
     this.isLoading = true;
-    this.eventService.uploadMedia(eventId, 'Link', undefined, url).subscribe({
+    this.eventService.uploadMedia(eventId, 'Link', undefined, url, subCategoryId).subscribe({
       next: () => {
         this.isLoading = false;
         this.showSuccess('Link added successfully');

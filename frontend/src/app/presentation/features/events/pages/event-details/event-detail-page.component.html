@@ -444,6 +444,34 @@
                                 </div>
                                 
                                 <div class="media-upload-area" *ngIf="canUploadMedia()">
+                                    <div class="media-category-controls">
+                                        <mat-form-field appearance="outline" class="media-select">
+                                            <mat-label>Category</mat-label>
+                                            <input type="text" matInput [formControl]="categoryControl" [matAutocomplete]="autoCategory" placeholder="e.g., Generation">
+                                            <mat-autocomplete #autoCategory="matAutocomplete" [displayWith]="displayCategory.bind(this)">
+                                                <mat-option *ngFor="let option of filteredCategories | async" [value]="option">
+                                                    {{ option.name }}
+                                                </mat-option>
+                                            </mat-autocomplete>
+                                            <button mat-icon-button matSuffix *ngIf="categoryControl.value" (click)="categoryControl.setValue(null)">
+                                                <mat-icon>close</mat-icon>
+                                            </button>
+                                        </mat-form-field>
+
+                                        <mat-form-field appearance="outline" class="media-select">
+                                            <mat-label>Sub-Category</mat-label>
+                                            <input type="text" matInput [formControl]="subCategoryControl" [matAutocomplete]="autoSubCategory" [readonly]="!categoryControl.value" placeholder="e.g., GERD Power Plant">
+                                            <mat-autocomplete #autoSubCategory="matAutocomplete" [displayWith]="displaySubCategory.bind(this)">
+                                                <mat-option *ngFor="let option of filteredSubCategories | async" [value]="option">
+                                                    {{ option.name }}
+                                                </mat-option>
+                                            </mat-autocomplete>
+                                            <button mat-icon-button matSuffix *ngIf="subCategoryControl.value" (click)="subCategoryControl.setValue(null)">
+                                                <mat-icon>close</mat-icon>
+                                            </button>
+                                        </mat-form-field>
+                                    </div>
+
                                     <div class="upload-options">
                                         <input type="file" #imageInput hidden (change)="onFileUpload($event, 'Image')" accept="image/*">
                                         <button class="upload-option" (click)="imageInput.click()">

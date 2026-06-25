@@ -16,6 +16,8 @@ namespace EEP.EventManagement.Api.Infrastructure.Persistence
         public DbSet<Assignment> Assignments { get; set; }
         public DbSet<AuditLog> AuditLogs { get; set; }
         public DbSet<MediaFile> MediaFiles { get; set; }
+        public DbSet<MediaCategory> MediaCategories { get; set; }
+        public DbSet<MediaSubCategory> MediaSubCategories { get; set; }
         public DbSet<Department> Departments { get; set; }
         public DbSet<Announcement> Announcements { get; set; }
         public DbSet<AnnouncementMedia> AnnouncementMedia { get; set; }

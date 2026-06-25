@@ -1,7 +1,7 @@
 // src/app/presentation/features/events/services/event.service.ts
 
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError, forkJoin } from 'rxjs';
 import { catchError, retry, timeout, map, tap } from 'rxjs/operators';
 import { 
@@ -12,12 +12,10 @@ import {
   EventType, 
   AssignmentPayload,
   EventAssignments,
-  AssignmentApiRequest,
   AssignmentResponse,
   MediaFile,
   GalleryMediaDto} from '../models/event.model';
 import { environment } from '../../../../../environments/environment';
-import { AuthService } from '../../../../core/auth/auth.service';
 
 export interface ApiResponse<T> {
   success: boolean;
@@ -31,7 +29,6 @@ export interface ApiResponse<T> {
 })
 export class EventService {
   private http = inject(HttpClient);
-  private authService = inject(AuthService);
   
   private readonly API_URL = `${environment.apiUrl}/api/events`;
   private readonly MEDIA_API_URL = `${environment.apiUrl}/api/media`;
@@ -39,23 +36,6 @@ export class EventService {
   private readonly REQUEST_TIMEOUT = 30000; // 30 seconds
 
   constructor() { }
-
-  /**
-   * Get HTTP headers with authorization token
-   */
-  private getHeaders(): HttpHeaders {
-    const token = this.authService.getToken();
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json'
-    };
-
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-
-    return new HttpHeaders(headers);
-  }
 
   /**
    * Handle HTTP errors
@@ -66,41 +46,20 @@ export class EventService {
     let errorMessage = 'An unexpected error occurred';
     
     if (typeof ErrorEvent !== 'undefined' && error.error instanceof ErrorEvent) {
-      // Client-side error
       errorMessage = `Client Error: ${error.error.message}`;
     } else {
-      // Server-side error
-      // Try to get detail from backend error object first
       if (error.error && typeof error.error === 'object') {
         errorMessage = error.error.detail || error.error.message || errorMessage;
-      }
-      
-      // If we still have generic message, use status-based defaults
-      if (errorMessage === 'An unexpected error occurred' || errorMessage === 'Invalid data provided') {
+      } else {
         switch (error.status) {
-          case 400:
-            errorMessage = 'Invalid data provided';
-            break;
-          case 401:
-            errorMessage = 'Your session has expired. Please login again.';
-            break;
-          case 403:
-            errorMessage = 'You do not have permission to perform this action';
-            break;
-          case 404:
-            errorMessage = 'Event not found';
-            break;
-          case 409:
-            errorMessage = 'Event conflict occurred';
-            break;
-          case 422:
-            errorMessage = 'Validation failed';
-            break;
-          case 500:
-            errorMessage = 'Server error. Please try again later.';
-            break;
-          default:
-            errorMessage = `Server Error: ${error.status} - ${error.message}`;
+          case 400: errorMessage = 'Invalid data provided'; break;
+          case 401: errorMessage = 'Your session has expired. Please login again.'; break;
+          case 403: errorMessage = 'You do not have permission to perform this action'; break;
+          case 404: errorMessage = 'Event not found'; break;
+          case 409: errorMessage = 'Event conflict occurred'; break;
+          case 422: errorMessage = 'Validation failed'; break;
+          case 500: errorMessage = 'Server error. Please try again later.'; break;
+          default: errorMessage = `Server Error: ${error.status} - ${error.message}`;
         }
       }
     }
@@ -116,7 +75,6 @@ export class EventService {
    * Transform form data to API request format
    */
   private transformToApiRequest(formData: EventFormData): CreateEventRequest {
-    // Determine the event place based on event type
     const eventPlace = formData.eventType === EventType.PHYSICAL 
       ? formData.address 
       : formData.meetingLink;
@@ -135,16 +93,9 @@ export class EventService {
 
   private getCategoryName(categoryId: number): string {
     const categories: Record<number, string> = {
-      1: 'Project Launch',
-      2: 'Workshop / Training',
-      3: 'Media Visit',
-      4: 'Inspection',
-      5: 'Board Meeting',
-      6: 'Team Building',
-      7: 'Conference',
-      8: 'Networking Event'
+      1: 'Project Launch', 2: 'Workshop / Training', 3: 'Media Visit', 4: 'Inspection',
+      5: 'Board Meeting', 6: 'Team Building', 7: 'Conference', 8: 'Networking Event'
     };
-
     return categories[categoryId] || '';
   }
 
@@ -153,12 +104,9 @@ export class EventService {
    */
   private formatDateToISO(date: Date | string): string {
     if (!date) return '';
-    
     try {
       const dateObj = date instanceof Date ? date : new Date(date);
-      if (isNaN(dateObj.getTime())) {
-        throw new Error('Invalid date');
-      }
+      if (isNaN(dateObj.getTime())) throw new Error('Invalid date');
       return dateObj.toISOString();
     } catch (error) {
       console.error('Date formatting error:', error);
@@ -166,497 +114,223 @@ export class EventService {
     }
   }
 
-  /**
-   * Create a new event
-   */
   createEvent(formData: EventFormData, _status: EventStatus): Observable<Event> {
-    const currentUser = this.authService.getCurrentUser();
-    
-    if (!currentUser) {
-      return throwError(() => new Error('User not authenticated'));
-    }
-
     const requestData = this.transformToApiRequest(formData);
-
-    console.log('📦 Sending to API:', JSON.stringify(requestData, null, 2));
-
-    return this.http.post<Event>(
-      this.API_URL, 
-      requestData, 
-      { 
-        headers: this.getHeaders(),
-        responseType: 'json'
-      }
-    ).pipe(
+    return this.http.post<Event>(this.API_URL, requestData).pipe(
       timeout(this.REQUEST_TIMEOUT),
       retry(1),
       catchError(this.handleError.bind(this))
     );
   }
 
-  /**
-   * Get all events with rich filters for discovery/finalized
-   */
   getAllEvents(filters?: { 
-    departmentId?: string; 
-    status?: string;
-    searchTerm?: string;
-    category?: string;
-    startDate?: string;
-    endDate?: string;
+    departmentId?: string; status?: string; searchTerm?: string;
+    category?: string; startDate?: string; endDate?: string;
   }): Observable<Event[]> {
     let url = this.API_URL;
-    
     if (filters) {
       const params = new URLSearchParams();
-      if (filters.departmentId) params.set('departmentId', filters.departmentId);
-      if (filters.status) params.set('status', filters.status);
-      if (filters.searchTerm) params.set('searchTerm', filters.searchTerm);
-      if (filters.category) params.set('category', filters.category);
-      if (filters.startDate) params.set('startDate', filters.startDate);
-      if (filters.endDate) params.set('endDate', filters.endDate);
-      
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value) params.set(key, value);
+      });
       const queryString = params.toString();
       if (queryString) url += `?${queryString}`;
     }
-    
-    return this.http.get<Event[]>(url, { 
-      headers: this.getHeaders(),
-      responseType: 'json'
-    }).pipe(
+    return this.http.get<Event[]>(url).pipe(
       timeout(this.REQUEST_TIMEOUT),
       retry(1),
       catchError(this.handleError.bind(this))
     );
   }
 
-  /**
-   * Get events for the public discovery registry
-   */
   getDiscoveryEvents(filters?: { 
-    searchTerm?: string; 
-    category?: string; 
-    departmentId?: string;
-    departmentName?: string[];
-    startDate?: string;
-    endDate?: string;
-    status?: string;
+    searchTerm?: string; category?: string; departmentId?: string;
+    departmentName?: string[]; startDate?: string; endDate?: string; status?: string;
   }): Observable<Event[]> {
     let url = `${this.API_URL}/discovery`;
-    
     if (filters) {
       const params = new URLSearchParams();
-      if (filters.searchTerm) params.set('searchTerm', filters.searchTerm);
-      if (filters.category) params.set('category', filters.category);
-      if (filters.departmentId) params.set('departmentId', filters.departmentId);
-      if (filters.departmentName) {
-        filters.departmentName.forEach(name => {
-          if (name) {
-            params.append('departmentName', name);
-          }
-        });
-      }
-      if (filters.startDate) params.set('startDate', filters.startDate);
-      if (filters.endDate) params.set('endDate', filters.endDate);
-      if (filters.status) params.set('status', filters.status);
-      
+      Object.entries(filters).forEach(([key, value]) => {
+        if (Array.isArray(value)) {
+          value.forEach(v => params.append(key, v));
+        } else if (value) {
+          params.set(key, value as string);
+        }
+      });
       const queryString = params.toString();
       if (queryString) url += `?${queryString}`;
     }
-    
-    return this.http.get<Event[]>(url, { 
-      headers: this.getHeaders(),
-      responseType: 'json'
-    }).pipe(
+    return this.http.get<Event[]>(url).pipe(
       timeout(this.REQUEST_TIMEOUT),
       retry(1),
       catchError(this.handleError.bind(this))
     );
   }
 
-  /**
-   * Get media for the public gallery page
-   */
-  getGalleryMedia(): Observable<GalleryMediaDto[]> {
-    const url = `${this.MEDIA_API_URL}/gallery`;
-    return this.http.get<GalleryMediaDto[]>(url, { 
-      headers: this.getHeaders(),
-      responseType: 'json'
-    }).pipe(
+  getGalleryMedia(categoryId?: string | null, subCategoryId?: string | null): Observable<GalleryMediaDto[]> {
+    let url = `${this.MEDIA_API_URL}/gallery`;
+    const params = new URLSearchParams();
+    if (categoryId) params.set('categoryId', categoryId);
+    if (subCategoryId) params.set('subCategoryId', subCategoryId);
+    const queryString = params.toString();
+    if (queryString) url += `?${queryString}`;
+    return this.http.get<GalleryMediaDto[]>(url).pipe(
       timeout(this.REQUEST_TIMEOUT),
       retry(1),
       catchError(this.handleError.bind(this))
     );
   }
 
-  /**
-   * Get upcoming events
-   */
   getUpcomingEvents(): Observable<Event[]> {
     const url = `${this.API_URL}/upcoming`;
-    
-    return this.http.get<Event[]>(url, { 
-      headers: this.getHeaders(),
-      responseType: 'json'
-    }).pipe(
+    return this.http.get<Event[]>(url).pipe(
       timeout(this.REQUEST_TIMEOUT),
       retry(1),
       catchError(this.handleError.bind(this))
     );
   }
 
-  /**
-   * Get event by ID
-   */
   getEventById(id: string): Observable<Event> {
     const url = `${this.API_URL}/${id}`;
-    console.log('Fetching event from:', url);
-    
-    return this.http.get<Event>(url, {
-      headers: this.getHeaders()
-    }).pipe(
+    return this.http.get<Event>(url).pipe(
       tap(event => console.log('Event fetched successfully:', event)),
       catchError(this.handleError.bind(this))
     );
   }
 
-  /**
-   * Update event
-   */
   updateEvent(eventId: string, formData: Partial<EventFormData>, status: EventStatus): Observable<Event> {
-    const currentUser = this.authService.getCurrentUser();
-    
-    if (!currentUser) {
-      return throwError(() => new Error('User not authenticated'));
-    }
-
-    const requestData: any = {
-      id: eventId,
-      status: status
-    };
-    
+    const requestData: any = { id: eventId, status: status };
     if (formData.title) requestData.title = formData.title.trim();
     if (formData.description !== undefined) requestData.description = formData.description?.trim() || '';
     if (formData.eventCategoryId) requestData.category = this.getCategoryName(formData.eventCategoryId);
     if (formData.startDateTime) requestData.startDate = this.formatDateToISO(formData.startDateTime);
     if (formData.endDateTime) requestData.endDate = this.formatDateToISO(formData.endDateTime);
     if (formData.eventType && (formData.address || formData.meetingLink)) {
-      requestData.eventPlace = formData.eventType === EventType.PHYSICAL 
-        ? formData.address 
-        : formData.meetingLink;
+      requestData.eventPlace = formData.eventType === EventType.PHYSICAL ? formData.address : formData.meetingLink;
     }
-    
-    if (formData.departmentId) {
-      requestData.departmentId = formData.departmentId.toString();
-    }
-
-    if (formData.coverImageUrl) {
-      requestData.coverImageUrl = formData.coverImageUrl.trim();
-    }
-
-    return this.http.put<Event>(
-      `${this.API_URL}/${eventId}`, 
-      requestData, 
-      { 
-        headers: this.getHeaders(),
-        responseType: 'json'
-      }
-    ).pipe(
+    if (formData.departmentId) requestData.departmentId = formData.departmentId.toString();
+    if (formData.coverImageUrl) requestData.coverImageUrl = formData.coverImageUrl.trim();
+    return this.http.put<Event>(`${this.API_URL}/${eventId}`, requestData).pipe(
       timeout(this.REQUEST_TIMEOUT),
       retry(1),
       catchError(this.handleError.bind(this))
     );
   }
 
-  /**
-   * Upload cover image for an event
-   */
   uploadEventCoverImage(eventId: string, file: File): Observable<string> {
     const url = `${this.API_URL}/${eventId}/cover-image`;
     const formData = new FormData();
     formData.append('File', file, file.name);
-
-    const headers = new HttpHeaders({
-      Authorization: `Bearer ${this.authService.getToken()}`
-    });
-
-    return this.http.post<{url: string}>(url, formData, { headers }).pipe(
+    return this.http.post<{url: string}>(url, formData).pipe(
       timeout(this.REQUEST_TIMEOUT),
       map(response => response.url),
       catchError(this.handleError.bind(this))
     );
   }
 
-  /**
-   * Delete event
-   */
   deleteEvent(eventId: string): Observable<void> {
-    return this.http.delete<void>(`${this.API_URL}/${eventId}`, { 
-      headers: this.getHeaders() 
-    }).pipe(
+    return this.http.delete<void>(`${this.API_URL}/${eventId}`).pipe(
       timeout(this.REQUEST_TIMEOUT),
       retry(1),
       catchError(this.handleError.bind(this))
     );
   }
 
-  /**
-   * Approve event
-   */
   approveEvent(eventId: string): Observable<Event> {
-    return this.http.post<Event>(
-      `${this.API_URL}/${eventId}/approve`, 
-      {}, 
-      { 
-        headers: this.getHeaders(),
-        responseType: 'json'
-      }
-    ).pipe(
+    return this.http.post<Event>(`${this.API_URL}/${eventId}/approve`, {}).pipe(
       timeout(this.REQUEST_TIMEOUT),
       retry(1),
       catchError(this.handleError.bind(this))
     );
   }
 
-  /**
-   * Reject event
-   */
   rejectEvent(eventId: string, reason: string): Observable<Event> {
-    return this.http.patch<Event>(
-      `${this.API_URL}/${eventId}/reject`, 
-      { reason }, 
-      { 
-        headers: this.getHeaders(),
-        responseType: 'json'
-      }
-    ).pipe(
+    return this.http.patch<Event>(`${this.API_URL}/${eventId}/reject`, { reason }).pipe(
       timeout(this.REQUEST_TIMEOUT),
       retry(1),
       catchError(this.handleError.bind(this))
     );
   }
  
-
-  /**
-   * Assign a single employee to an event
-   * API expects a single assignment object, not an array
-   */
-   
-assignEmployeeToEvent(eventId: string, assignment: AssignmentPayload): Observable<any> {
-  console.log('📦 Sending single assignment:', { eventId, ...assignment });
-  
-  // Try both ID formats to see which one works
-  const payload = {
-    eventId: eventId,
-    employeeId: assignment.employeeId, // This might need to be the string ID
-    role: assignment.role
-  };
-  
-  console.log('Full payload being sent:', JSON.stringify(payload, null, 2));
-  
-  return this.http.post<any>(
-    `${this.API_URL}/${eventId}/assignments`, 
-    payload,
-    { 
-      headers: this.getHeaders(),
-      responseType: 'json'
-    }
-  ).pipe(
-    timeout(this.REQUEST_TIMEOUT),
-    tap(result => console.log('✅ Assignment successful:', result)),
-    catchError(error => {
-      console.error('❌ Failed with payload:', payload);
-      console.error('Error details:', error.error);
-      return throwError(() => error);
-    })
-  );
-}
-
-// Update assignMultipleEmployees:
-assignMultipleEmployees(eventId: string, assignments: AssignmentPayload[]): Observable<any[]> {
-  console.log(`📦 Sending ${assignments.length} assignments one by one`);
-  console.log('Original assignments:', assignments);
-  
-  if (assignments.length === 0) {
-    return throwError(() => new Error('No assignments provided'));
-  }
-  
-  // Send them sequentially instead of in parallel to better identify which one fails
-  const requests = assignments.map((assignment, index) => {
-    const payload = {
-      eventId: eventId,
-      employeeId: assignment.employeeId,
-      role: assignment.role
-    };
-    
-    console.log(`Request ${index + 1}:`, payload);
-    
-    return this.http.post<any>(
-      `${this.API_URL}/${eventId}/assignments`,
-      payload,
-      { 
-        headers: this.getHeaders(),
-        responseType: 'json'
-      }
-    ).pipe(
+  assignEmployeeToEvent(eventId: string, assignment: AssignmentPayload): Observable<any> {
+    const payload = { eventId, employeeId: assignment.employeeId, role: assignment.role };
+    return this.http.post<any>(`${this.API_URL}/${eventId}/assignments`, payload).pipe(
       timeout(this.REQUEST_TIMEOUT),
       catchError(error => {
-        console.error(`❌ Failed assignment ${index + 1}:`, assignment, error);
-        // Return the error but don't stop other requests
-        return throwError(() => ({
-          assignment,
-          error,
-          index
-        }));
+        console.error('❌ Failed with payload:', payload, error.error);
+        return throwError(() => error);
       })
     );
-  });
-  
-  // Use forkJoin to execute all requests
-  return forkJoin(requests).pipe(
-    tap(results => console.log(`✅ All assignments processed:`, results)),
-    catchError(error => {
-      console.error('❌ Some assignments failed:', error);
-      return throwError(() => error);
-    })
-  );
-}
+  }
 
+  assignMultipleEmployees(eventId: string, assignments: AssignmentPayload[]): Observable<any[]> {
+    if (assignments.length === 0) return throwError(() => new Error('No assignments provided'));
+    const requests = assignments.map(assignment => {
+      const payload = { eventId, employeeId: assignment.employeeId, role: assignment.role };
+      return this.http.post<any>(`${this.API_URL}/${eventId}/assignments`, payload).pipe(
+        timeout(this.REQUEST_TIMEOUT),
+        catchError(error => {
+          console.error(`❌ Failed assignment:`, assignment, error);
+          return throwError(() => ({ assignment, error }));
+        })
+      );
+    });
+    return forkJoin(requests).pipe(catchError(error => throwError(() => error)));
+  }
 
-  /**
-   * Remove an assignment
-   */
   removeAssignment(eventId: string, role: string, assignmentId: string): Observable<Event> {
-    return this.http.delete<Event>(
-      `${this.API_URL}/${eventId}/assignments/${role}/${assignmentId}`,
-      { 
-        headers: this.getHeaders(),
-        responseType: 'json'
-      }
-    ).pipe(
+    return this.http.delete<Event>(`${this.API_URL}/${eventId}/assignments/${role}/${assignmentId}`).pipe(
       timeout(this.REQUEST_TIMEOUT),
-      tap(result => console.log('✅ Assignment removed:', result)),
       catchError(this.handleError.bind(this))
     );
   }
 
-  /**
-   * Get all assignments for an event
-   */
   getEventAssignments(eventId: string): Observable<EventAssignments> {
-    const url = `${this.API_URL}/${eventId}/assignments`;
-    
-    return this.http.get<EventAssignments>(
-      url,
-      {
-        headers: this.getHeaders(),
-        responseType: 'json'
-      }
-    ).pipe(
+    return this.http.get<EventAssignments>(`${this.API_URL}/${eventId}/assignments`).pipe(
       timeout(this.REQUEST_TIMEOUT),
-      tap(assignments => console.log('📋 Event assignments:', assignments)),
       catchError(this.handleError.bind(this))
     );
   }
 
-  /**
-   * Update an existing assignment
-   */
   updateAssignment(eventId: string, assignmentId: string, updatedData: Partial<AssignmentPayload>): Observable<Event> {
-    const url = `${this.API_URL}/${eventId}/assignments/${assignmentId}`;
-    
-    return this.http.put<Event>(
-      url,
-      updatedData,
-      {
-        headers: this.getHeaders(),
-        responseType: 'json'
-      }
-    ).pipe(
+    return this.http.put<Event>(`${this.API_URL}/${eventId}/assignments/${assignmentId}`, updatedData).pipe(
       timeout(this.REQUEST_TIMEOUT),
-      tap(updatedEvent => console.log('✅ Assignment updated successfully:', updatedEvent)),
       catchError(this.handleError.bind(this))
     );
   }
 
-  /**
-   * Finalize event
-   */
   finalizeEvent(eventId: string, closureComment: string, allowOverride: boolean = false): Observable<Event> {
-    return this.http.post<Event>(
-      `${this.API_URL}/${eventId}/finalize`,
-      { eventId, closureComment, allowOverride },
-      {
-        headers: this.getHeaders(),
-        responseType: 'json'
-      }
-    ).pipe(
+    return this.http.post<Event>(`${this.API_URL}/${eventId}/finalize`, { eventId, closureComment, allowOverride }).pipe(
       timeout(this.REQUEST_TIMEOUT),
       retry(1),
       catchError(this.handleError.bind(this))
     );
   }
 
-  /**
-   * Submit coverage for an assignment (Staff)
-   */
   submitCoverage(eventId: string, assignmentId: string): Observable<AssignmentResponse> {
-    const url = `${this.API_URL}/${eventId}/assignments/${assignmentId}/submit-coverage`;
-    return this.http.post<AssignmentResponse>(
-      url,
-      {},
-      { headers: this.getHeaders() }
-    ).pipe(
+    return this.http.post<AssignmentResponse>(`${this.API_URL}/${eventId}/assignments/${assignmentId}/submit-coverage`, {}).pipe(
       timeout(this.REQUEST_TIMEOUT),
       catchError(this.handleError.bind(this))
     );
   }
 
-  /**
-   * Verify coverage for an assignment (Creator)
-   */
   verifyCoverage(eventId: string, assignmentId: string, isApproved: boolean, note?: string): Observable<AssignmentResponse> {
-    const url = `${this.API_URL}/${eventId}/assignments/${assignmentId}/verify-coverage`;
-    return this.http.post<AssignmentResponse>(
-      url,
-      { isApproved, note },
-      { headers: this.getHeaders() }
-    ).pipe(
+    return this.http.post<AssignmentResponse>(`${this.API_URL}/${eventId}/assignments/${assignmentId}/verify-coverage`, { isApproved, note }).pipe(
       timeout(this.REQUEST_TIMEOUT),
       catchError(this.handleError.bind(this))
     );
   }
 
-  /**
-   * Directly cancel an event (for Draft events by Admin/Comm Manager)
-   */
   cancelEvent(eventId: string, comment: string): Observable<Event> {
-    return this.http.post<Event>(
-      `${this.API_URL}/${eventId}/cancel`,
-      { comment },
-      {
-        headers: this.getHeaders(),
-        responseType: 'json'
-      }
-    ).pipe(
+    return this.http.post<Event>(`${this.API_URL}/${eventId}/cancel`, { comment }).pipe(
       timeout(this.REQUEST_TIMEOUT),
       retry(1),
       catchError(this.handleError.bind(this))
     );
   }
 
-  /**
-   * Request event cancellation (for Scheduled events by Creator/Admin)
-   */
   requestCancellation(eventId: string, comment: string): Observable<Event> {
-    return this.http.post<Event>(
-      `${this.API_URL}/${eventId}/cancellation-request`,
-      { comment },
-      {
-        headers: this.getHeaders(),
-        responseType: 'json'
-      }
-    ).pipe(
+    return this.http.post<Event>(`${this.API_URL}/${eventId}/cancellation-request`, { comment }).pipe(
       timeout(this.REQUEST_TIMEOUT),
       retry(1),
       catchError(this.handleError.bind(this))
@@ -664,14 +338,7 @@ assignMultipleEmployees(eventId: string, assignments: AssignmentPayload[]): Obse
   }
 
   approveCancellationRequest(eventId: string, comment: string = ''): Observable<Event> {
-    return this.http.post<Event>(
-      `${this.API_URL}/${eventId}/cancellation-request/approve`,
-      { comment },
-      {
-        headers: this.getHeaders(),
-        responseType: 'json'
-      }
-    ).pipe(
+    return this.http.post<Event>(`${this.API_URL}/${eventId}/cancellation-request/approve`, { comment }).pipe(
       timeout(this.REQUEST_TIMEOUT),
       retry(1),
       catchError(this.handleError.bind(this))
@@ -679,129 +346,73 @@ assignMultipleEmployees(eventId: string, assignments: AssignmentPayload[]): Obse
   }
 
   rejectCancellationRequest(eventId: string, comment: string = ''): Observable<Event> {
-    return this.http.post<Event>(
-      `${this.API_URL}/${eventId}/cancellation-request/reject`,
-      { comment },
-      {
-        headers: this.getHeaders(),
-        responseType: 'json'
-      }
-    ).pipe(
+    return this.http.post<Event>(`${this.API_URL}/${eventId}/cancellation-request/reject`, { comment }).pipe(
       timeout(this.REQUEST_TIMEOUT),
       retry(1),
       catchError(this.handleError.bind(this))
     );
   }
 
-  /**
-   * Request event date/location change (for Scheduled events)
-   */
   requestDateChange(eventId: string, payload: {
-    proposedStartDate: string;
-    proposedEndDate: string;
-    proposedEventPlace?: string;
-    reason: string;
+    proposedStartDate: string; proposedEndDate: string;
+    proposedEventPlace?: string; reason: string;
   }): Observable<Event> {
-    return this.http.post<Event>(
-      `${this.API_URL}/${eventId}/date-change-request`,
-      { eventId, ...payload },
-      {
-        headers: this.getHeaders(),
-        responseType: 'json'
-      }
-    ).pipe(
+    return this.http.post<Event>(`${this.API_URL}/${eventId}/date-change-request`, { eventId, ...payload }).pipe(
       timeout(this.REQUEST_TIMEOUT),
       retry(1),
       catchError(this.handleError.bind(this))
     );
   }
 
-  /**
-   * Review event date/location change request
-   */
   reviewDateChange(eventId: string, approved: boolean, comment?: string): Observable<Event> {
-    return this.http.post<Event>(
-      `${this.API_URL}/${eventId}/date-change-request/review`,
-      { eventId, approved, reviewComment: comment },
-      {
-        headers: this.getHeaders(),
-        responseType: 'json'
-      }
-    ).pipe(
+    return this.http.post<Event>(`${this.API_URL}/${eventId}/date-change-request/review`, { eventId, approved, reviewComment: comment }).pipe(
       timeout(this.REQUEST_TIMEOUT),
       retry(1),
       catchError(this.handleError.bind(this))
     );
   }
 
-  /**
-   * Upload media for an event
-   */
-  uploadMedia(eventId: string, fileType: string, file?: File, externalUrl?: string): Observable<any> {
+  uploadMedia(eventId: string, fileType: string, file?: File, externalUrl?: string, mediaSubCategoryId?: string): Observable<any> {
     const url = `${environment.apiUrl}/api/media/upload`;
     const formData = new FormData();
     formData.append('EventId', eventId);
     formData.append('FileType', fileType);
-    if (file) {
-      formData.append('File', file);
-    }
-    if (externalUrl) {
-      formData.append('ExternalUrl', externalUrl);
-    }
-
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${this.authService.getToken()}`
-    });
-
-    return this.http.post<any>(url, formData, { headers }).pipe(
+    if (file) formData.append('File', file);
+    if (externalUrl) formData.append('ExternalUrl', externalUrl);
+    if (mediaSubCategoryId) formData.append('MediaSubCategoryId', mediaSubCategoryId);
+    return this.http.post<any>(url, formData).pipe(
       timeout(this.REQUEST_TIMEOUT),
       catchError(this.handleError.bind(this))
     );
   }
 
-  /**
-   * Get media for an event
-   */
   getEventMedia(eventId: string): Observable<MediaFile[]> {
     const url = `${environment.apiUrl}/api/media/event/${eventId}`;
-    return this.http.get<MediaFile[]>(url, { headers: this.getHeaders() }).pipe(
+    return this.http.get<MediaFile[]>(url).pipe(
       timeout(this.REQUEST_TIMEOUT),
       catchError(this.handleError.bind(this))
     );
   }
 
-  /**
-   * Delete media file
-   */
   deleteMedia(mediaId: string): Observable<void> {
     const url = `${environment.apiUrl}/api/media/${mediaId}`;
-    return this.http.delete<void>(url, { headers: this.getHeaders() }).pipe(
+    return this.http.delete<void>(url).pipe(
       timeout(this.REQUEST_TIMEOUT),
       catchError(this.handleError.bind(this))
     );
   }
 
-  /**
-   * Get assignments for the current user
-   */
   getMyAssignments(): Observable<AssignmentResponse[]> {
     const url = `${environment.apiUrl}/api/my-assignments`;
-    return this.http.get<AssignmentResponse[]>(url, { headers: this.getHeaders() }).pipe(
+    return this.http.get<AssignmentResponse[]>(url).pipe(
       timeout(this.REQUEST_TIMEOUT),
       catchError(this.handleError.bind(this))
     );
   }
 
-  /**
-   * Update assignment status (Accept/Decline)
-   */
   updateAssignmentStatus(eventId: string, assignmentId: string, status: string, declineReason?: string): Observable<any> {
     const url = `${this.API_URL}/${eventId}/assignments/${assignmentId}/status`;
-    return this.http.put<any>(
-      url,
-      { id: assignmentId, status, declineReason },
-      { headers: this.getHeaders() }
-    ).pipe(
+    return this.http.put<any>(url, { id: assignmentId, status, declineReason }).pipe(
       timeout(this.REQUEST_TIMEOUT),
       catchError(this.handleError.bind(this))
     );

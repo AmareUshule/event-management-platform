@@ -6,10 +6,75 @@
   padding: var(--space-6) 0;
 }
 
+.folder-grid,
 .gallery-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: var(--space-6);
+}
+
+.folder-item,
+.gallery-item {
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  background-color: var(--bg-surface);
+}
+
+.folder-item {
+  display: flex;
+  flex-direction: column;
+  min-height: 250px;
+  cursor: pointer;
+}
+
+.folder-item:hover,
+.gallery-item:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-xl);
+}
+
+.folder-thumbnail,
+.media-preview {
+  position: relative;
+  width: 100%;
+  min-height: 180px;
+  overflow: hidden;
+  background-color: var(--bg-subtle);
+}
+
+.folder-thumbnail img,
+.media-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.folder-item:hover .folder-thumbnail img,
+.gallery-item:hover img {
+  transform: scale(1.05);
+}
+
+.folder-details {
+  padding: var(--space-4);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.folder-name {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+  display: block;
+}
+
+.folder-icon {
+  font-size: 48px;
+  color: var(--primary-default);
 }
 
 .gallery-item {

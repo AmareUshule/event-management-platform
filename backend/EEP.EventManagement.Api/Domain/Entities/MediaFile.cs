@@ -14,6 +14,8 @@ namespace EEP.EventManagement.Api.Domain.Entities
         public long FileSize { get; set; }
         public Guid EventId { get; set; }
         public Event? Event { get; set; }
+        public Guid? MediaSubCategoryId { get; set; }
+        public MediaSubCategory? MediaSubCategory { get; set; }
         public Guid? UploadedBy { get; set; }
         public ApplicationUser? Uploader { get; set; }
     }

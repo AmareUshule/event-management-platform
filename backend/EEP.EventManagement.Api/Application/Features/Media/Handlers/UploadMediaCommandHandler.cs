@@ -13,6 +13,9 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using EEP.EventManagement.Api.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
+using System.IO;
 
 namespace EEP.EventManagement.Api.Application.Features.Media.Handlers
 {
@@ -21,6 +24,7 @@ namespace EEP.EventManagement.Api.Application.Features.Media.Handlers
         private readonly IMediaFileRepository _mediaRepository;
         private readonly IEventRepository _eventRepository;
         private readonly IAssignmentRepository _assignmentRepository;
+        private readonly ApplicationDbContext _context;
         private readonly IStorageService _storageService;
         private readonly IMapper _mapper;
         private readonly IUserContext _userContext;
@@ -30,6 +34,7 @@ namespace EEP.EventManagement.Api.Application.Features.Media.Handlers
             IMediaFileRepository mediaRepository,
             IEventRepository eventRepository,
             IAssignmentRepository assignmentRepository,
+            ApplicationDbContext context,
             IStorageService storageService,
             IMapper mapper,
             IUserContext userContext,
@@ -38,6 +43,7 @@ namespace EEP.EventManagement.Api.Application.Features.Media.Handlers
             _mediaRepository = mediaRepository;
             _eventRepository = eventRepository;
             _assignmentRepository = assignmentRepository;
+            _context = context;
             _storageService = storageService;
             _mapper = mapper;
             _userContext = userContext;
@@ -79,7 +85,8 @@ namespace EEP.EventManagement.Api.Application.Features.Media.Handlers
             {
                 EventId = ev.Id,
                 FileType = request.UploadMediaDto.FileType,
-                UploadedBy = currentUserId
+                UploadedBy = currentUserId,
+                MediaSubCategoryId = request.UploadMediaDto.MediaSubCategoryId
             };
 
             if (request.UploadMediaDto.FileType == MediaType.Link)
@@ -97,7 +104,23 @@ namespace EEP.EventManagement.Api.Application.Features.Media.Handlers
 
                 using (var stream = request.UploadMediaDto.File.OpenReadStream())
                 {
-                    var filePath = await _storageService.SaveFileAsync(stream, request.UploadMediaDto.File.FileName, $"uploads/events/{ev.Id}");
+                    // Build storage path. If sub-category provided, try to use category/subcategory names.
+                    string storagePath = $"uploads/events/{ev.Id}";
+                    if (mediaFile.MediaSubCategoryId.HasValue)
+                    {
+                        var sub = await _context.MediaSubCategories
+                            .Include(sc => sc.MediaCategory)
+                            .FirstOrDefaultAsync(sc => sc.Id == mediaFile.MediaSubCategoryId.Value, cancellationToken: cancellationToken);
+                        if (sub != null)
+                        {
+                            string sanitize(string s) => string.IsNullOrWhiteSpace(s) ? "unknown" : string.Concat(s.Split(Path.GetInvalidFileNameChars())).Replace(' ', '_');
+                            var categoryName = sanitize(sub.MediaCategory?.Name ?? "Uncategorized");
+                            var subName = sanitize(sub.Name);
+                            storagePath = Path.Combine("uploads", categoryName, subName);
+                        }
+                    }
+
+                    var filePath = await _storageService.SaveFileAsync(stream, request.UploadMediaDto.File.FileName, storagePath);
                     mediaFile.FileName = request.UploadMediaDto.File.FileName;
                     mediaFile.FilePath = filePath;
                     mediaFile.FileSize = request.UploadMediaDto.File.Length;

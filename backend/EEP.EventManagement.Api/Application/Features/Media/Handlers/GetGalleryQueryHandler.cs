@@ -34,11 +34,25 @@ namespace EEP.EventManagement.Api.Application.Features.Media.Handlers
             // Define the media types allowed in the gallery.
             var allowedMediaTypes = new[] { MediaType.Image, MediaType.Video };
 
-            var galleryMedia = await _context.MediaFiles
-                .Include(media => media.Event) // Include the related Event data
-                .Where(media => media.Event != null 
+            var query = _context.MediaFiles
+                .Include(media => media.Event)
+                .Include(media => media.MediaSubCategory)
+                    .ThenInclude(sc => sc.MediaCategory)
+                .Where(media => media.Event != null
                                 && publicEventStatuses.Contains(media.Event.Status)
-                                && allowedMediaTypes.Contains(media.FileType))
+                                && allowedMediaTypes.Contains(media.FileType));
+
+            if (request.MediaCategoryId.HasValue)
+            {
+                query = query.Where(media => media.MediaSubCategory != null && media.MediaSubCategory.MediaCategoryId == request.MediaCategoryId.Value);
+            }
+
+            if (request.MediaSubCategoryId.HasValue)
+            {
+                query = query.Where(media => media.MediaSubCategoryId == request.MediaSubCategoryId.Value);
+            }
+
+            var galleryMedia = await query
                 .OrderByDescending(media => media.Event.StartDate)
                 .Select(media => new GalleryMediaDto
                 {
@@ -47,7 +61,9 @@ namespace EEP.EventManagement.Api.Application.Features.Media.Handlers
                     FileType = media.FileType,
                     EventId = media.Event.Id,
                     EventTitle = media.Event.Title,
-                    EventDate = media.Event.StartDate
+                    EventDate = media.Event.StartDate,
+                    CategoryName = media.MediaSubCategory != null && media.MediaSubCategory.MediaCategory != null ? media.MediaSubCategory.MediaCategory.Name : "Uncategorized",
+                    SubCategoryName = media.MediaSubCategory != null ? media.MediaSubCategory.Name : string.Empty
                 })
                 .ToListAsync(cancellationToken);
 

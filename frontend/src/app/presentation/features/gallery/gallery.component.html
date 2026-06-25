@@ -4,41 +4,170 @@
 </app-page-header>
 
 <div class="gallery-container">
-  <ng-container *ngIf="galleryMedia$ | async as mediaItems; else loading">
-    <div *ngIf="mediaItems.length > 0; else noItems" class="gallery-grid">
-      <div *ngFor="let item of mediaItems" class="gallery-item">
-        <a [href]="getMediaPath(item.filePath)" target="_blank" class="gallery-link">
-          <div class="media-preview">
-            <ng-container [ngSwitch]="item.fileType">
-              <img *ngSwitchCase="'Image'" [src]="getMediaPath(item.filePath)" [alt]="item.eventTitle">
-              <div *ngSwitchCase="'Video'" class="video-preview">
-                <mat-icon>videocam</mat-icon>
-              </div>
-              <div *ngSwitchDefault class="file-preview">
-                <mat-icon>insert_drive_file</mat-icon>
+  <!-- Header Bar with Toggles -->
+  <div class="gallery-header">
+    <mat-button-toggle-group #group="matButtonToggleGroup" [value]="viewMode" (valueChange)="setViewMode($event)">
+      <mat-button-toggle value="folders" aria-label="Folder View">
+        <mat-icon>folder</mat-icon>
+        Folder View
+      </mat-button-toggle>
+      <mat-button-toggle value="all" aria-label="All Media View">
+        <mat-icon>grid_view</mat-icon>
+        All Media
+      </mat-button-toggle>
+    </mat-button-toggle-group>
+
+    <div class="spacer"></div>
+
+    <button *ngIf="isAdmin" mat-stroked-button (click)="toggleManagementPanel()">
+      <mat-icon>settings</mat-icon>
+      {{ managementPanelVisible ? 'Close Management' : 'Manage Categories' }}
+    </button>
+  </div>
+
+  <!-- Admin Management Panel -->
+  <mat-expansion-panel class="management-panel" [expanded]="managementPanelVisible" hideToggle>
+    <div class="management-grid">
+      <!-- Left Panel: Categories -->
+      <div class="mgmt-column">
+        <div class="mgmt-header">
+          <h3>Categories</h3>
+          <button mat-icon-button color="primary" (click)="addCategory()" matTooltip="Add New Category">
+            <mat-icon>add_circle</mat-icon>
+          </button>
+        </div>
+        <mat-divider></mat-divider>
+        <mat-list *ngIf="!isMgmtLoading; else mgmtSpinner">
+          <mat-list-item *ngFor="let cat of mgmtCategories" 
+                         (click)="selectCategoryForMgmt(cat)" 
+                         [class.selected]="selectedMgmtCategory?.id === cat.id">
+            <span matListItemTitle>{{ cat.name }}</span>
+            <div matListItemMeta class="mgmt-actions">
+              <button mat-icon-button (click)="editCategory(cat); $event.stopPropagation()"><mat-icon>edit</mat-icon></button>
+              <button mat-icon-button color="warn" (click)="deleteCategory(cat); $event.stopPropagation()"><mat-icon>delete</mat-icon></button>
+            </div>
+          </mat-list-item>
+        </mat-list>
+      </div>
+
+      <!-- Right Panel: Sub-Categories -->
+      <div class="mgmt-column">
+        <div class="mgmt-header">
+          <h3>Sub-Categories</h3>
+          <button mat-icon-button color="primary" [disabled]="!selectedMgmtCategory" (click)="addSubCategory()" matTooltip="Add New Sub-Category">
+            <mat-icon>add_circle</mat-icon>
+          </button>
+        </div>
+        <mat-divider></mat-divider>
+        <mat-list *ngIf="!isMgmtLoading; else mgmtSpinner">
+          <div *ngIf="!selectedMgmtCategory" class="empty-mgmt-state">Select a category to see its sub-categories.</div>
+          <mat-list-item *ngFor="let sub of mgmtSubCategories">
+            <span matListItemTitle>{{ sub.name }}</span>
+            <div matListItemMeta class="mgmt-actions">
+              <button mat-icon-button (click)="editSubCategory(sub); $event.stopPropagation()"><mat-icon>edit</mat-icon></button>
+              <button mat-icon-button color="warn" (click)="deleteSubCategory(sub); $event.stopPropagation()"><mat-icon>delete</mat-icon></button>
+            </div>
+          </mat-list-item>
+        </mat-list>
+      </div>
+      <ng-template #mgmtSpinner><div class="spinner-container"><mat-spinner diameter="30"></mat-spinner></div></ng-template>
+    </div>
+  </mat-expansion-panel>
+
+  <!-- Main Content Area -->
+  <div class="gallery-content">
+    <ng-container *ngIf="!(isLoading$ | async); else loading">
+      <div [ngSwitch]="viewMode">
+        
+        <!-- FOLDER VIEW -->
+        <ng-container *ngSwitchCase="'folders'">
+          <div class="breadcrumb-bar">
+            <ng-container *ngFor="let crumb of breadcrumbs; let i = index; let last = last">
+              <button mat-button (click)="navigateToBreadcrumb(i)" [disabled]="last">{{ crumb.name }}</button>
+              <mat-icon *ngIf="!last">chevron_right</mat-icon>
+            </ng-container>
+          </div>
+
+          <div [ngSwitch]="getCurrentViewLevel()">
+            <ng-container *ngSwitchCase="'categories'">
+              <div class="folder-grid">
+                <div *ngFor="let cat of categories" class="folder-item" (click)="selectCategory(cat)">
+                  <div class="folder-thumbnail">
+                    <img *ngIf="cat.thumbnailUrl" [src]="getMediaPath(cat.thumbnailUrl)" alt="Thumbnail for {{cat.name}}">
+                    <mat-icon *ngIf="!cat.thumbnailUrl" class="folder-icon">folder</mat-icon>
+                  </div>
+                  <div class="folder-details">
+                    <span class="folder-name">{{ cat.name }}</span>
+                  </div>
+                </div>
+                <div *ngIf="categories.length === 0" class="no-items-message"><h2>No Categories Found</h2></div>
               </div>
             </ng-container>
-            <div class="media-overlay">
-              <span class="event-title">{{ item.eventTitle }}</span>
-              <span class="event-date">{{ item.eventDate | date:'longDate' }}</span>
-            </div>
+
+            <ng-container *ngSwitchCase="'subcategories'">
+              <div class="folder-grid">
+                <div *ngFor="let sub of subCategories" class="folder-item" (click)="selectSubCategory(sub)">
+                   <div class="folder-thumbnail">
+                    <img *ngIf="sub.thumbnailUrl" [src]="getMediaPath(sub.thumbnailUrl)" alt="Thumbnail for {{sub.name}}">
+                    <mat-icon *ngIf="!sub.thumbnailUrl" class="folder-icon">folder_special</mat-icon>
+                  </div>
+                  <div class="folder-details">
+                    <span class="folder-name">{{ sub.name }}</span>
+                  </div>
+                </div>
+                <div *ngIf="subCategories.length === 0" class="no-items-message"><h2>No Sub-Categories Found</h2></div>
+              </div>
+            </ng-container>
+
+            <ng-container *ngSwitchCase="'media'">
+              <div class="gallery-grid">
+                <div *ngFor="let item of media" class="gallery-item">
+                  <a [routerLink]="['/events/details', item.eventId]" class="gallery-link">
+                    <div class="media-preview"><img [src]="getMediaPath(item.filePath)" [alt]="item.eventTitle"></div>
+                    <div class="media-overlay"><span class="event-title">{{ item.eventTitle }}</span></div>
+                  </a>
+                </div>
+                <div *ngIf="media.length === 0" class="no-items-message"><h2>No Media Found</h2></div>
+              </div>
+            </ng-container>
           </div>
-        </a>
+        </ng-container>
+
+        <!-- ALL MEDIA VIEW -->
+        <ng-container *ngSwitchCase="'all'">
+          <div class="filter-bar">
+            <mat-form-field appearance="outline">
+              <mat-label>Filter by Category</mat-label>
+              <input type="text" matInput [formControl]="categoryControl" [matAutocomplete]="autoCatFilter">
+              <mat-autocomplete #autoCatFilter="matAutocomplete" [displayWith]="displayCategory">
+                <mat-option *ngFor="let option of filteredCategoriesForFilterBar$ | async" [value]="option">{{ option.name }}</mat-option>
+              </mat-autocomplete>
+              <button mat-icon-button matSuffix *ngIf="categoryControl.value" (click)="categoryControl.setValue(null); $event.stopPropagation()"><mat-icon>close</mat-icon></button>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Filter by Sub-Category</mat-label>
+              <input type="text" matInput [formControl]="subCategoryControl" [matAutocomplete]="autoSubCatFilter" [readonly]="!categoryControl.value">
+              <mat-autocomplete #autoSubCatFilter="matAutocomplete" [displayWith]="displayCategory">
+                <mat-option *ngFor="let option of filteredSubCategoriesForFilterBar$ | async" [value]="option">{{ option.name }}</mat-option>
+              </mat-autocomplete>
+              <button mat-icon-button matSuffix *ngIf="subCategoryControl.value" (click)="subCategoryControl.setValue(null); $event.stopPropagation()"><mat-icon>close</mat-icon></button>
+            </mat-form-field>
+          </div>
+          <div class="gallery-grid" *ngIf="allMedia$ | async as items">
+            <div *ngFor="let item of items" class="gallery-item">
+              <a [routerLink]="['/events/details', item.eventId]" class="gallery-link">
+                <div class="media-preview"><img [src]="getMediaPath(item.filePath)" [alt]="item.eventTitle"></div>
+                <div class="media-overlay"><span class="event-title">{{ item.eventTitle }}</span></div>
+              </a>
+            </div>
+            <div *ngIf="items.length === 0" class="no-items-message"><h2>No Media Found</h2></div>
+          </div>
+        </ng-container>
+
       </div>
-    </div>
-  </ng-container>
-
-  <ng-template #loading>
-    <div class="loading-spinner">
-      <!-- Add a spinner component here if you have one, e.g., <mat-spinner> -->
-      <p>Loading Media...</p>
-    </div>
-  </ng-template>
-
-  <ng-template #noItems>
-    <div class="no-items-message">
-      <h2>No Media Found</h2>
-      <p>There is currently no media available from public events.</p>
-    </div>
-  </ng-template>
+    </ng-container>
+    <ng-template #loading>
+      <div class="loading-spinner"><mat-spinner diameter="50"></mat-spinner><p>Loading...</p></div>
+    </ng-template>
+  </div>
 </div>

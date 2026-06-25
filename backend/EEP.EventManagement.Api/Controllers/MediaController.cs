@@ -23,9 +23,14 @@ namespace EEP.EventManagement.Api.Controllers
         }
 
         [HttpGet("gallery")]
-        public async Task<ActionResult<List<GalleryMediaDto>>> GetGalleryMedia()
+        [AllowAnonymous]
+        public async Task<ActionResult<List<GalleryMediaDto>>> GetGalleryMedia([FromQuery] Guid? categoryId, [FromQuery] Guid? subCategoryId)
         {
-            var query = new GetGalleryQuery();
+            var query = new GetGalleryQuery
+            {
+                MediaCategoryId = categoryId,
+                MediaSubCategoryId = subCategoryId
+            };
             var result = await _mediator.Send(query);
             return Ok(result);
         }

@@ -11,5 +11,7 @@ namespace EEP.EventManagement.Api.Application.Features.Media.DTOs
         public Guid EventId { get; set; }
         public string EventTitle { get; set; }
         public DateTime EventDate { get; set; }
+        public string CategoryName { get; set; }
+        public string SubCategoryName { get; set; }
     }
 }

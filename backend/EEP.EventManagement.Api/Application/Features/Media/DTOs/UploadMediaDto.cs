@@ -10,6 +10,7 @@ namespace EEP.EventManagement.Api.Application.Features.Media.DTOs
         public MediaType FileType { get; set; }
         public IFormFile? File { get; set; }
         public string? ExternalUrl { get; set; } // For 'Link' type
+        public Guid? MediaSubCategoryId { get; set; }
     }
 
     public class MediaFileDto

@@ -277,4 +277,6 @@ export interface GalleryMediaDto {
   eventId: string;
   eventTitle: string;
   eventDate: string;
+  categoryName: string;
+  subCategoryName: string;
 }
