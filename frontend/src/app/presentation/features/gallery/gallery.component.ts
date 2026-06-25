@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { BehaviorSubject, Observable, Subscription, of } from 'rxjs';
+import { BehaviorSubject, Observable, Subscription, of, combineLatest } from 'rxjs';
 import { catchError, debounceTime, map, shareReplay, startWith, switchMap, tap } from 'rxjs/operators';
 import { EventService } from '../events/services/event.service';
 import { MediaService, MediaCategory, MediaSubCategory } from '../../../core/services/media.service';
@@ -127,9 +127,7 @@ export class GalleryComponent implements OnInit, OnDestroy {
     // Data stream for the flat list
     this.allMedia$ = this.allMediaFilters$.pipe(
       debounceTime(300),
-      tap(() => {
-        this.isLoading$.next(true);
-      }),
+      tap(() => this.isLoading$.next(true)),
       switchMap(filters => this.eventService.getGalleryMedia(filters.categoryId, filters.subCategoryId).pipe(
         catchError(error => {
           this.isLoading$.next(false);
@@ -140,10 +138,11 @@ export class GalleryComponent implements OnInit, OnDestroy {
       tap(() => this.isLoading$.next(false)),
       shareReplay({ bufferSize: 1, refCount: true })
     );
-
     this.subscriptions.add(this.allMedia$.subscribe());
 
-    // Fetch categories for the filter bar
+    // --- New Reactive Filter Logic ---
+
+    // Fetch all categories once for the main filter
     this.mediaService.getMediaCategories().subscribe(cats => (this.allViewCategories = cats));
 
     // Autocomplete for Category Filter
@@ -153,26 +152,40 @@ export class GalleryComponent implements OnInit, OnDestroy {
       map(name => (name ? this._filterByName(this.allViewCategories, name) : this.allViewCategories.slice()))
     );
 
-    // Autocomplete for Sub-Category Filter
-    this.filteredSubCategoriesForFilterBar$ = this.subCategoryControl.valueChanges.pipe(
-      startWith(''),
-      map(value => (typeof value === 'string' ? value : value?.name)),
-      map(name => (name ? this._filterByName(this.allViewSubCategories, name) : this.allViewSubCategories.slice()))
+    // This stream holds the options for the sub-category dropdown.
+    // It reacts to changes in the parent category selection.
+    const subCategoryOptions$ = this.categoryControl.valueChanges.pipe(
+      startWith(this.categoryControl.value),
+      switchMap(category => {
+        const categoryId = category && typeof category !== 'string' ? category.id : null;
+        if (categoryId) {
+          return this.mediaService.getSubCategories(categoryId);
+        }
+        return of([]); // If no category, return empty array of options
+      }),
+      tap(subCats => this.allViewSubCategories = subCats) // Keep the class property in sync
     );
 
-    // Cascading logic for filters
+    // This stream powers the sub-category autocomplete panel.
+    // It combines the latest options with what the user is typing.
+    this.filteredSubCategoriesForFilterBar$ = combineLatest([
+      subCategoryOptions$,
+      this.subCategoryControl.valueChanges.pipe(startWith(''))
+    ]).pipe(
+      map(([options, value]) => {
+        const name = typeof value === 'string' ? value : value?.name;
+        return name ? this._filterByName(options, name) : options.slice();
+      })
+    );
+
+    // Subscription to handle category changes: reset sub-category and trigger media reload
     const categorySub = this.categoryControl.valueChanges.subscribe(category => {
       this.subCategoryControl.setValue(null, { emitEvent: false });
-      this.allViewSubCategories = [];
       const categoryId = category && typeof category !== 'string' ? category.id : null;
       this.allMediaFilters$.next({ categoryId: categoryId, subCategoryId: null });
-      if (categoryId) {
-        this.mediaService.getSubCategories(categoryId).subscribe(subCats => {
-          this.allViewSubCategories = subCats;
-        });
-      }
     });
 
+    // Subscription to handle sub-category changes: trigger media reload
     const subCategorySub = this.subCategoryControl.valueChanges.subscribe(subCategory => {
       const parentCategory = this.categoryControl.value;
       const parentCategoryId = parentCategory && typeof parentCategory !== 'string' ? parentCategory.id : null;
