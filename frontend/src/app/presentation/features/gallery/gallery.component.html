@@ -121,11 +121,14 @@
 
             <ng-container *ngSwitchCase="'media'">
               <div class="gallery-grid">
-                <div *ngFor="let item of media" class="gallery-item">
-                  <a [routerLink]="['/events/details', item.eventId]" class="gallery-link">
-                    <div class="media-preview"><img [src]="getMediaPath(item.filePath)" [alt]="item.eventTitle"></div>
+                <div *ngFor="let item of media" class="gallery-item" (click)="openMedia(item)">
+                    <div class="media-preview">
+                      <img *ngIf="item.fileType === 'Image'" [src]="getMediaPath(item.filePath)" [alt]="item.eventTitle">
+                      <div *ngIf="item.fileType !== 'Image'" class="video-preview">
+                        <mat-icon>{{ item.fileType === 'Video' ? 'videocam' : 'insert_drive_file' }}</mat-icon>
+                      </div>
+                    </div>
                     <div class="media-overlay"><span class="event-title">{{ item.eventTitle }}</span></div>
-                  </a>
                 </div>
                 <div *ngIf="media.length === 0" class="no-items-message"><h2>No Media Found</h2></div>
               </div>
@@ -154,11 +157,14 @@
             </mat-form-field>
           </div>
           <div class="gallery-grid" *ngIf="allMedia$ | async as items">
-            <div *ngFor="let item of items" class="gallery-item">
-              <a [routerLink]="['/events/details', item.eventId]" class="gallery-link">
-                <div class="media-preview"><img [src]="getMediaPath(item.filePath)" [alt]="item.eventTitle"></div>
+            <div *ngFor="let item of items" class="gallery-item" (click)="openMedia(item)">
+                <div class="media-preview">
+                  <img *ngIf="item.fileType === 'Image'" [src]="getMediaPath(item.filePath)" [alt]="item.eventTitle">
+                  <div *ngIf="item.fileType !== 'Image'" class="video-preview">
+                    <mat-icon>{{ item.fileType === 'Video' ? 'videocam' : 'insert_drive_file' }}</mat-icon>
+                  </div>
+                </div>
                 <div class="media-overlay"><span class="event-title">{{ item.eventTitle }}</span></div>
-              </a>
             </div>
             <div *ngIf="items.length === 0" class="no-items-message"><h2>No Media Found</h2></div>
           </div>

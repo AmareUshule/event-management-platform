@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { BehaviorSubject, Observable, Subscription, of } from 'rxjs';
-import { catchError, debounceTime, map, startWith, switchMap, tap } from 'rxjs/operators';
+import { catchError, debounceTime, map, shareReplay, startWith, switchMap, tap } from 'rxjs/operators';
 import { EventService } from '../events/services/event.service';
 import { MediaService, MediaCategory, MediaSubCategory } from '../../../core/services/media.service';
 import { AuthService } from '../../../core/auth/auth.service';
@@ -13,6 +13,7 @@ import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { PageHeaderComponent } from '../../../shared/components/page-header/page-header.component';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatListModule } from '@angular/material/list';
@@ -24,6 +25,7 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 
 import { environment } from '../../../../environments/environment';
+import { ImageLightboxComponent } from '../internal-announcements/components/image-lightbox/image-lightbox.component';
 
 type ViewMode = 'folders' | 'all';
 type FolderViewLevel = 'categories' | 'subcategories' | 'media';
@@ -44,6 +46,7 @@ interface Breadcrumb {
     PageHeaderComponent,
     MatIconModule,
     MatButtonModule,
+    MatDialogModule,
     MatSnackBarModule,
     MatExpansionModule,
     MatListModule,
@@ -63,6 +66,7 @@ export class GalleryComponent implements OnInit, OnDestroy {
   private mediaService = inject(MediaService);
   private authService = inject(AuthService);
   private snackBar = inject(MatSnackBar);
+  private dialog = inject(MatDialog);
 
   // --- View Mode State ---
   public viewMode: ViewMode = 'folders';
@@ -133,8 +137,11 @@ export class GalleryComponent implements OnInit, OnDestroy {
           return of([]);
         })
       )),
-      tap(() => this.isLoading$.next(false))
+      tap(() => this.isLoading$.next(false)),
+      shareReplay({ bufferSize: 1, refCount: true })
     );
+
+    this.subscriptions.add(this.allMedia$.subscribe());
 
     // Fetch categories for the filter bar
     this.mediaService.getMediaCategories().subscribe(cats => (this.allViewCategories = cats));
@@ -234,6 +241,39 @@ export class GalleryComponent implements OnInit, OnDestroy {
     const baseUrl = apiBase.endsWith('/') ? apiBase : `${apiBase}/`;
     const path = filePath?.startsWith('/') ? filePath.substring(1) : filePath;
     return `${baseUrl}${path}`;
+  }
+
+  openMedia(item: GalleryMediaDto): void {
+    const type = item.fileType?.toString?.().toLowerCase();
+    const url = this.getMediaPath(item.filePath);
+
+    if (!url) {
+      this.snackBar.open('Unable to open media. File URL is invalid.', 'Close', { duration: 3000 });
+      return;
+    }
+
+    if (type === 'image') {
+      this.dialog.open(ImageLightboxComponent, {
+        panelClass: 'gallery-lightbox-dialog',
+        data: {
+          imageUrl: url,
+          title: item.eventTitle,
+          fileName: this.getFileName(item.filePath)
+        }
+      });
+      return;
+    }
+
+    const newWindow = window.open(url, '_blank');
+    if (!newWindow) {
+      window.location.href = url;
+    }
+  }
+
+  private getFileName(filePath: string): string {
+    if (!filePath) return 'download';
+    const parts = filePath.split('/');
+    return parts[parts.length - 1] || 'download';
   }
 
   // --- All Media View Helpers ---
