@@ -174,9 +174,12 @@ export class GalleryComponent implements OnInit, OnDestroy {
     });
 
     const subCategorySub = this.subCategoryControl.valueChanges.subscribe(subCategory => {
+      const parentCategory = this.categoryControl.value;
+      const parentCategoryId = parentCategory && typeof parentCategory !== 'string' ? parentCategory.id : null;
       const subCategoryId = subCategory && typeof subCategory !== 'string' ? subCategory.id : null;
+      
       this.allMediaFilters$.next({
-        categoryId: this.allMediaFilters$.value.categoryId,
+        categoryId: parentCategoryId,
         subCategoryId: subCategoryId
       });
     });

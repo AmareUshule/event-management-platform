@@ -76,50 +76,13 @@
 
 .filter-bar {
   display: flex;
-  flex-wrap: nowrap; // Keep filters on one line if possible
+  flex-wrap: nowrap;
   gap: var(--space-3);
   align-items: center;
 
   .mat-form-field {
     flex-grow: 1;
-    min-width: 200px; // Adjust min-width for header
-  }
-}
-
-// Override the default outline appearance using a more aggressive ::ng-deep strategy
-:host ::ng-deep {
-  .filter-bar {
-    .mat-form-field-appearance-outline {
-      // Remove the default outline completely to prevent conflicts
-      .mat-form-field-outline {
-        display: none;
-      }
-
-      // Style the main container instead
-      .mat-form-field-flex {
-        border-radius: 12px;
-        border: 2px solid var(--neutral-300);
-        background-color: white;
-        transition: border-color 0.3s ease, box-shadow 0.3s ease;
-        padding: 0 1em;
-      }
-    }
-
-    // Hover state
-    .mat-form-field-appearance-outline:not(.mat-focused):hover .mat-form-field-flex {
-      border-color: var(--neutral-500);
-    }
-
-    // Focus state
-    .mat-form-field-appearance-outline.mat-focused {
-      .mat-form-field-flex {
-        border-color: var(--brand-green);
-        box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-green) 20%, transparent);
-      }
-      .mat-form-field-label {
-        color: var(--brand-green);
-      }
-    }
+    min-width: 200px;
   }
 }
 
