@@ -1199,30 +1199,31 @@ export class EventDetailPageComponent implements OnInit, OnDestroy {
     return `${baseUrl}${filePath}`;
   }
 
-  openMediaViewer(media: MediaFile): void {
+  openMediaViewer(media: MediaFile, allMedia: MediaFile[], index: number): void {
     if (media.fileType === MediaType.IMAGE) {
       // Open image in lightbox
-      this.openImageLightbox(media);
+      this.openImageLightbox(media, allMedia, index);
     } else {
       // For other types, open in new tab
       window.open(this.getMediaUrl(media), '_blank');
     }
   }
 
-  private openImageLightbox(media: MediaFile): void {
+  private openImageLightbox(clickedMedia: MediaFile, allMedia: MediaFile[], clickedIndex: number): void {
+    // Filter for only the image items to show in the lightbox navigation
+    const imageItems = allMedia.filter(m => this.isImage(m));
+    const lightboxIndex = imageItems.findIndex(item => item.id === clickedMedia.id);
+
     this.dialog.open(ImageLightboxComponent, {
+      panelClass: 'gallery-lightbox-dialog', // Use the same class as the gallery
       data: {
-        imageUrl: this.getMediaUrl(media),
-        title: media.fileName,
-        fileName: media.fileName
-      },
-      panelClass: 'lightbox-dialog',
-      maxWidth: '100vw',
-      maxHeight: '100vh',
-      height: '100%',
-      width: '100%',
-      hasBackdrop: true,
-      backdropClass: 'lightbox-backdrop'
+        items: imageItems.map(item => ({
+          imageUrl: this.getMediaUrl(item),
+          title: item.fileName,
+          fileName: item.fileName
+        })),
+        currentIndex: lightboxIndex >= 0 ? lightboxIndex : 0
+      }
     });
   }
 }

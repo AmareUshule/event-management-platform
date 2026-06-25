@@ -146,7 +146,7 @@
 
             <ng-container *ngSwitchCase="'media'">
               <div class="gallery-grid">
-                <div *ngFor="let item of media" class="gallery-item" (click)="openMedia(item)">
+                <div *ngFor="let item of media; let i = index" class="gallery-item" (click)="openMedia(item, media, i)">
                     <div class="media-preview">
                       <img *ngIf="item.fileType === 'Image'" [src]="getMediaPath(item.filePath)" [alt]="item.eventTitle">
                       <div *ngIf="item.fileType !== 'Image'" class="video-preview">
@@ -165,7 +165,7 @@
         <!-- ALL MEDIA VIEW -->
         <ng-container *ngSwitchCase="'all'">
           <div class="gallery-grid" *ngIf="allMedia$ | async as items">
-            <div *ngFor="let item of items" class="gallery-item" (click)="openMedia(item)">
+            <div *ngFor="let item of items; let i = index" class="gallery-item" (click)="openMedia(item, items, i)">
                 <div class="media-preview">
                   <img *ngIf="item.fileType === 'Image'" [src]="getMediaPath(item.filePath)" [alt]="item.eventTitle">
                   <div *ngIf="item.fileType !== 'Image'" class="video-preview">

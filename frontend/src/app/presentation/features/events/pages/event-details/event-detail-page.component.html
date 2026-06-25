@@ -509,8 +509,8 @@
                                     </div>
 
                                     <div class="intelligence-grid">
-                                        <div class="artifact-card" *ngFor="let media of filteredMedia" 
-                                             [class]="getMediaCardClass(media)" (click)="openMediaViewer(media)">
+                                        <div class="artifact-card" *ngFor="let media of filteredMedia; let i = index" 
+                                             [class]="getMediaCardClass(media)" (click)="openMediaViewer(media, filteredMedia, i)">
                                             
                                             <!-- Delete Button -->
                                             <button class="delete-artifact-btn" 

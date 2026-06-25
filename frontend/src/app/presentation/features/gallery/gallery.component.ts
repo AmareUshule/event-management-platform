@@ -259,31 +259,39 @@ export class GalleryComponent implements OnInit, OnDestroy {
     return `${baseUrl}${path}`;
   }
 
-  openMedia(item: GalleryMediaDto): void {
-    const type = item.fileType?.toString?.().toLowerCase();
-    const url = this.getMediaPath(item.filePath);
-
-    if (!url) {
-      this.snackBar.open('Unable to open media. File URL is invalid.', 'Close', { duration: 3000 });
+  openMedia(clickedItem: GalleryMediaDto, allItems: GalleryMediaDto[], clickedIndex: number): void {
+    const type = clickedItem.fileType?.toString?.().toLowerCase();
+    
+    // We only open the lightbox for images.
+    if (type !== 'image') {
+      const url = this.getMediaPath(clickedItem.filePath);
+      if (!url) {
+        this.snackBar.open('Unable to open media. File URL is invalid.', 'Close', { duration: 3000 });
+        return;
+      }
+      // Open non-images in a new tab
+      const newWindow = window.open(url, '_blank');
+      if (!newWindow) {
+        window.location.href = url;
+      }
       return;
     }
-
-    if (type === 'image') {
-      this.dialog.open(ImageLightboxComponent, {
-        panelClass: 'gallery-lightbox-dialog',
-        data: {
-          imageUrl: url,
+  
+    // Filter for only the image items to show in the lightbox navigation
+    const imageItems = allItems.filter(item => item.fileType?.toString?.().toLowerCase() === 'image');
+    const lightboxIndex = imageItems.findIndex(item => item.mediaId === clickedItem.mediaId);
+  
+    this.dialog.open(ImageLightboxComponent, {
+      panelClass: 'gallery-lightbox-dialog',
+      data: {
+        items: imageItems.map(item => ({
+          imageUrl: this.getMediaPath(item.filePath),
           title: item.eventTitle,
           fileName: this.getFileName(item.filePath)
-        }
-      });
-      return;
-    }
-
-    const newWindow = window.open(url, '_blank');
-    if (!newWindow) {
-      window.location.href = url;
-    }
+        })),
+        currentIndex: lightboxIndex >= 0 ? lightboxIndex : 0
+      }
+    });
   }
 
   private getFileName(filePath: string): string {
