@@ -1,6 +1,8 @@
+<div class="page-top-padding"></div>
 <app-page-header
-  title="Event Gallery"
-  subtitle="A visual collection of media from all public events.">
+  title="Media Library"
+  subtitle="A centralized collection of photos and videos from across Ethiopian Electric Power."
+  titleClass="gradient-strip">
 </app-page-header>
 
 <div class="gallery-container">
@@ -19,7 +21,7 @@
 
     <div class="spacer"></div>
 
-    <button *ngIf="isAdmin" mat-stroked-button (click)="toggleManagementPanel()">
+    <button *ngIf="isAdmin" mat-stroked-button class="manage-button" (click)="toggleManagementPanel()">
       <mat-icon>settings</mat-icon>
       {{ managementPanelVisible ? 'Close Management' : 'Manage Categories' }}
     </button>
@@ -82,9 +84,11 @@
         <!-- FOLDER VIEW -->
         <ng-container *ngSwitchCase="'folders'">
           <div class="breadcrumb-bar">
-            <ng-container *ngFor="let crumb of breadcrumbs; let i = index; let last = last">
-              <button mat-button (click)="navigateToBreadcrumb(i)" [disabled]="last">{{ crumb.name }}</button>
-              <mat-icon *ngIf="!last">chevron_right</mat-icon>
+            <ng-container *ngIf="breadcrumbs.length > 1">
+              <ng-container *ngFor="let crumb of breadcrumbs; let i = index; let last = last">
+                <button mat-button (click)="navigateToBreadcrumb(i)" [disabled]="last">{{ crumb.name }}</button>
+                <mat-icon *ngIf="!last">chevron_right</mat-icon>
+              </ng-container>
             </ng-container>
           </div>
 
@@ -128,6 +132,7 @@
                         <mat-icon>{{ item.fileType === 'Video' ? 'videocam' : 'insert_drive_file' }}</mat-icon>
                       </div>
                     </div>
+                    <mat-icon class="action-icon">zoom_in</mat-icon>
                     <div class="media-overlay"><span class="event-title">{{ item.eventTitle }}</span></div>
                 </div>
                 <div *ngIf="media.length === 0" class="no-items-message"><h2>No Media Found</h2></div>
@@ -164,6 +169,7 @@
                     <mat-icon>{{ item.fileType === 'Video' ? 'videocam' : 'insert_drive_file' }}</mat-icon>
                   </div>
                 </div>
+                <mat-icon class="action-icon">zoom_in</mat-icon>
                 <div class="media-overlay"><span class="event-title">{{ item.eventTitle }}</span></div>
             </div>
             <div *ngIf="items.length === 0" class="no-items-message"><h2>No Media Found</h2></div>
