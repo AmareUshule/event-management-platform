@@ -9,7 +9,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { AnnouncementService } from '../../services/announcement.service';
 import { Announcement, AnnouncementMedia, JobVacancy } from '../../models/announcement.model';
 import { HeaderComponent } from '../../../../layouts/header/header.component';
-import { ImageLightboxComponent } from '../../components/image-lightbox/image-lightbox.component';
+import { ImageLightboxComponent } from '../../../../../shared/components/image-lightbox/image-lightbox.component';
 import { finalize } from 'rxjs/operators';
 import { environment } from '../../../../../../environments/environment';
 import { MatTableModule } from '@angular/material/table'; // Import MatTableModule
@@ -111,18 +111,17 @@ export class AnnouncementDetailPageComponent implements OnInit {
     return `${environment.apiUrl}/${cleanUrl}`;
   }
 
-  openLightbox(media: AnnouncementMedia): void {
+  openLightbox(images: AnnouncementMedia[], index: number): void {
     this.dialog.open(ImageLightboxComponent, {
       data: {
-        imageUrl: this.getFileUrl(media.fileUrl),
-        title: this.announcement?.title || 'Image',
-        fileName: media.fileName
+        items: images.map(img => ({
+          imageUrl: this.getFileUrl(img.fileUrl),
+          title: this.announcement?.title || 'Image',
+          fileName: img.fileName
+        })),
+        currentIndex: index
       },
-      panelClass: 'full-screen-dialog',
-      maxWidth: '100vw',
-      maxHeight: '100vh',
-      height: '100vh',
-      width: '100vw'
+      panelClass: 'gallery-lightbox-dialog', // Use consistent panel class
     });
   }
 

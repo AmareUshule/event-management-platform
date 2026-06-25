@@ -45,7 +45,7 @@ import { environment } from '../../../../../../environments/environment';
 import { AssignmentDialogComponent } from './assignment-dialog.component';
 import { RequestDateChangeDialogComponent } from './request-date-change-dialog.component';
 import { ConfirmationDialogComponent, ConfirmationDialogData } from '../../../confirmation-dialog.component';
-import { ImageLightboxComponent } from '../../../internal-announcements/components/image-lightbox/image-lightbox.component';
+import { ImageLightboxComponent } from '../../../../../shared/components/image-lightbox/image-lightbox.component';
 
 @Component({
   selector: 'app-event-detail-page',

@@ -25,7 +25,7 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 
 import { environment } from '../../../../environments/environment';
-import { ImageLightboxComponent } from '../internal-announcements/components/image-lightbox/image-lightbox.component';
+import { ImageLightboxComponent } from '../../../shared/components/image-lightbox/image-lightbox.component';
 
 type ViewMode = 'folders' | 'all';
 type FolderViewLevel = 'categories' | 'subcategories' | 'media';
